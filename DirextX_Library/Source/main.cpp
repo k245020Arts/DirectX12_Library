@@ -1,6 +1,5 @@
 #include <string>
 #include "Window/Window.h"
-#include <string>
 #include <assert.h>
 #ifdef _DEBUG
 #include <iostream>
@@ -24,7 +23,7 @@ int WINAPI WinMain(HINSTANCE,HINSTANCE,LPSTR,int)
 {
 	
 	Window window;
-	if (!window.Create(1200, 500, L"DX12_Library", L"Window")) {
+	if (!window.Create(1200, 500, L"DX12_Library", L"Window")) { //初期化
 		assert(false && "ウィンドウ作成失敗");
 		return 0;
 	}

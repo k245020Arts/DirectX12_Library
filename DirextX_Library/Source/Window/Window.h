@@ -17,6 +17,12 @@
 
 using Microsoft::WRL::ComPtr;
 
+struct Vertex
+{
+	DirectX::XMFLOAT3 pos; //ç¿ïW
+	DirectX::XMFLOAT2 uv; //uvç¿ïW
+};
+
 class Window
 {
 public:
@@ -62,12 +68,20 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vbView = {};
 	D3D12_INDEX_BUFFER_VIEW ibView = {};
 
-	ComPtr<ID3D12RootSignature> rootSignature = nullptr;
+	//ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 
 	ComPtr<ID3D12PipelineState> pipelineState = nullptr;
 
 	D3D12_VIEWPORT viewport = {};
 
 	D3D12_RECT scissorrect = {};
+
+	ComPtr<ID3D12Resource> texbuff = nullptr;
+
+	ComPtr <ID3D12RootSignature> rootsignature = nullptr;
+
+	ComPtr <ID3D12DescriptorHeap> texDescHeap = nullptr;
+
+	ComPtr <ID3DBlob> rootSigBlob = nullptr;
 
 };

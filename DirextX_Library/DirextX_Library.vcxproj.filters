@@ -32,4 +32,9 @@
       <Filter>Source\Shader</Filter>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Shader\BasicShaderHeader.hlsli">
+      <Filter>Source\Shader</Filter>
+    </None>
+  </ItemGroup>
 </Project>

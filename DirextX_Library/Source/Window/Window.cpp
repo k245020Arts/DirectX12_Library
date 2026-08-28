@@ -230,11 +230,11 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 
 	adapters.clear();//念のため削除
 
-	DirectX::XMFLOAT3 vertices[] = {
-		{-0.4f,-0.7f,0.0f} ,//左下
-		{-0.4f,0.7f,0.0f} ,//左上
-		{0.4f,-0.7f,0.0f} ,//右下
-		{0.4f,0.7f,0.0f} ,//右上
+	Vertex vertices[] = {
+		{{ -0.4f,-0.7f,0.0f},{0.0f,1.0f}} ,//左下
+		{{ -0.4f,0.7f,0.0f},{0.0f,0.0f}} ,//左上
+		{{0.4f,-0.7f,0.0f},{1.0f,1.0f}} ,//右下
+		{{0.4f,0.7f,0.0f},{1.0f,0.0f}} ,//右上
 	};
 
 	//頂点バッファの設定
@@ -264,7 +264,7 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	result = _dev->CreateCommittedResource(&heapprop, D3D12_HEAP_FLAG_NONE, &resdesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertBuff));
 
 	//頂点情報のコピー
-	DirectX::XMFLOAT3* vertMap = nullptr;
+	Vertex* vertMap = nullptr;
 	//バッファの仮想アドレスを取得する関数、CPUで変更をすればGPUで変更が出来るように出来る
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 
@@ -317,6 +317,12 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
 		{
 			"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,
+			D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
+		},
+
+		{
+			"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,
 			D3D12_APPEND_ALIGNED_ELEMENT,
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
 		},
@@ -398,7 +404,6 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	//切り離せない頂点集合を特定のインデックスで切り離すための指定を行うためのものだが、切り離さないので以下の指定をする
 	gpipeline.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
 
-	// ★重要
 	gpipeline.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
 	//レンダーターゲットの設定
@@ -409,26 +414,155 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	gpipeline.SampleDesc.Count = 1; //サンプリングは1ピクセルにつき1
 	gpipeline.SampleDesc.Quality = 0; //クオリティーは最低
 
+	//ポリゴン生成時のルートシグネチャの管理
+
+	// 
 	//ルートシグネチャの生成
-	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
+	//D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 
-	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;//頂点情報があることを示す
+	//rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;//頂点情報があることを示す
 
-	ID3DBlob* rootSigBlob = nullptr;
+	//ID3DBlob* rootSigBlob = nullptr;
 
-	//バイナリコードの生成
-	result = D3D12SerializeRootSignature(
-		&rootSignatureDesc,
-		D3D_ROOT_SIGNATURE_VERSION_1_0, //ルートシグネチャのバージョン
-		&rootSigBlob, //シェーダーを生成した時と同じ感じ
-		&errorBlob
-		);
+	////バイナリコードの生成
+	//result = D3D12SerializeRootSignature(
+	//	&rootSignatureDesc,
+	//	D3D_ROOT_SIGNATURE_VERSION_1_0, //ルートシグネチャのバージョン
+	//	&rootSigBlob, //シェーダーを生成した時と同じ感じ
+	//	&errorBlob
+	//);
 
-	result = _dev->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
+	//result = _dev->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
+
 	//rootSigBlob->Release(); ComPtrを使っているので手動でReleaseはしない、通常のポインタの場合は絶対に忘れてはいけない
 
+	struct TexRGBA
+	{
+		unsigned char R, G, B, A;
+	};
 
-	gpipeline.pRootSignature = rootSignature.Get();
+	std::vector<TexRGBA> texturedata(256 * 256);
+
+	for (auto& rgba : texturedata) {
+		rgba.R = rand() % 256;
+		rgba.G = rand() % 256;
+		rgba.B = rand() % 256;
+		rgba.A = 255;
+
+	}
+
+	//テクステャバッファーの作成
+
+	//WriteToSubresouceで転送するためのヒープ設定
+	D3D12_HEAP_PROPERTIES heapProp = {};
+
+	//特殊な設定なのでUPLOADでもDEALUTでもない
+	heapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
+
+	//ライトバック
+	heapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+
+	//転送はL0、つまりCPU側から直接行う
+	heapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+
+	//単一アダプタのため0
+	heapProp.CreationNodeMask = 0;
+	heapProp.VisibleNodeMask = 0;
+
+	D3D12_RESOURCE_DESC resDesc = {};
+
+	resDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //RGBAフォーマット
+	resDesc.Width = 256; //幅
+	resDesc.Height = 256; //高さ
+	resDesc.DepthOrArraySize = 1; //2Dで配列でもないので1
+	resDesc.SampleDesc.Count = 1; //通常テクステャなのでアンチエイリシアリングしない
+	resDesc.SampleDesc.Quality = 0; //最低クオリティ
+	resDesc.MipLevels = 1; //ミップアップしないのでミップ数は1つ
+	resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; //２Dテクステャ用
+	resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; //レイアウトは設定しない
+	resDesc.Flags = D3D12_RESOURCE_FLAG_NONE; //フラグなし
+
+	result = _dev->CreateCommittedResource(&heapProp, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, nullptr, IID_PPV_ARGS(&texbuff));
+	//GPUにデータ転送
+	result = texbuff->WriteToSubresource(0, nullptr, texturedata.data(), sizeof(TexRGBA) * 256, sizeof(TexRGBA) * texturedata.size());
+
+	//シェーダーリソースビューの作成
+	//ディスプリタヒープの生成
+	D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc = {};
+
+	descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+	descHeapDesc.NodeMask = 0;
+
+	descHeapDesc.NumDescriptors = 1;
+
+	descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV; //シェーダーリソースビュー用
+
+	result = _dev->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&texDescHeap));
+
+	//シェーダーリソースビューの生成
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+
+	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //0.0f～1.0fに初期化
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; //2Dテクステャ用
+
+	srvDesc.Texture2D.MipLevels = 1; //ミップマップを使用しないので1
+
+	_dev->CreateShaderResourceView(texbuff.Get(), &srvDesc, texDescHeap->GetCPUDescriptorHandleForHeapStart());
+
+	//ディスクプリタレンジの設定
+	D3D12_DESCRIPTOR_RANGE descTblRange = {};
+
+	descTblRange.NumDescriptors = 1; //複数のテクスチャがディスクプリタヒープ上で並んでおり、連続で指定する場合はこの数が増える
+	descTblRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; //種別はテクステャ
+	descTblRange.BaseShaderRegister = 0; //0番スロットから
+	descTblRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+
+	//ルートパラメーターの設定
+	D3D12_ROOT_PARAMETER rootParam = {};
+
+	rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; //ピクセルシェーダーから見える
+	rootParam.DescriptorTable.pDescriptorRanges = &descTblRange;
+	rootParam.DescriptorTable.NumDescriptorRanges = 1;
+
+
+	//ディスクプリタテーブルの作成
+	//画像用のルートシグネチャ
+	D3D12_ROOT_SIGNATURE_DESC rootsignatureDesc = {};
+
+	rootsignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT; //頂点情報があるかを示す
+
+	rootsignatureDesc.pParameters = &rootParam;
+	rootsignatureDesc.NumParameters = 1;
+
+	//サンプラーの生成
+	D3D12_STATIC_SAMPLER_DESC samplerDesc = {};
+
+	samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; //横方向の繰り返し
+	samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP; //縦方向の繰り返し
+	samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP; //奥行きの繰り返し
+	samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK; //ボーダーは黒
+
+	samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR; //線形補完
+	samplerDesc.MaxLOD = D3D12_FLOAT32_MAX; //ミップマップ最大値
+	samplerDesc.MinLOD = 0.0f; //ミップマップ最低値
+	samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; //ピクセルシェーダーから見える
+	samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER; //リサンプリングしない
+
+	samplerDesc.ShaderRegister = 0;
+	samplerDesc.RegisterSpace = 0;
+
+	rootsignatureDesc.pStaticSamplers = &samplerDesc;
+	rootsignatureDesc.NumStaticSamplers = 1;
+
+
+	result = D3D12SerializeRootSignature(&rootsignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSigBlob, &errorBlob);
+	result = _dev->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS(&rootsignature));
+
+	gpipeline.pRootSignature = rootsignature.Get();
 
 	result = _dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&pipelineState));
 
@@ -448,9 +582,10 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	scissorrect.right = _cWidth;
 	scissorrect.bottom = _cHeight;
 
+	
 
 
-
+ 
 	return true;
 }
 
@@ -505,14 +640,20 @@ bool Window::ScreenFlip()
 	_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
 
 	
-	_cmdList->SetGraphicsRootSignature(rootSignature.Get());
+	
 	_cmdList->RSSetViewports(1, &viewport);
 	_cmdList->RSSetScissorRects(1, &scissorrect);
+	_cmdList->SetGraphicsRootSignature(rootsignature.Get());
+
 	_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //トライアングルリストの生成
 	//D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST : 三角形を描画するときに使う
 	//D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP : 四角形を描画す際に使う
 	_cmdList->IASetVertexBuffers(0, 1, &vbView);
 	_cmdList->IASetIndexBuffer(&ibView);
+	_cmdList->SetGraphicsRootSignature(rootsignature.Get());
+	_cmdList->SetDescriptorHeaps(1, texDescHeap.GetAddressOf());
+	_cmdList->SetGraphicsRootDescriptorTable(0, texDescHeap->GetGPUDescriptorHandleForHeapStart());
+
 	//第一引数に頂点数を代入
 	//_cmdList->DrawInstanced(3, 1, 0, 0);
 
