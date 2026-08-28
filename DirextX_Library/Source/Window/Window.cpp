@@ -348,7 +348,45 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 
 	D3D12_RENDER_TARGET_BLEND_DESC renderTargetBlendDesc = {};
 
-	renderTargetBlendDesc.BlendEnable = false;
+	renderTargetBlendDesc.BlendEnable = false; //ブレンドをするならtrue
+	//renderTargetBlendDesc.BlendEnable = true;
+
+	//----------------------------------αブレンド----------------------------------------
+	//renderTargetBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	//renderTargetBlendDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	//renderTargetBlendDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+
+	////Alphag側も設定しないと正常にパイプラインがCreate出来ないため一応書く
+	//renderTargetBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	//renderTargetBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	//renderTargetBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+	//-------------------------------------------------------------------------------------
+
+	//----------------------------------加算ブレンド----------------------------------------
+	//renderTargetBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	//renderTargetBlendDesc.SrcBlend = D3D12_BLEND_ONE;
+	//renderTargetBlendDesc.DestBlend = D3D12_BLEND_ONE;
+
+	////Alphag側も設定しないと正常にパイプラインがCreate出来ないため一応書く
+	//renderTargetBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	//renderTargetBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	//renderTargetBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+	//-------------------------------------------------------------------------------------
+
+	//----------------------------------乗算ブレンド----------------------------------------
+	/*renderTargetBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	renderTargetBlendDesc.SrcBlend = D3D12_BLEND_ZERO;
+	renderTargetBlendDesc.DestBlend = D3D12_BLEND_SRC_COLOR;
+
+	Alphag側も設定しないと正常にパイプラインがCreate出来ないため一応書く
+	renderTargetBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	renderTargetBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	renderTargetBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;*/
+
+	//-------------------------------------------------------------------------------------
+
 	renderTargetBlendDesc.LogicOpEnable = false;
 	renderTargetBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
