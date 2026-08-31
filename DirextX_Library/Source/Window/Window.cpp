@@ -1,6 +1,7 @@
 #include "Window.h"
 #include <assert.h>
 
+
 //using namespace DirectX;
 
 //HRESULT D3D12CreateDevice(IUnknown* pAdapter, D3D_FEATURE_LEVEL MiniumuFeatureLevel, REFIID riid, void** ppDevice);
@@ -204,6 +205,13 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	result = _swapChain->GetDesc(&swcDesc);
 
 	_backBuffers.resize(swcDesc.BufferCount);
+
+	//SRGB用のレンダーターゲットビュー設定を行う
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+
+	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; //ガンマ補正あり
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+
 	for (unsigned int idx = 0; idx < swcDesc.BufferCount; ++idx) {
 		result = _swapChain->GetBuffer(idx, IID_PPV_ARGS(&_backBuffers[idx]));
 
@@ -217,7 +225,7 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 
 		handle.ptr += idx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-		_dev->CreateRenderTargetView(_backBuffers[idx].Get(), nullptr, handle);
+		_dev->CreateRenderTargetView(_backBuffers[idx].Get(), &rtvDesc, handle); //第二引数をnullptrにするとフォーマットをスワップチェーンに準拠するということを意味する
 
 
 	}
@@ -436,7 +444,16 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 
 	//rootSigBlob->Release(); ComPtrを使っているので手動でReleaseはしない、通常のポインタの場合は絶対に忘れてはいけない
 
-	struct TexRGBA
+	DirectX::TexMetadata metadata = {};
+	DirectX::ScratchImage scratchImg = {};
+
+	result = DirectX::LoadFromWICFile(L"data/textest.png", DirectX::WIC_FLAGS_NONE, &metadata, scratchImg);
+
+	auto image = scratchImg.GetImage(0, 0, 0);
+
+	//自前で作成する場合はこれを使う
+
+	/*struct TexRGBA
 	{
 		unsigned char R, G, B, A;
 	};
@@ -449,7 +466,7 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 		rgba.B = rand() % 256;
 		rgba.A = 255;
 
-	}
+	}*/
 
 	//テクステャバッファーの作成
 
@@ -471,20 +488,21 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 
 	D3D12_RESOURCE_DESC resDesc = {};
 
-	resDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //RGBAフォーマット
-	resDesc.Width = 256; //幅
-	resDesc.Height = 256; //高さ
-	resDesc.DepthOrArraySize = 1; //2Dで配列でもないので1
+	resDesc.Format = metadata.format; //RGBAフォーマットDXGI_FORMAT_R8G8B8A8_UNORM : DirectXTexを使用すると画像のデータが取得できるのでそれを使う
+	resDesc.Width = metadata.width; //幅 255 : DirectXTexを使用すると画像のデータが取得できるのでそれを使う
+	resDesc.Height = (UINT)metadata.height; //高さ 255 : DirectXTexを使用すると画像のデータが取得できるのでそれを使う
+	resDesc.DepthOrArraySize = (UINT16)metadata.arraySize; //2Dで配列でもないので1 : DirectXTexを使用すると画像のデータが取得できるのでそれを使う
 	resDesc.SampleDesc.Count = 1; //通常テクステャなのでアンチエイリシアリングしない
 	resDesc.SampleDesc.Quality = 0; //最低クオリティ
-	resDesc.MipLevels = 1; //ミップアップしないのでミップ数は1つ
-	resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; //２Dテクステャ用
+	resDesc.MipLevels = (UINT16)metadata.mipLevels; //ミップアップしないのでミップ数は1つ : DirectXTexを使用すると画像のデータが取得できるのでそれを使う
+	resDesc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metadata.dimension); //２Dテクステャ用 D3D12_RESOURCE_DIMENSION_TEXTURE2D : DirectXTexを使用すると画像のデータが取得できるのでそれを使う
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; //レイアウトは設定しない
 	resDesc.Flags = D3D12_RESOURCE_FLAG_NONE; //フラグなし
 
 	result = _dev->CreateCommittedResource(&heapProp, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, nullptr, IID_PPV_ARGS(&texbuff));
 	//GPUにデータ転送
-	result = texbuff->WriteToSubresource(0, nullptr, texturedata.data(), sizeof(TexRGBA) * 256, sizeof(TexRGBA) * texturedata.size());
+	//result = texbuff->WriteToSubresource(0, nullptr, texturedata.data(), sizeof(TexRGBA) * 256, sizeof(TexRGBA) * texturedata.size());
+	result = texbuff->WriteToSubresource(0, nullptr, image->pixels, (UINT)image->rowPitch, (UINT)image->slicePitch);
 
 	//シェーダーリソースビューの作成
 	//ディスプリタヒープの生成
@@ -503,7 +521,7 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	//シェーダーリソースビューの生成
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 
-	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //0.0f～1.0fに初期化
+	srvDesc.Format = metadata.format; //0.0f～1.0fに初期化 DXGI_FORMAT_R8G8B8A8_UNORM
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; //2Dテクステャ用
 
