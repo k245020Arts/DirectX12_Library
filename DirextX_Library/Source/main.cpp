@@ -23,7 +23,7 @@ int WINAPI WinMain(HINSTANCE,HINSTANCE,LPSTR,int)
 {
 	
 	Window window;
-	if (!window.Create(1200, 500, L"DX12_Library", L"Window")) { //初期化
+	if (!window.Create(1280, 720, L"DX12_Library", L"Window")) { //初期化
 		assert(false && "ウィンドウ作成失敗");
 		return 0;
 	}
@@ -32,6 +32,7 @@ int WINAPI WinMain(HINSTANCE,HINSTANCE,LPSTR,int)
 		if (!window.ProcessMessage()) {
 			break;
 		}
+		window.Update();
 		bool result = window.ScreenFlip();
 		if (!result) {
 			assert(false && "反転に失敗しました");

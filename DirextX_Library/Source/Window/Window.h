@@ -5,6 +5,7 @@
 #include <d3dcompiler.h>
 #include<wrl.h>
 #include <DirectXTex.h>
+#include "../../DirectX12_Library/d3dx12.h"
 
 //ライブラリのリンク
 #pragma comment(lib,"d3d12.lib")
@@ -26,6 +27,8 @@ struct Vertex
 	DirectX::XMFLOAT2 uv; //uv座標
 };
 
+int AlignmentedSize(size_t size, size_t alignment);
+
 class Window
 {
 public:
@@ -40,6 +43,8 @@ public:
 	bool Create(int _cWidth,int _cHeight,const std::wstring& _titleName,const std::wstring& _windowClassName);
 
 	bool ProcessMessage();
+
+	void Update();
 
 	bool ScreenFlip();
 
@@ -81,10 +86,22 @@ private:
 
 	ComPtr<ID3D12Resource> texbuff = nullptr;
 
+	ComPtr<ID3D12Resource> uploadBuff = nullptr;
+
 	ComPtr <ID3D12RootSignature> rootsignature = nullptr;
 
-	ComPtr <ID3D12DescriptorHeap> texDescHeap = nullptr;
+	ComPtr <ID3D12DescriptorHeap> basicDescHeap = nullptr;
 
 	ComPtr <ID3DBlob> rootSigBlob = nullptr;
+
+	ComPtr<ID3D12Resource> constBuff = nullptr;
+
+	DirectX::XMMATRIX* mapMatrix;
+	float angle;
+
+	DirectX::XMMATRIX worldMatrix;
+	DirectX::XMMATRIX viewMatrix;
+	DirectX::XMMATRIX projectionMatrix;
+
 
 };
