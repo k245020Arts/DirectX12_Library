@@ -158,6 +158,40 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 		return false;
 	}
 
+	//PMDヘッダ構造体
+	struct PMDHeader {
+		float version; //例：00 00 80 3F == 1.00
+		char model_name[20];//モデル名
+		char comment[256];//モデルコメント
+	};
+	char pmdsignature[3];
+	PMDHeader pmdheader = {};
+	FILE* fp;
+	auto err = fopen_s(&fp, "data/Model/初音ミク.pmd", "rb");
+	if (fp == nullptr) {
+		assert(false && "ファイルが開けませんでした");
+		return false;
+	}
+	fread(pmdsignature, sizeof(pmdsignature), 1, fp);
+	fread(&pmdheader, sizeof(pmdheader), 1, fp);
+
+	constexpr size_t pmdVertex_size = 38; //頂点一つあたりのサイズ
+
+	
+	fread(&vertNum, sizeof(vertNum), 1, fp);
+
+	std::vector<unsigned char> pmdvertices(vertNum * pmdVertex_size); //バッファーの確保
+	fread(pmdvertices.data(), pmdvertices.size(), 1, fp);
+
+	fread(&indicsNum, sizeof(indicsNum), 1, fp);
+
+	//インデックスデータの作成
+	std::vector<unsigned short> indices;
+	indices.resize(indicsNum);
+	fread(indices.data(), indices.size() * sizeof(indices[0]), 1, fp);
+
+	fclose(fp);
+
 	//スワップチェーン
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 
@@ -259,55 +293,30 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 
 	//頂点バッファの設定
 
-	//頂点ヒープの設定
-	D3D12_HEAP_PROPERTIES heapprop = {};
-	heapprop.Type = D3D12_HEAP_TYPE_UPLOAD;
-
-	heapprop.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	heapprop.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-
-	//リソース設定構造体
-	D3D12_RESOURCE_DESC resdesc = {};
-
-	resdesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	resdesc.Width = sizeof(vertices);
-	resdesc.Height = 1;
-	resdesc.DepthOrArraySize = 1;
-	resdesc.MipLevels = 1;
-	resdesc.Format = DXGI_FORMAT_UNKNOWN;
-
-	resdesc.SampleDesc.Count = 1;
-	resdesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-	resdesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	auto heapprop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	auto resdesc = CD3DX12_RESOURCE_DESC::Buffer(pmdvertices.size());
 
 	//頂点バッファの生成
 	result = _dev->CreateCommittedResource(&heapprop, D3D12_HEAP_FLAG_NONE, &resdesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertBuff));
 
 	//頂点情報のコピー
-	Vertex* vertMap = nullptr;
+	unsigned char* vertMap = nullptr;
 	//バッファの仮想アドレスを取得する関数、CPUで変更をすればGPUで変更が出来るように出来る
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 
-	std::copy(std::begin(vertices), std::end(vertices), vertMap);
+	std::copy(pmdvertices.begin(),pmdvertices.end(),vertMap);
 
 	vertBuff->Unmap(0, nullptr);
 
 	//頂点バッファービューの作成
 
 	vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();//バッファーの仮想アドレス
-	vbView.SizeInBytes = sizeof(vertices);//全体ののバイト数
-	vbView.StrideInBytes = sizeof(vertices[0]);//1頂点あたりのバイト数
-
-
-	//インデックスデータの作成
-	unsigned short indices[] = {
-		0,1,2,
-		2,1,3
-	};
+	vbView.SizeInBytes = (UINT)pmdvertices.size();//全体ののバイト数
+	vbView.StrideInBytes = (UINT)pmdVertex_size;//1頂点あたりのバイト数
 
 	//バッファーのサイズ以外は頂点シェーダーの設定を使いまわしても良い
-	resdesc.Width = sizeof(indices);
-
+	heapprop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	resdesc = CD3DX12_RESOURCE_DESC::Buffer(indices.size() * sizeof(indices[0]));
 	result = _dev->CreateCommittedResource(&heapprop, D3D12_HEAP_FLAG_NONE, &resdesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&idxBuff));
 
 	unsigned short* idxMap = nullptr;
@@ -320,7 +329,7 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 
 	//インデックスバッファービューの作成
 	ibView.BufferLocation = idxBuff->GetGPUVirtualAddress();
-	ibView.SizeInBytes = sizeof(indices);
+	ibView.SizeInBytes = indices.size() *  sizeof(indices[0]);
 	ibView.Format = DXGI_FORMAT_R16_UINT;
 
 	//シェーダーオブジェクトの生成
@@ -335,17 +344,12 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 		"BasicPS", "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &psBlob, &errorBlob);
 
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-		{
-			"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,
-			D3D12_APPEND_ALIGNED_ELEMENT,
-			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
-		},
-
-		{
-			"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,
-			D3D12_APPEND_ALIGNED_ELEMENT,
-			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
-		},
+		{ "POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0 },
+		{ "NORMAL",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0 },
+		{ "TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0 },
+		{ "BONE_NO",0,DXGI_FORMAT_R16G16_UINT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0 },
+		{ "WEIGHT",0,DXGI_FORMAT_R8_UINT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0 },
+		//{ "EDGE_FLG",0,DXGI_FORMAT_R8_UINT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0 },
 	};
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC gpipeline = {};
@@ -424,7 +428,8 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	//切り離せない頂点集合を特定のインデックスで切り離すための指定を行うためのものだが、切り離さないので以下の指定をする
 	gpipeline.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
 
-	gpipeline.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	//gpipeline.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	gpipeline.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;;
 
 	//レンダーターゲットの設定
 	gpipeline.NumRenderTargets = 1;
@@ -624,15 +629,15 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	_dev->CreateShaderResourceView(texbuff.Get(), &srvDesc,basicHeapHandle );
 
 	DirectX::XMMATRIX matrix = DirectX::XMMatrixIdentity();
-	worldMatrix = DirectX::XMMatrixRotationY(DirectX::XM_PIDIV4);
+	worldMatrix = DirectX::XMMatrixIdentity();
 
-	DirectX::XMFLOAT3 eye(0, 0, 5);
-	DirectX::XMFLOAT3 target(0, 0, 0);
+	DirectX::XMFLOAT3 eye(0, 10, -15);
+	DirectX::XMFLOAT3 target(0, 10, 0);
 	DirectX::XMFLOAT3 up(0, 1, 0);
 
 	viewMatrix = DirectX::XMMatrixLookAtLH(DirectX::XMLoadFloat3(&eye), DirectX::XMLoadFloat3(&target), DirectX::XMLoadFloat3(&up));
 
-	projectionMatrix =  DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, static_cast<float>(_cWidth) / static_cast<float>(_cHeight), 1.0f, 10.0f);
+	projectionMatrix =  DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, static_cast<float>(_cWidth) / static_cast<float>(_cHeight), 1.0f, 100.0f);
 
 	matrix = worldMatrix;
 	matrix *= viewMatrix;
@@ -779,9 +784,9 @@ bool Window::ProcessMessage()
 
 void Window::Update()
 {
-	angle += 0.1f;
-	worldMatrix = DirectX::XMMatrixRotationZ(angle);
-	*mapMatrix = worldMatrix * viewMatrix * projectionMatrix;
+	/*angle += 0.1f;
+	worldMatrix = DirectX::XMMatrixRotationY(angle);
+	*mapMatrix = worldMatrix * viewMatrix * projectionMatrix;*/
 }
 
 bool Window::ScreenFlip()
@@ -813,7 +818,7 @@ bool Window::ScreenFlip()
 	plus += 0.01f;
 	float r = sinf(plus);
 
-	float clearColor[] = { 0.0f,0.0f,0.0f,1.0f };//白色
+	float clearColor[] = { 1.0f,1.0f,1.0f,1.0f };//白色
 
 	_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
 
@@ -824,6 +829,7 @@ bool Window::ScreenFlip()
 	_cmdList->SetGraphicsRootSignature(rootsignature.Get());
 
 	_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); //トライアングルリストの生成
+	//_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST); //点を描画
 	//D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST : 三角形を描画するときに使う
 	//D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP : 四角形を描画す際に使う
 	_cmdList->IASetVertexBuffers(0, 1, &vbView);
@@ -844,10 +850,10 @@ bool Window::ScreenFlip()
 	//-------------------------------------------------------------------------------------------
 
 	//第一引数に頂点数を代入
-	//_cmdList->DrawInstanced(3, 1, 0, 0);
+	//_cmdList->DrawInstanced(vertNum, 1, 0, 0);
 
 	//第一引数にインデックスの数を代入
-	_cmdList->DrawIndexedInstanced(6, 1, 0, 0,0);
+	_cmdList->DrawIndexedInstanced(indicsNum, 1, 0, 0,0);
 
 	BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;

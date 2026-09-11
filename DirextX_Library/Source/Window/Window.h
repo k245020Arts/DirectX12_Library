@@ -27,6 +27,17 @@ struct Vertex
 	DirectX::XMFLOAT2 uv; //uv座標
 };
 
+struct PMDVertex
+{
+	DirectX::XMFLOAT3 pos;//頂点座標 : 12バイト
+	DirectX::XMFLOAT3 normal;//法線ベクトル : 12バイト
+	DirectX::XMFLOAT2 uv; //uv座標 : 8バイト
+	unsigned short boneNo[2]; //ボーン番号 : 4バイト
+	unsigned char boneWeight;//ボーン影響度 : 1バイト
+	unsigned char edgeFlg; //輪郭線フラグ : 1バイト
+
+};
+
 int AlignmentedSize(size_t size, size_t alignment);
 
 class Window
@@ -103,5 +114,7 @@ private:
 	DirectX::XMMATRIX viewMatrix;
 	DirectX::XMMATRIX projectionMatrix;
 
+	unsigned int vertNum;
+	unsigned int indicsNum;
 
 };
