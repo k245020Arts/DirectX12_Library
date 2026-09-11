@@ -27,6 +27,12 @@ struct Vertex
 	DirectX::XMFLOAT2 uv; //uv座標
 };
 
+struct MatriceData
+{
+	DirectX::XMMATRIX world; //モデル本体を回転させたり移動させたりする行列
+	DirectX::XMMATRIX viewproj; //ビューとプロジェクション合成行列
+};
+
 struct PMDVertex
 {
 	DirectX::XMFLOAT3 pos;//頂点座標 : 12バイト
@@ -35,7 +41,19 @@ struct PMDVertex
 	unsigned short boneNo[2]; //ボーン番号 : 4バイト
 	unsigned char boneWeight;//ボーン影響度 : 1バイト
 	unsigned char edgeFlg; //輪郭線フラグ : 1バイト
+	unsigned short dummy; //ダミーがないと38バイトで終わってしまうので、ダミーを入れて40バイトになるようにする
 
+	PMDVertex()
+	{
+		pos = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		normal = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+		uv = DirectX::XMFLOAT2(0.0f, 0.0f);
+		boneNo[0] = 0;
+		boneNo[1] = 0;
+		boneWeight = 0;
+		edgeFlg = 0;
+		dummy = 0;
+	}
 };
 
 int AlignmentedSize(size_t size, size_t alignment);
@@ -107,7 +125,7 @@ private:
 
 	ComPtr<ID3D12Resource> constBuff = nullptr;
 
-	DirectX::XMMATRIX* mapMatrix;
+	MatriceData* mapMatrix;
 	float angle;
 
 	DirectX::XMMATRIX worldMatrix;

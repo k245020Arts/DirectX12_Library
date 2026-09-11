@@ -183,6 +183,27 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	std::vector<unsigned char> pmdvertices(vertNum * pmdVertex_size); //バッファーの確保
 	fread(pmdvertices.data(), pmdvertices.size(), 1, fp);
 
+	/*std::vector<PMDVertex> gpuVertices(vertNum);
+
+	for (unsigned int i = 0; i < vertNum; ++i)
+	{
+		const unsigned char* src = pmdvertices.data() + i * pmdVertex_size;
+
+		memcpy(&gpuVertices[i].pos,src + 0,sizeof(DirectX::XMFLOAT3));
+
+		memcpy(&gpuVertices[i].normal,src + 12,sizeof(DirectX::XMFLOAT3));
+
+		memcpy(&gpuVertices[i].uv,src + 24,sizeof(DirectX::XMFLOAT2));
+
+		memcpy(&gpuVertices[i].boneNo,src + 32,sizeof(unsigned short) * 2);
+
+		memcpy(&gpuVertices[i].boneWeight,src + 36,sizeof(unsigned char));
+
+		memcpy(&gpuVertices[i].edgeFlg,src + 37,sizeof(unsigned char));
+
+		gpuVertices[i].dummy = 0;
+	}*/
+
 	fread(&indicsNum, sizeof(indicsNum), 1, fp);
 
 	//インデックスデータの作成
@@ -294,7 +315,7 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	//頂点バッファの設定
 
 	auto heapprop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-	auto resdesc = CD3DX12_RESOURCE_DESC::Buffer(pmdvertices.size());
+	auto resdesc = CD3DX12_RESOURCE_DESC::Buffer(pmdvertices.size() *  pmdVertex_size);
 
 	//頂点バッファの生成
 	result = _dev->CreateCommittedResource(&heapprop, D3D12_HEAP_FLAG_NONE, &resdesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertBuff));
@@ -697,14 +718,17 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	CD3DX12_HEAP_PROPERTIES constheapProps(D3D12_HEAP_TYPE_UPLOAD);
 
 	CD3DX12_RESOURCE_DESC constresourceDesc =
-		CD3DX12_RESOURCE_DESC::Buffer((sizeof(matrix) + 0xff) & ~0xff);
+		CD3DX12_RESOURCE_DESC::Buffer((sizeof(MatriceData) + 0xff) & ~0xff);
 
 	result = _dev->CreateCommittedResource(&constheapProps, D3D12_HEAP_FLAG_NONE, &constresourceDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&constBuff));
 
 	
 	result = constBuff->Map(0, nullptr, (void**)&mapMatrix); //マップ
-	*mapMatrix = matrix; //行列の内容をコピー
+
+	//ワールドの行列を入れてからビュープロジェクションの行列を入れることによって、順番に入るようにしている
+	mapMatrix->world = worldMatrix;
+	mapMatrix->viewproj = viewMatrix * projectionMatrix;
 
 
 	basicHeapHandle.ptr += _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -830,9 +854,10 @@ bool Window::ProcessMessage()
 
 void Window::Update()
 {
-	/*angle += 0.1f;
+	angle += 0.01f;
 	worldMatrix = DirectX::XMMatrixRotationY(angle);
-	*mapMatrix = worldMatrix * viewMatrix * projectionMatrix;*/
+	mapMatrix->world = worldMatrix;
+	mapMatrix->viewproj = viewMatrix * projectionMatrix;
 }
 
 bool Window::ScreenFlip()

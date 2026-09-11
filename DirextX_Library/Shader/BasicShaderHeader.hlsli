@@ -12,5 +12,6 @@ SamplerState smp : register(s0); //０番スロットに設定されたサンプラー
 
 cbuffer cbuff0 : register(b0) //定数バッファー
 {
-    matrix mat;
+    matrix world;
+    matrix viewproj;
 }
