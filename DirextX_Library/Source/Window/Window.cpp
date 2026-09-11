@@ -352,9 +352,54 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 		//{ "EDGE_FLG",0,DXGI_FORMAT_R8_UINT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0 },
 	};
 
+	//深度バッファの作成
+	D3D12_RESOURCE_DESC depthResDesc = {};
+	depthResDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; //2Dテクスチャ用
+	depthResDesc.Width = (UINT64)_cWidth; //レンダーターゲットと同じ値
+	depthResDesc.Height = (UINT64)_cHeight;
+	depthResDesc.DepthOrArraySize = 1; //テクスチャ配列でも、3Dテクスチャでもない
+	depthResDesc.Format = DXGI_FORMAT_D32_FLOAT; //深度書き込み用フォーマット
+	depthResDesc.SampleDesc.Count = 1; //サンプルは一ピクセルあたり一つ
+
+	depthResDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL; //デプスステンシルとして活用
+
+	//深度地用ヒーププロパティ
+	D3D12_HEAP_PROPERTIES depthHeapProp = {};
+	depthHeapProp.Type = D3D12_HEAP_TYPE_DEFAULT; // デフォルトなので後はunknownで良い
+	depthHeapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	depthHeapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+
+	//クリアバリューの生成(大事)
+	D3D12_CLEAR_VALUE depthClearValue = {};
+
+	depthClearValue.DepthStencil.Depth = 1.0f; //深さ1.0f (最大値)でクリア
+	depthClearValue.Format = DXGI_FORMAT_D32_FLOAT; //32ビットfloatとして定義
+
+	result = _dev->CreateCommittedResource(&depthHeapProp, D3D12_HEAP_FLAG_NONE, &depthResDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthClearValue, IID_PPV_ARGS(&depthBuffer));
+
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV; //デプスステンシルビューとして扱う
+	dsvHeapDesc.NumDescriptors = 1; //深度ビューは一つ
+
+	result = _dev->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap));
+
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;//2Dテクスチャ
+	dsvDesc.Flags = D3D12_DSV_FLAG_NONE; //フラグなし
+
+	_dev->CreateDepthStencilView(depthBuffer.Get(), &dsvDesc, dsvHeap->GetCPUDescriptorHandleForHeapStart());
+
+
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC gpipeline = {};
 
 	gpipeline.pRootSignature = nullptr; //後で設定する
+
+	gpipeline.DepthStencilState.DepthEnable = true;
+	gpipeline.DepthStencilState.StencilEnable = false;
+	gpipeline.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	gpipeline.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS; //小さい方を採用;
+	gpipeline.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
 	//頂点シェーダーの設定
 	gpipeline.VS.pShaderBytecode = vsBlob->GetBufferPointer();
@@ -744,6 +789,7 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 
 	result = _dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&pipelineState));
 
+	
 	//ビューポートの設定 : ビューポートとは、ウィンドウに対してレンダリング結果をどう表示するかの設定
 
 	viewport.Width = (FLOAT)_cWidth;
@@ -813,7 +859,8 @@ bool Window::ScreenFlip()
 	//これから使用されるであろうバックバッファーをレンダーターゲットビューとしてセットする
 	auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
 	rtvH.ptr += bbIdx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	_cmdList->OMSetRenderTargets(1, &rtvH, true, nullptr);
+	auto dsvH = dsvHeap->GetCPUDescriptorHandleForHeapStart();
+	_cmdList->OMSetRenderTargets(1, &rtvH, false, &dsvH);
 
 	plus += 0.01f;
 	float r = sinf(plus);
@@ -821,7 +868,7 @@ bool Window::ScreenFlip()
 	float clearColor[] = { 1.0f,1.0f,1.0f,1.0f };//白色
 
 	_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
-
+	_cmdList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	
 	
 	_cmdList->RSSetViewports(1, &viewport);
@@ -884,6 +931,7 @@ bool Window::ScreenFlip()
 		CloseHandle(event);
 	}
 
+	
 	_cmdAllocator->Reset();//キューをクリア
 	_cmdList->Reset(_cmdAllocator.Get(), pipelineState.Get());//再びコマンドリストをためる準備
 

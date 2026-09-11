@@ -117,4 +117,7 @@ private:
 	unsigned int vertNum;
 	unsigned int indicsNum;
 
+	ComPtr <ID3D12Resource> depthBuffer = nullptr;
+	ComPtr <ID3D12DescriptorHeap> dsvHeap = nullptr;
+
 };
