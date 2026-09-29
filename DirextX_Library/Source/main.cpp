@@ -1,8 +1,10 @@
 #include <string>
 #include "Window/Window.h"
+#include "Engine/Engine.h"
 #include <assert.h>
 #ifdef _DEBUG
 #include <iostream>
+#include <memory>
 #endif // _DEBUG
 
 
@@ -23,21 +25,28 @@ int WINAPI WinMain(HINSTANCE,HINSTANCE,LPSTR,int)
 {
 	
 	Window window;
-	if (!window.Create(1280, 720, L"DX12_Library", L"Window")) { //初期化
+	if (!window.Create(Size(1280,720), L"DX12_Library", L"Window")) { //初期化
 		assert(false && "ウィンドウ作成失敗");
 		return 0;
+	}
+
+	// 描画エンジンの初期化を行う
+	std::unique_ptr<Engine> engine = std::make_unique<Engine>();
+	if (!engine->Init(window.GetHwnd(), window.GetWindowSize()))
+	{
+		return -1;
 	}
 	while (true)
 	{
 		if (!window.ProcessMessage()) {
 			break;
 		}
-		window.Update();
+		/*window.Update();
 		bool result = window.ScreenFlip();
 		if (!result) {
 			assert(false && "反転に失敗しました");
 			break;
-		}
+		}*/
 	}
 	return 1;
 }

@@ -1,30 +1,31 @@
 #pragma once
 #include <string>
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include<wrl.h>
-#include <DirectXTex.h>
-#include "../../DirectX12_Library/d3dx12.h"
-
-//ライブラリのリンク
-#pragma comment(lib,"d3d12.lib")
-#pragma comment(lib,"dxgi.lib")
-#pragma comment(lib,"d3dcompiler.lib")
-#pragma comment(lib,"DirectXTex.lib")
 
 #include <Windows.h>
 #include <vector>
 
 #include <DirectXMath.h>
 
-
-using Microsoft::WRL::ComPtr;
-
 struct Vertex
 {
 	DirectX::XMFLOAT3 pos; //座標
 	DirectX::XMFLOAT2 uv; //uv座標
+};
+
+struct Size
+{
+	LONG width;
+	LONG height;
+
+	Size() {
+		width = 0;
+		height = 0;
+	}
+
+	Size(const LONG _width, const LONG _height) {
+		width = _width;
+		height = _height;
+	}
 };
 
 struct MatriceData
@@ -71,101 +72,17 @@ public:
 	///	<param name = "clientHeight"> = < / param>
 	///	<param name = "titleName"> < l & < / param>
 	///	<param name = "windowClassName">< / param>
-	bool Create(int _cWidth,int _cHeight,const std::wstring& _titleName,const std::wstring& _windowClassName);
+	bool Create(const Size& _size,const std::wstring& _titleName,const std::wstring& _windowClassName);
 
 	bool ProcessMessage();
 
-	void Update();
+	const Size& GetWindowSize()const { return windowSize; }
 
-	bool ScreenFlip();
+	const HWND& GetHwnd() const{ return hwnd; }
 
 private:
 
-	ComPtr<ID3D12Device> _dev = nullptr; //デバイスのオブジェクトのポインタ
-	ComPtr <IDXGIFactory6> _dxgiFactory = nullptr; //アダプターの列挙をするためのオブジェクト1
-	ComPtr <IDXGISwapChain4> _swapChain = nullptr;
-
-	ComPtr <ID3D12CommandAllocator> _cmdAllocator = nullptr;
-	ComPtr <ID3D12GraphicsCommandList> _cmdList = nullptr;
-
-	//フェンスの作成
-	ComPtr<ID3D12Fence> _fence = nullptr;
-	UINT64 _fenceVal = 0;
-
-	ComPtr<ID3D12DescriptorHeap> rtvHeaps = nullptr;
-
-	//コマンドキューの設定
-	ComPtr<ID3D12CommandQueue> _cmdQueue = nullptr;
-
-	std::vector<ComPtr<ID3D12Resource>> _backBuffers;
-
-	float plus = 0;
-
-	ComPtr<ID3D12Resource> vertBuff = nullptr;
-	ComPtr<ID3D12Resource> idxBuff = nullptr;
-
-	D3D12_VERTEX_BUFFER_VIEW vbView = {};
-	D3D12_INDEX_BUFFER_VIEW ibView = {};
-
-	//ComPtr<ID3D12RootSignature> rootSignature = nullptr;
-
-	ComPtr<ID3D12PipelineState> pipelineState = nullptr;
-
-	D3D12_VIEWPORT viewport = {};
-
-	D3D12_RECT scissorrect = {};
-
-	ComPtr<ID3D12Resource> texbuff = nullptr;
-
-	ComPtr<ID3D12Resource> uploadBuff = nullptr;
-
-	ComPtr <ID3D12RootSignature> rootsignature = nullptr;
-
-	ComPtr <ID3D12DescriptorHeap> basicDescHeap = nullptr;
-
-	ComPtr <ID3DBlob> rootSigBlob = nullptr;
-
-	ComPtr<ID3D12Resource> constBuff = nullptr;
-
-	MatriceData* mapMatrix;
-	float angle;
-
-	DirectX::XMMATRIX worldMatrix;
-	DirectX::XMMATRIX viewMatrix;
-	DirectX::XMMATRIX projectionMatrix;
-
-	unsigned int vertNum;
-	unsigned int indicsNum;
-
-	ComPtr <ID3D12Resource> depthBuffer = nullptr;
-	ComPtr <ID3D12DescriptorHeap> dsvHeap = nullptr;
-
-	ComPtr <ID3D12Resource> materialBuff = nullptr;
-	ComPtr <ID3D12DescriptorHeap> materialHeap = nullptr;
-
-	struct MaterialForHlsl
-	{
-		DirectX::XMFLOAT3 diffuse; //ディフューズ色
-		float alpha; //ディフューズα
-		DirectX::XMFLOAT3 specular; //スペキュラ色
-		float specularity; //スペキュラの強さ
-		DirectX::XMFLOAT3 ambient; //アンビエント色
-	};
-
-	struct Additional
-	{
-		std::string texPath; //テクスチャファイルパス
-		int toonIdx; //トゥーン番号
-		bool edgeFlg; //マテリアルごとの輪郭線フラグ
-	};
-
-	struct Material
-	{
-		unsigned int indicesNum; //インデックス数
-		MaterialForHlsl material;
-		Additional additional;
-	};
-
-	std::vector<Material> materials;
-
+	Size windowSize = Size();
+	HWND hwnd{};
+	WNDCLASSEX w{};
 };
