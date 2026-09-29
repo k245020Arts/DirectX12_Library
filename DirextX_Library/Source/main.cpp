@@ -6,7 +6,7 @@
 #include <iostream>
 #include <memory>
 #endif // _DEBUG
-
+#include "Scene/Scene.h"
 
 #include <vector>
 
@@ -31,24 +31,25 @@ int WINAPI WinMain(HINSTANCE,HINSTANCE,LPSTR,int)
 	}
 
 	// 描画エンジンの初期化を行う
-	std::unique_ptr<Engine> engine = std::make_unique<Engine>();
-	if (!engine->Init(window.GetHwnd(), window.GetWindowSize()))
+	if (!Engine::GetInstance()->Init(window.GetHwnd(), window.GetWindowSize()))
 	{
 		return -1;
 	}
+	std::unique_ptr<Scene> scene = std::make_unique<Scene>();
 	while (true)
 	{
 		if (!window.ProcessMessage()) {
 			break;
 		}
 
-		//ToDO 後でこの行で更新処理を行う
-		engine->BeginRender();
+		scene->Update();
+		Engine::GetInstance()->BeginRender();
+		scene->Draw();
+		Engine::GetInstance()->EndRender();
 
-		//ToDO 後でこの行で3Dオブジェクトのの描画処理を行う
-
-		engine->EndRender();
 	}
+
+	Engine::GetInstance()->Destory();
 	return 1;
 }
 

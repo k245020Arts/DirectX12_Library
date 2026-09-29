@@ -6,12 +6,6 @@
 
 #include <DirectXMath.h>
 
-struct Vertex
-{
-	DirectX::XMFLOAT3 pos; //ç¿ïW
-	DirectX::XMFLOAT2 uv; //uvç¿ïW
-};
-
 struct Size
 {
 	LONG width;

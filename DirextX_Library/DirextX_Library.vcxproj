@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -127,12 +127,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\ConstBuffer\ConstBuffer.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\PipelineState\PipelineState.cpp" />
+    <ClCompile Include="Source\Pixel\Triangle\Triangle.cpp" />
+    <ClCompile Include="Source\RootSignature\RootSignature.cpp" />
+    <ClCompile Include="Source\Scene\Scene.cpp" />
+    <ClCompile Include="Source\ShaderStruct\ShaderStruct.cpp" />
+    <ClCompile Include="Source\VertexBuffer\VertexBuffer.cpp" />
     <ClCompile Include="Source\Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Comptr.h" />
+    <ClInclude Include="Source\ConstBuffer\ConstBuffer.h" />
     <ClInclude Include="Source\Engine\Engine.h" />
+    <ClInclude Include="Source\PipelineState\PipelineState.h" />
+    <ClInclude Include="Source\Pixel\Triangle\Triangle.h" />
+    <ClInclude Include="Source\RootSignature\RootSignature.h" />
+    <ClInclude Include="Source\Scene\Scene.h" />
+    <ClInclude Include="Source\ShaderStruct\ShaderStruct.h" />
+    <ClInclude Include="Source\VertexBuffer\VertexBuffer.h" />
     <ClInclude Include="Source\Window\Window.h" />
   </ItemGroup>
   <ItemGroup>

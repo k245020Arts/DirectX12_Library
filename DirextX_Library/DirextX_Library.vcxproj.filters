@@ -13,6 +13,30 @@
     <Filter Include="Source\Engine">
       <UniqueIdentifier>{2805df9e-56d7-449b-8f5c-53b314c771a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Pixel">
+      <UniqueIdentifier>{eeff02e3-3246-4faf-a699-87b6f75ea737}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scene">
+      <UniqueIdentifier>{836206ef-76ee-4aa5-a9aa-873794152de7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Pixel\Triangle">
+      <UniqueIdentifier>{76bb703b-4475-4de5-8a09-99f119165dfd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\VertexBuffer">
+      <UniqueIdentifier>{9d125a4e-ac1a-47e7-81ef-fa1b2206a443}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ShaderStruct">
+      <UniqueIdentifier>{ecdb8c01-ad83-4420-9a6f-df1ac5367b22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ConstBuffer">
+      <UniqueIdentifier>{9bf646b7-9a51-463d-8e33-d083163a5ef8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RootSignature">
+      <UniqueIdentifier>{cf667d0a-c145-4938-9b0c-2532a92532b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PipelineState">
+      <UniqueIdentifier>{c37bfd06-febe-47fa-8643-1ce1b7051db7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -24,6 +48,27 @@
     <ClCompile Include="Source\Engine\Engine.cpp">
       <Filter>Source\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Scene\Scene.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Pixel\Triangle\Triangle.cpp">
+      <Filter>Source\Pixel\Triangle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\VertexBuffer\VertexBuffer.cpp">
+      <Filter>Source\VertexBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ConstBuffer\ConstBuffer.cpp">
+      <Filter>Source\ConstBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ShaderStruct\ShaderStruct.cpp">
+      <Filter>Source\ShaderStruct</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\PipelineState\PipelineState.cpp">
+      <Filter>Source\PipelineState</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RootSignature\RootSignature.cpp">
+      <Filter>Source\RootSignature</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Window\Window.h">
@@ -31,6 +76,30 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\Engine.h">
       <Filter>Source\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\Scene.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Pixel\Triangle\Triangle.h">
+      <Filter>Source\Pixel\Triangle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\VertexBuffer\VertexBuffer.h">
+      <Filter>Source\VertexBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Comptr.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ShaderStruct\ShaderStruct.h">
+      <Filter>Source\ShaderStruct</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ConstBuffer\ConstBuffer.h">
+      <Filter>Source\ConstBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RootSignature\RootSignature.h">
+      <Filter>Source\RootSignature</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\PipelineState\PipelineState.h">
+      <Filter>Source\PipelineState</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

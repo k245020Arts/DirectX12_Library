@@ -1,5 +1,7 @@
 #include "Engine.h"
 
+Engine* Engine::engine = nullptr;
+
 Engine::~Engine()
 {
     if (commandQueue && fence)
@@ -19,6 +21,8 @@ bool Engine::Init(HWND _hwnd, const Size& _size)
     hwnd = _hwnd;
 
     windowSize = _size;
+
+    CreateDebugLayer();
 
     bool deviceCreate = CreateDevice();
 
@@ -75,42 +79,49 @@ bool Engine::Init(HWND _hwnd, const Size& _size)
         return false;
     }
 
+    m_RtvDescriptorSize = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
     return true;
 }
 
 void Engine::BeginRender()
 {
-    // 現在のレンダーターゲットを更新
+    // 必ずフレーム開始時に現在のバックバッファを取得
+    currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
     currentRenderTarget = pRenderTargets[currentBackBufferIndex].Get();
 
-    // コマンドを初期化してためる準備をする
+    // 現在のバックバッファに対応するAllocatorを使用
     commandAllocator[currentBackBufferIndex]->Reset();
-    commandList->Reset(commandAllocator[currentBackBufferIndex].Get(), nullptr);
 
-    // ビューポートとシザー矩形を設定
+    commandList->Reset(commandAllocator[currentBackBufferIndex].Get(),nullptr);
+
     commandList->RSSetViewports(1, &viewport);
     commandList->RSSetScissorRects(1, &scissor);
 
-    // 現在のフレームのレンダーターゲットビューのディスクリプタヒープの開始アドレスを取得
     auto currentRtvHandle = pRtvHeap->GetCPUDescriptorHandleForHeapStart();
+
     currentRtvHandle.ptr += currentBackBufferIndex * m_RtvDescriptorSize;
 
-    // 深度ステンシルのディスクリプタヒープの開始アドレス取得
     auto currentDsvHandle = pDsvHeap->GetCPUDescriptorHandleForHeapStart();
 
-    // レンダーターゲットが使用可能になるまで待つ
-    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentRenderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentRenderTarget,D3D12_RESOURCE_STATE_PRESENT,D3D12_RESOURCE_STATE_RENDER_TARGET);
+
     commandList->ResourceBarrier(1, &barrier);
 
-    // レンダーターゲットを設定
-    commandList->OMSetRenderTargets(1, &currentRtvHandle, FALSE, &currentDsvHandle);
+    commandList->OMSetRenderTargets(1, &currentRtvHandle, FALSE,&currentDsvHandle);
 
-    // レンダーターゲットをクリア
-    const float clearColor[] = { 0.25f, 0.25f, 0.25f, 1.0f };
-    commandList->ClearRenderTargetView(currentRtvHandle, clearColor, 0, nullptr);
+    const float clearColor[] =
+    {
+        0.25f,
+        0.25f,
+        0.25f,
+        1.0f
+    };
 
-    // 深度ステンシルビューをクリア
-    commandList->ClearDepthStencilView(currentDsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+    commandList->ClearRenderTargetView(currentRtvHandle, clearColor,0,nullptr );
+
+    commandList->ClearDepthStencilView( currentDsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0,0, nullptr);
 }
 
 
@@ -133,8 +144,7 @@ void Engine::EndRender()
     // 描画完了を待つ
     WaitRender();
 
-    // バックバッファ番号更新
-    currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
+    
 }
 
 ID3D12Device6* Engine::Device()
@@ -262,7 +272,7 @@ bool Engine::CreateSwapChain()
     swapChainDesc.Stereo = false; //ステレオ表示フラグ
     swapChainDesc.SampleDesc.Count = 1; //マルチサンプルの指定
     swapChainDesc.SampleDesc.Quality = 0; //マルチサンプルの指定
-    swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER;
+    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swapChainDesc.BufferCount = 2; //ダブルバッファーなら2で良い
 
     //バックバッファーは伸び縮み完了

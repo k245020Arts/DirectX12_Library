@@ -15,8 +15,7 @@
 #pragma comment(lib,"DirectXTex.lib")
 
 #include "../Window/Window.h"
-
-using Microsoft::WRL::ComPtr;
+#include "../Comptr.h"
 
 static constexpr int FRAME_BUFFER_COUNT = 2;
 
@@ -34,6 +33,22 @@ public:
 	ID3D12Device6* Device();
 	ID3D12GraphicsCommandList* CommandList();
 	UINT CurrentBackBufferIndex();
+
+	static Engine* GetInstance() {
+
+		if (engine == nullptr) {
+			engine = new Engine();
+		}
+		return engine;
+	};
+
+	static void Destory() {
+		if (engine != nullptr) {
+			delete engine;
+		}
+	}
+
+	const Size& GetWindowSize() { return windowSize; }
 
 private:
 
@@ -79,4 +94,6 @@ private:
 	ID3D12Resource* currentRenderTarget = nullptr;
 
 	void WaitRender();
+
+	static Engine* engine;
 };

@@ -1,24 +1,21 @@
-struct Output
+cbuffer Transform : register(b0)
 {
-    float4 pos : SV_Position;
-    float4 normal : NORMAL; //システム用頂点座標
-    float2 uv : TEXCOORD; //uv値
-    min16int2 boneno : BONE_NO;
-    min16uint weight : WEIGHT;
+    float4x4 World; // ワールド行列
+    float4x4 View; // ビュー行列
+    float4x4 Proj; // 投影行列
+}
+
+struct VSInput
+{
+    float3 pos : POSITION; // 頂点座標
+    float3 normal : NORMAL; // 法線
+    float2 uv : TEXCOORD; // UV
+    float3 tangent : TANGENT; // 接空間
+    float4 color : COLOR; // 頂点色
 };
 
-Texture2D<float4> tex : register(t0); //0番スロットに設定されたTexture
-SamplerState smp : register(s0); //０番スロットに設定されたサンプラー
-
-cbuffer cbuff0 : register(b0) //定数バッファー
+struct VSOutput
 {
-    matrix world;
-    matrix viewproj;
-}
-
-cbuffer Material : register(b1) //定数バッファー
-{
-    float4 diffuse; //ディフューズ色
-    float4 specular; //スペキュラ
-    float4 ambient; //アンビエント
-}
+    float4 svpos : SV_POSITION; // 変換された座標
+    float4 color : COLOR; // 変換された色
+};
