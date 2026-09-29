@@ -41,12 +41,13 @@ int WINAPI WinMain(HINSTANCE,HINSTANCE,LPSTR,int)
 		if (!window.ProcessMessage()) {
 			break;
 		}
-		/*window.Update();
-		bool result = window.ScreenFlip();
-		if (!result) {
-			assert(false && "反転に失敗しました");
-			break;
-		}*/
+
+		//ToDO 後でこの行で更新処理を行う
+		engine->BeginRender();
+
+		//ToDO 後でこの行で3Dオブジェクトのの描画処理を行う
+
+		engine->EndRender();
 	}
 	return 1;
 }
