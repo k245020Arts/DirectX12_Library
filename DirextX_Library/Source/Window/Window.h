@@ -33,6 +33,7 @@ struct MatriceData
 	DirectX::XMMATRIX viewproj; //ビューとプロジェクション合成行列
 };
 
+#pragma pack(push, 1)
 struct PMDVertex
 {
 	DirectX::XMFLOAT3 pos;//頂点座標 : 12バイト
@@ -55,6 +56,7 @@ struct PMDVertex
 		dummy = 0;
 	}
 };
+#pragma pack(pop)
 
 int AlignmentedSize(size_t size, size_t alignment);
 
@@ -137,5 +139,33 @@ private:
 
 	ComPtr <ID3D12Resource> depthBuffer = nullptr;
 	ComPtr <ID3D12DescriptorHeap> dsvHeap = nullptr;
+
+	ComPtr <ID3D12Resource> materialBuff = nullptr;
+	ComPtr <ID3D12DescriptorHeap> materialHeap = nullptr;
+
+	struct MaterialForHlsl
+	{
+		DirectX::XMFLOAT3 diffuse; //ディフューズ色
+		float alpha; //ディフューズα
+		DirectX::XMFLOAT3 specular; //スペキュラ色
+		float specularity; //スペキュラの強さ
+		DirectX::XMFLOAT3 ambient; //アンビエント色
+	};
+
+	struct Additional
+	{
+		std::string texPath; //テクスチャファイルパス
+		int toonIdx; //トゥーン番号
+		bool edgeFlg; //マテリアルごとの輪郭線フラグ
+	};
+
+	struct Material
+	{
+		unsigned int indicesNum; //インデックス数
+		MaterialForHlsl material;
+		Additional additional;
+	};
+
+	std::vector<Material> materials;
 
 };

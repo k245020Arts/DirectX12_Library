@@ -6,6 +6,25 @@
 
 //HRESULT D3D12CreateDevice(IUnknown* pAdapter, D3D_FEATURE_LEVEL MiniumuFeatureLevel, REFIID riid, void** ppDevice);
 
+
+
+#pragma pack(1)//ここから1バイトパッキング…アライメントは発生しない
+	//PMDマテリアル構造体
+struct PMDMaterial {
+	DirectX::XMFLOAT3 diffuse; //ディフューズ色
+	float alpha; // ディフューズα
+	float specularity;//スペキュラの強さ(乗算値)
+	DirectX::XMFLOAT3 specular; //スペキュラ色
+	DirectX::XMFLOAT3 ambient; //アンビエント色
+	unsigned char toonIdx; //トゥーン番号(後述)
+	unsigned char edgeFlg;//マテリアル毎の輪郭線フラグ
+	//2バイトのパディングが発生！！
+	unsigned int indicesNum; //このマテリアルが割り当たるインデックス数
+	char texFilePath[20]; //テクスチャファイル名(プラスアルファ…後述)
+};//70バイトのはず…でもパディングが発生するため72バイト
+#pragma pack()//1バイトパッキング解除
+
+
 LRESULT WindowProcedure(HWND hwud, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	//ウィンドウが破棄されたら呼ばれる
@@ -210,6 +229,68 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 	std::vector<unsigned short> indices;
 	indices.resize(indicsNum);
 	fread(indices.data(), indices.size() * sizeof(indices[0]), 1, fp);
+
+	unsigned int materialNum = 0; //マテリアル数
+
+	fread(&materialNum, sizeof(materialNum), 1, fp);
+
+	std::vector<PMDMaterial> pmdMaterials(materialNum);
+	fread(pmdMaterials.data(), pmdMaterials.size() * sizeof(PMDMaterial), 1, fp);
+
+	//コピー
+
+	materials.resize(pmdMaterials.size());
+	for (int i = 0; i < pmdMaterials.size(); i++) {
+
+		materials[i].indicesNum = pmdMaterials[i].indicesNum;
+		materials[i].material.diffuse = pmdMaterials[i].diffuse;
+		materials[i].material.alpha = pmdMaterials[i].alpha;
+		materials[i].material.specular = pmdMaterials[i].specular;
+		materials[i].material.specularity = pmdMaterials[i].specularity;
+		materials[i].material.ambient = pmdMaterials[i].ambient;
+	}
+
+	auto materialBuffSize = sizeof(MaterialForHlsl);
+	materialBuffSize = (materialBuffSize + 0xff) & ~0xff; //256の倍率にする
+
+	auto materialHeapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	auto materialHeapSize = CD3DX12_RESOURCE_DESC::Buffer(materialBuffSize * materialNum);
+
+	result = _dev->CreateCommittedResource(&materialHeapProp, D3D12_HEAP_FLAG_NONE, &materialHeapSize, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&materialBuff));
+
+	char* mapMaterial = nullptr;
+
+	result = materialBuff->Map(0, nullptr, (void**)&mapMaterial);
+
+	for (auto& m : materials) {
+		*((MaterialForHlsl*)mapMaterial) = m.material; //データコピー
+		mapMaterial += materialBuffSize;
+	}
+	materialBuff->Unmap(0, nullptr);
+
+	D3D12_DESCRIPTOR_HEAP_DESC mateterialHeapDesc = {};
+
+	mateterialHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	mateterialHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	mateterialHeapDesc.NodeMask = 0;
+	mateterialHeapDesc.NumDescriptors = materialNum * 5; //マテリアルの数分ヒープを作成
+
+	result = _dev->CreateDescriptorHeap(&mateterialHeapDesc, IID_PPV_ARGS(&materialHeap));
+
+
+	D3D12_CONSTANT_BUFFER_VIEW_DESC matCBVDesc = {};
+
+	matCBVDesc.BufferLocation = materialBuff->GetGPUVirtualAddress();
+
+	matCBVDesc.SizeInBytes = materialBuffSize; //マテリアルの256アライメントのサイズ
+
+	auto matDescHeapH = materialHeap->GetCPUDescriptorHandleForHeapStart();
+
+	for (int i = 0; i < materialNum; i++) {
+		_dev->CreateConstantBufferView(&matCBVDesc, matDescHeapH);
+		matDescHeapH.ptr += _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		matCBVDesc.BufferLocation += materialBuffSize;
+	}
 
 	fclose(fp);
 
@@ -739,34 +820,38 @@ bool Window::Create(int _cWidth, int _cHeight, const std::wstring& _titleName, c
 
 	_dev->CreateConstantBufferView(&cbvDesc, basicHeapHandle);
 
-	//ディスクプリタレンジの設定
-	D3D12_DESCRIPTOR_RANGE descTblRange[2] = {};
+	D3D12_DESCRIPTOR_RANGE descTblRange[3] = {};//テクスチャと定数の２つ
 
-	//テクステャ用レジスター0番
-	descTblRange[0].NumDescriptors = 1; //複数のテクスチャがディスクプリタヒープ上で並んでおり、連続で指定する場合はこの数が増える
-	descTblRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; //種別はテクステャ
-	descTblRange[0].BaseShaderRegister = 0; //0番スロットから
+	//定数ひとつ目(座標変換用)
+	descTblRange[0].NumDescriptors = 1;//定数ひとつ
+	descTblRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;//種別は定数
+	descTblRange[0].BaseShaderRegister = 0;//0番スロットから
 	descTblRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	descTblRange[1].NumDescriptors = 1; //定数一つ
-	descTblRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV; //種別は定数
-	descTblRange[1].BaseShaderRegister = 0; //0番スロットから
+	//定数ふたつめ(マテリアル用)
+	descTblRange[1].NumDescriptors = 1;//デスクリプタヒープはたくさんあるが一度に使うのは１つ
+	descTblRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;//種別は定数
+	descTblRange[1].BaseShaderRegister = 1;//1番スロットから
 	descTblRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
+	//テクスチャ1つ目(↑のマテリアルとペア)
+	descTblRange[2].NumDescriptors = 4;//テクスチャ４つ(基本とsphとspaとトゥーン)
+	descTblRange[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;//種別はテクスチャ
+	descTblRange[2].BaseShaderRegister = 0;//0番スロットから
+	descTblRange[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	//ルートパラメーターの設定
 	D3D12_ROOT_PARAMETER rootParam[2] = {};
-
-	//テクスチャバッファの生成
 	rootParam[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParam[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; //ピクセルシェーダーから見える
-	rootParam[0].DescriptorTable.pDescriptorRanges = &descTblRange[0];
-	rootParam[0].DescriptorTable.NumDescriptorRanges = 1;
+	rootParam[0].DescriptorTable.pDescriptorRanges = &descTblRange[0];//デスクリプタレンジのアドレス
+	rootParam[0].DescriptorTable.NumDescriptorRanges = 1;//デスクリプタレンジ数
+	rootParam[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;//全てのシェーダから見える
 
 	rootParam[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParam[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; //頂点シェーダーから見える
-	rootParam[1].DescriptorTable.pDescriptorRanges = &descTblRange[1];
-	rootParam[1].DescriptorTable.NumDescriptorRanges = 1;
+	rootParam[1].DescriptorTable.pDescriptorRanges = &descTblRange[1];//デスクリプタレンジのアドレス
+	rootParam[1].DescriptorTable.NumDescriptorRanges = 2;//デスクリプタレンジ数←ここ
+	rootParam[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//ピクセルシェーダから見える
+
+	
 
 	//ルートパラメーターの設定 all指定版
 	//D3D12_ROOT_PARAMETER rootParam = {};
@@ -915,9 +1000,26 @@ bool Window::ScreenFlip()
 
 	_cmdList->SetGraphicsRootDescriptorTable(0, basicDescHeap->GetGPUDescriptorHandleForHeapStart());
 
-	heapHandle.ptr += _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	/*heapHandle.ptr += _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	_cmdList->SetGraphicsRootDescriptorTable(1, heapHandle);
+	_cmdList->SetGraphicsRootDescriptorTable(1, heapHandle);*/
+
+	_cmdList->SetDescriptorHeaps(1, materialHeap.GetAddressOf());
+	//_cmdList->SetGraphicsRootDescriptorTable(1, materialHeap->GetGPUDescriptorHandleForHeapStart());
+
+	auto materialH = materialHeap->GetGPUDescriptorHandleForHeapStart(); //ヒープ先頭
+
+	unsigned int idxOffset = 0; //最初はオフセットなし
+
+	for (auto& m : materials) {
+		_cmdList->SetGraphicsRootDescriptorTable(1, materialH);
+
+		_cmdList->DrawIndexedInstanced(m.indicesNum, 1, idxOffset, 0, 0);
+
+		materialH.ptr += _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+		idxOffset += m.indicesNum;
+	}
 
 	//-------------------------------------------------------------------------------------------
 
@@ -925,7 +1027,7 @@ bool Window::ScreenFlip()
 	//_cmdList->DrawInstanced(vertNum, 1, 0, 0);
 
 	//第一引数にインデックスの数を代入
-	_cmdList->DrawIndexedInstanced(indicsNum, 1, 0, 0,0);
+	//_cmdList->DrawIndexedInstanced(indicsNum, 1, 0, 0,0);
 
 	BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;

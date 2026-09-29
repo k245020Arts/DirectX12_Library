@@ -15,3 +15,10 @@ cbuffer cbuff0 : register(b0) //定数バッファー
     matrix world;
     matrix viewproj;
 }
+
+cbuffer Material : register(b1) //定数バッファー
+{
+    float4 diffuse; //ディフューズ色
+    float4 specular; //スペキュラ
+    float4 ambient; //アンビエント
+}
