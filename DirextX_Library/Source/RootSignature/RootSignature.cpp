@@ -26,14 +26,10 @@ RootSignature::RootSignature()
 	ComPtr<ID3DBlob> pErrorBlob;
 
 	// シリアライズ
-	auto hr = D3D12SerializeRootSignature(
-		&desc,
-		D3D_ROOT_SIGNATURE_VERSION_1_0,
-		pBlob.GetAddressOf(),
-		pErrorBlob.GetAddressOf());
+	auto hr = D3D12SerializeRootSignature(&desc,D3D_ROOT_SIGNATURE_VERSION_1_0,pBlob.GetAddressOf(),pErrorBlob.GetAddressOf());
 	if (FAILED(hr))
 	{
-		printf("ルートシグネチャシリアライズに失敗");
+		OutputDebugStringW(L"ルートシグネチャシリアライズに失敗");
 		return;
 	}
 
@@ -46,7 +42,7 @@ RootSignature::RootSignature()
 
 	if (FAILED(hr))
 	{
-		printf("ルートシグネチャの生成に失敗");
+		OutputDebugStringW(L"ルートシグネチャの生成に失敗");
 		return;
 	}
 

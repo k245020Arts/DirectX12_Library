@@ -1,24 +1,28 @@
-#include "Triangle.h"
+#include "Box2D.h"
 #include "../../VertexBuffer/VertexBuffer.h"
 #include "../../Engine/Engine.h"
 #include "../../ConstBuffer/ConstBuffer.h"
 #include "../../PipelineState/PipelineState.h"
 #include "../../RootSignature/RootSignature.h"
+#include "../../IndexBuffer/IndexBuffer.h"
 
-
-Triangle::Triangle()
+Box2D::Box2D()
 {
 	constBuffer.resize(FRAME_BUFFER_COUNT);
 
-	Vertex vertices[3] = {};
-	vertices[0].position = DirectX::XMFLOAT3(0.0f, -50.0f, 0.0f); // 上
+	// 頂点を4つにして四角形を定義する
+	Vertex vertices[4] = {};
+	vertices[0].position = DirectX::XMFLOAT3(-50.0f, 50.0f, 0.0f);
 	vertices[0].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 
-	vertices[1].position = DirectX::XMFLOAT3(50.0f, 50.0f, 0.0f); // 右下
+	vertices[1].position = DirectX::XMFLOAT3(50.0f, 50.0f, 0.0f);
 	vertices[1].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 
-	vertices[2].position = DirectX::XMFLOAT3(-50.0f, 50.0f, 0.0f); // 左下
+	vertices[2].position = DirectX::XMFLOAT3(50.0f, -50.0f, 0.0f);
 	vertices[2].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+
+	vertices[3].position = DirectX::XMFLOAT3(-50.0f, -50.0f, 0.0f);
+	vertices[3].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
 
 	auto vertexSize = sizeof(Vertex) * std::size(vertices);
 	auto vertexStride = sizeof(Vertex);
@@ -26,7 +30,16 @@ Triangle::Triangle()
 	if (!vertexBuffer->IsSuccess())
 	{
 		OutputDebugStringW(L"頂点バッファの生成に失敗\n");
-		assert(false);
+	}
+
+	uint32_t indices[] = { 0, 1, 2, 0, 2, 3 }; // これに書かれている順序で描画する
+
+	// インデックスバッファの生成
+	auto size = sizeof(uint32_t) * std::size(indices);
+	indexBuffer = std::make_unique <IndexBuffer>(size, indices);
+	if (!indexBuffer->IsSuccess())
+	{
+		OutputDebugStringW(L"インデックスバッファの生成に失敗\n");
 	}
 
 	const auto eyePos = DirectX::XMVectorSet(0.0f, 0.0f, 5.0f, 0.0f); // 視点の位置
@@ -55,7 +68,7 @@ Triangle::Triangle()
 	pipelineState = std::make_unique<PipelineState>();
 	pipelineState->SetInputLayout(Vertex::InputLayout);
 	pipelineState->SetRootSignature(rootSignature->Get());
-	pipelineState->SetVS(L"Shader/2DBaseShader/Basic_VertexShader.hlsl","BasicVS");
+	pipelineState->SetVS(L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS");
 	pipelineState->SetPS(L"Shader/2DBaseShader/Basic_PixelShader.hlsl", "BasicPS");
 	pipelineState->Create();
 
@@ -65,19 +78,20 @@ Triangle::Triangle()
 	}
 }
 
-Triangle::~Triangle()
+Box2D::~Box2D()
 {
 
 }
 
-void Triangle::Update()
+void Box2D::Update()
 {
 	transform.position.x += 1.0f;
 	transform.position.y += 1.0f;
+	transform.rotation.z += 0.01f;
 	SetTriangleMatrix();
 }
 
-void Triangle::Draw() 
+void Box2D::Draw()
 {
 	auto currentIndex = Engine::GetInstance()->CurrentBackBufferIndex(); // 現在のフレーム番号を取得する
 	auto commandList = Engine::GetInstance()->CommandList(); // コマンドリスト
@@ -89,12 +103,14 @@ void Triangle::Draw()
 
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形を描画する設定にする
 	commandList->IASetVertexBuffers(0, 1, &vbView); // 頂点バッファをスロット0番を使って1個だけ設定する
+	commandList->IASetIndexBuffer(&indexBuffer->View()); // インデックスバッファをセットする
 
-	commandList->DrawInstanced(3, 1, 0, 0); // 3個の頂点を描画する
+	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0); // 6個のインデックスで描画する（三角形の時と関数名が違うので注意）
+
 
 }
 
-void Triangle::SetTriangleMatrix()
+void Box2D::SetTriangleMatrix()
 {
 	//ウィンドウサイズを取得
 	float windowWidth = static_cast<float>(Engine::GetInstance()->GetWindowSize().width);

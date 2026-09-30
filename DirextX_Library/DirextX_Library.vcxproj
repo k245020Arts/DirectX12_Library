@@ -129,8 +129,11 @@
   <ItemGroup>
     <ClCompile Include="Source\ConstBuffer\ConstBuffer.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
+    <ClCompile Include="Source\IndexBuffer\IndexBuffer.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\PipelineState\PipelineState.cpp" />
+    <ClCompile Include="Source\Pixel\Box\Box2D.cpp" />
+    <ClCompile Include="Source\Pixel\CIcle\Cicle2D.cpp" />
     <ClCompile Include="Source\Pixel\Triangle\Triangle.cpp" />
     <ClCompile Include="Source\RootSignature\RootSignature.cpp" />
     <ClCompile Include="Source\Scene\Scene.cpp" />
@@ -142,7 +145,10 @@
     <ClInclude Include="Source\Comptr.h" />
     <ClInclude Include="Source\ConstBuffer\ConstBuffer.h" />
     <ClInclude Include="Source\Engine\Engine.h" />
+    <ClInclude Include="Source\IndexBuffer\IndexBuffer.h" />
     <ClInclude Include="Source\PipelineState\PipelineState.h" />
+    <ClInclude Include="Source\Pixel\Box\Box2D.h" />
+    <ClInclude Include="Source\Pixel\CIcle\Cicle2D.h" />
     <ClInclude Include="Source\Pixel\Triangle\Triangle.h" />
     <ClInclude Include="Source\RootSignature\RootSignature.h" />
     <ClInclude Include="Source\Scene\Scene.h" />
@@ -151,7 +157,7 @@
     <ClInclude Include="Source\Window\Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader\Basic_PixelShader.hlsl">
+    <FxCompile Include="Shader\2DBaseShader\Basic_PixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
@@ -161,7 +167,7 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BasicPS</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Shader\Basic_VertexShader.hlsl">
+    <FxCompile Include="Shader\2DBaseShader\Basic_VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
@@ -171,9 +177,17 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BasicVS</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="Shader\2DCiclePixelShader\2DCiclePixelShader.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Cicle2DPixelShader</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Cicle2DPixelShader</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\BasicShaderHeader.hlsli" />
+    <None Include="Shader\2DBaseShader\BasicShaderHeader.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

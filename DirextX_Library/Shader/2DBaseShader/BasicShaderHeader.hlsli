@@ -18,4 +18,5 @@ struct VSOutput
 {
     float4 svpos : SV_POSITION; // •ÏŠ·‚³‚ê‚½À•W
     float4 color : COLOR; // •ÏŠ·‚³‚ê‚½F
+    float2 uv : TEXCOORD; //uvÀ•W
 };

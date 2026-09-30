@@ -37,6 +37,21 @@
     <Filter Include="Source\PipelineState">
       <UniqueIdentifier>{c37bfd06-febe-47fa-8643-1ce1b7051db7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Pixel\Box">
+      <UniqueIdentifier>{8d4d649f-e1a9-46ed-8dab-906d577061b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\IndexBuffer">
+      <UniqueIdentifier>{de371ca5-e235-4a7b-a777-ed8961a20493}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Pixel\Cicle">
+      <UniqueIdentifier>{49821720-b316-4189-9614-67be8c1a76bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Shader\2DBaseShader">
+      <UniqueIdentifier>{6c853491-a29b-4fe2-ba76-43f5ba3f5f76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Shader\2DCicleShader">
+      <UniqueIdentifier>{c4db815f-03d7-4087-8557-2ad17f61d054}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -68,6 +83,15 @@
     </ClCompile>
     <ClCompile Include="Source\RootSignature\RootSignature.cpp">
       <Filter>Source\RootSignature</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IndexBuffer\IndexBuffer.cpp">
+      <Filter>Source\IndexBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Pixel\Box\Box2D.cpp">
+      <Filter>Source\Pixel\Box</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Pixel\CIcle\Cicle2D.cpp">
+      <Filter>Source\Pixel\Cicle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -101,18 +125,30 @@
     <ClInclude Include="Source\PipelineState\PipelineState.h">
       <Filter>Source\PipelineState</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Pixel\Box\Box2D.h">
+      <Filter>Source\Pixel\Box</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IndexBuffer\IndexBuffer.h">
+      <Filter>Source\IndexBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Pixel\CIcle\Cicle2D.h">
+      <Filter>Source\Pixel\Cicle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader\Basic_VertexShader.hlsl">
-      <Filter>Source\Shader</Filter>
+    <FxCompile Include="Shader\2DBaseShader\Basic_VertexShader.hlsl">
+      <Filter>Source\Shader\2DBaseShader</Filter>
     </FxCompile>
-    <FxCompile Include="Shader\Basic_PixelShader.hlsl">
-      <Filter>Source\Shader</Filter>
+    <FxCompile Include="Shader\2DBaseShader\Basic_PixelShader.hlsl">
+      <Filter>Source\Shader\2DBaseShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\2DCiclePixelShader\2DCiclePixelShader.hlsl">
+      <Filter>Source\Shader\2DCicleShader</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\BasicShaderHeader.hlsli">
-      <Filter>Source\Shader</Filter>
+    <None Include="Shader\2DBaseShader\BasicShaderHeader.hlsli">
+      <Filter>Source\Shader\2DBaseShader</Filter>
     </None>
   </ItemGroup>
 </Project>

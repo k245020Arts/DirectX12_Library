@@ -9,10 +9,10 @@ public:
 	PipelineState(); // コンストラクタである程度の設定をする
 	bool IsSuccess(); // 生成に成功したかどうかを返す
 
-	void SetInputLayout(D3D12_INPUT_LAYOUT_DESC layout); // 入力レイアウトを設定
-	void SetRootSignature(ID3D12RootSignature* rootSignature); // ルートシグネチャを設定
-	void SetVS(std::wstring filePath); // 頂点シェーダーを設定
-	void SetPS(std::wstring filePath); // ピクセルシェーダーを設定
+	void SetInputLayout(D3D12_INPUT_LAYOUT_DESC _layout); // 入力レイアウトを設定
+	void SetRootSignature(ID3D12RootSignature* _rootSignature); // ルートシグネチャを設定
+	void SetVS(std::wstring _filePath,std::string _entryPoint); // 頂点シェーダーを設定
+	void SetPS(std::wstring _filePath, std::string _entryPoint); // ピクセルシェーダーを設定
 	void Create(); // パイプラインステートを生成
 
 	ID3D12PipelineState* Get();

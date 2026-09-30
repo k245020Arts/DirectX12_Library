@@ -11,6 +11,7 @@ VSOutput BasicVS(VSInput input)
 
     output.svpos = projPos; // 投影変換された座標をピクセルシェーダーに渡す
     output.color = input.color; // 頂点色をそのままピクセルシェーダーに渡す
+    output.uv = input.uv;
     
     return output;
     

@@ -35,11 +35,11 @@ void PipelineState::SetRootSignature(ID3D12RootSignature* rootSignature)
 	desc.pRootSignature = rootSignature;
 }
 
-void PipelineState::SetVS(std::wstring filePath)
+void PipelineState::SetVS(std::wstring filePath, std::string _entryPoint)
 {
 	// 頂点シェーダー読み込み
-	auto hr = D3DCompileFromFile(L"Shader/Basic_VertexShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		"BasicVS", "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pVSBlob, &errorBlob);
+	auto hr = D3DCompileFromFile(filePath.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		_entryPoint.c_str(), "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pVSBlob, &errorBlob);
 
 	if (FAILED(hr))
 	{
@@ -50,15 +50,15 @@ void PipelineState::SetVS(std::wstring filePath)
 	desc.VS = CD3DX12_SHADER_BYTECODE(pVSBlob.Get());
 }
 
-void PipelineState::SetPS(std::wstring filePath)
+void PipelineState::SetPS(std::wstring filePath, std::string _entryPoint)
 {
 	// ピクセルシェーダー読み込み
-	auto hr = D3DCompileFromFile(L"Shader/Basic_PixelShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		"BasicPS", "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pPSBlob, &errorBlob);
+	auto hr = D3DCompileFromFile(filePath.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		_entryPoint.c_str(), "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pPSBlob, &errorBlob);
 
 	if (FAILED(hr))
 	{
-		printf("ピクセルシェーダーの読み込みに失敗");
+		OutputDebugStringW(L"ピクセルシェーダーの読み込みに失敗");
 		return;
 	}
 
@@ -71,7 +71,7 @@ void PipelineState::Create()
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(pipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
 	{
-		printf("パイプラインステートの生成に失敗");
+		OutputDebugStringW(L"パイプラインステートの生成に失敗");
 		return;
 	}
 
