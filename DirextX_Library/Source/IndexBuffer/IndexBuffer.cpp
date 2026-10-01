@@ -21,23 +21,7 @@ IndexBuffer::IndexBuffer(size_t size, const uint32_t* pInitData)
 	view.Format = DXGI_FORMAT_R32_UINT;
 	view.SizeInBytes = static_cast<UINT>(size);
 
-	// マッピングする
-	if (pInitData != nullptr)
-	{
-		void* ptr = nullptr;
-		hr = pBuffer->Map(0, nullptr, &ptr);
-		if (FAILED(hr))
-		{
-			printf("[OnInit] インデックスバッファマッピングに失敗");
-			return;
-		}
-
-		// インデックスデータをマッピング先に設定
-		memcpy(ptr, pInitData, size);
-
-		// マッピング解除
-		pBuffer->Unmap(0, nullptr);
-	}
+	BufferMapping(size,pInitData);
 	success = true;
 }
 
@@ -49,4 +33,27 @@ bool IndexBuffer::IsSuccess()
 const D3D12_INDEX_BUFFER_VIEW& IndexBuffer::View() const
 {
 	return view;
+}
+
+void IndexBuffer::BufferMapping(size_t size, const void* pInitData)
+{
+	view.SizeInBytes = static_cast<UINT>(size);
+
+	// マッピングする
+	if (pInitData != nullptr)
+	{
+		void* ptr = nullptr;
+		auto hr = pBuffer->Map(0, nullptr, &ptr);
+		if (FAILED(hr))
+		{
+			printf("[OnInit] インデックスバッファマッピングに失敗");
+			return;
+		}
+
+		// インデックスデータをマッピング先に設定
+		memcpy(ptr, pInitData, view.SizeInBytes);
+
+		// マッピング解除
+		pBuffer->Unmap(0, nullptr);
+	}
 }

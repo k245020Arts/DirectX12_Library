@@ -9,9 +9,10 @@
 Cicle2D::Cicle2D()
 {
 	constBuffer.resize(FRAME_BUFFER_COUNT);
+	cicleWireFrameConstBuffer.resize(FRAME_BUFFER_COUNT);
 
 	// 頂点を4つにして四角形を定義する
-	Vertex vertices[4] = {};
+	vertices.resize(4);
 
 	vertices[0].position = DirectX::XMFLOAT3(-50.0f, 50.0f, 0.0f);
 	vertices[0].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -29,72 +30,77 @@ Cicle2D::Cicle2D()
 	vertices[3].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
 	vertices[3].uv = DirectX::XMFLOAT2(0.0f, 1.0f);
 
-	auto vertexSize = sizeof(Vertex) * std::size(vertices);
-	auto vertexStride = sizeof(Vertex);
+	std::vector<uint32_t> indices = { 0, 1, 2, 0, 2, 3 }; //これに書かれている順序で描画する
 
-	vertexBuffer = std::make_unique<VertexBuffer>(vertexSize, vertexStride, vertices);
-	if (!vertexBuffer->IsSuccess())
-	{
-		OutputDebugStringW(L"頂点バッファの生成に失敗\n");
-	}
+	Init(vertices, indices);
+	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-	uint32_t indices[] = { 0, 1, 2, 0, 2, 3 }; //これに書かれている順序で描画する
-
-	// インデックスバッファの生成
-	auto size = sizeof(uint32_t) * std::size(indices);
-	indexBuffer = std::make_unique <IndexBuffer>(size, indices);
-	if (!indexBuffer->IsSuccess())
-	{
-		OutputDebugStringW(L"インデックスバッファの生成に失敗\n");
-	}
-
-	const auto eyePos = DirectX::XMVectorSet(0.0f, 0.0f, 5.0f, 0.0f); // 視点の位置
-	const auto targetPos = DirectX::XMVectorZero(); // 視点を向ける座標
-	const auto upward = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f); // 上方向を表すベクトル
-	constexpr float fov = DirectX::XMConvertToRadians(37.5f); // 視野角
-	auto aspect = static_cast<float>(Engine::GetInstance()->GetWindowSize().width) / static_cast<float>(Engine::GetInstance()->GetWindowSize().height); // アスペクト比
 
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
-		constBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
-		if (!constBuffer[i]->IsValid())
+		cicleWireFrameConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(CicleWireFrame));
+		if (!cicleWireFrameConstBuffer[i]->IsValid())
 		{
 			OutputDebugStringW(L"変換行列用定数バッファの生成に失敗\n");
 		}
 	}
 
-	SetTriangleMatrix();
-
-	rootSignature = std::make_unique<RootSignature>();
-	if (!rootSignature->IsSuccess())
-	{
-		OutputDebugStringW(L"ルートシグネチャの生成に失敗\n");
-	}
-
-	pipelineState = std::make_unique<PipelineState>();
-	pipelineState->SetInputLayout(Vertex::InputLayout);
-	pipelineState->SetRootSignature(rootSignature->Get());
-	pipelineState->SetVS(L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS");
-	pipelineState->SetPS(L"Shader/2DCiclePixelShader/2DCiclePixelShader.hlsl","Cicle2DPixelShader");
-	pipelineState->Create();
-
-	if (!pipelineState->IsSuccess())
-	{
-		OutputDebugStringW(L"パイプラインステートの生成に失敗\n");
-	}
+	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS", L"Shader/2DCiclePixelShader/2DCiclePixelShader.hlsl", "Cicle2DPixelShader");
 }
 
 Cicle2D::~Cicle2D()
 {
+	
+	
+}
 
+void Cicle2D::SetFill(bool _fill)
+{
+	fill = _fill;
+	FillConstShaderUpdate();
+	//Polygon2D::SetFill(_fill);
+}
+
+void Cicle2D::FillConstShaderUpdate()
+{
+	if (!fill) {
+		for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
+		{
+			auto ptr = cicleWireFrameConstBuffer[i]->GetPtr<CicleWireFrame>();
+			ptr->wireFrame = 1.0f;
+		}
+	}
+	else {
+		for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
+		{
+			auto ptr = cicleWireFrameConstBuffer[i]->GetPtr<CicleWireFrame>();
+			ptr->wireFrame = 0.0f;
+		}
+	}
+}
+
+void Cicle2D::SetRadius(float _radius)
+{
+	const float RADOIS = _radius;
+	radius = _radius;
+	vertices[0].position = DirectX::XMFLOAT3(-RADOIS, RADOIS, 0.0f);
+
+	vertices[1].position = DirectX::XMFLOAT3(RADOIS, RADOIS, 0.0f);
+
+	vertices[2].position = DirectX::XMFLOAT3(RADOIS, -RADOIS, 0.0f);
+
+	vertices[3].position = DirectX::XMFLOAT3(-RADOIS, -RADOIS, 0.0f);
+
+	vertexBuffer->BufferMapping(vertices.data());
 }
 
 void Cicle2D::Update()
 {
 	transform.position.x += 1.0f;
 	transform.position.y += 1.0f;
-	transform.rotation.z += 0.01f;
-	SetTriangleMatrix();
+	//transform.rotation.z += 0.01f;
+	Set2DMatrix();
+	FillConstShaderUpdate();
 }
 
 void Cicle2D::Draw()
@@ -102,47 +108,9 @@ void Cicle2D::Draw()
 	auto currentIndex = Engine::GetInstance()->CurrentBackBufferIndex(); // 現在のフレーム番号を取得する
 	auto commandList = Engine::GetInstance()->CommandList(); // コマンドリスト
 	auto vbView = vertexBuffer->GetView(); // 頂点バッファビュー
+	
+	Polygon2D::Draw();
 
-	commandList->SetGraphicsRootSignature(rootSignature->Get()); // ルートシグネチャをセット
-	commandList->SetPipelineState(pipelineState->Get()); // パイプラインステートをセット
-	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
+	commandList->SetGraphicsRootConstantBufferView(0, cicleWireFrameConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形を描画する設定にする
-	commandList->IASetVertexBuffers(0, 1, &vbView); // 頂点バッファをスロット0番を使って1個だけ設定する
-	commandList->IASetIndexBuffer(&indexBuffer->View()); // インデックスバッファをセットする
-
-	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0); // 6個のインデックスで描画する（三角形の時と関数名が違うので注意）
-
-
-}
-
-void Cicle2D::SetTriangleMatrix()
-{
-	//ウィンドウサイズを取得
-	float windowWidth = static_cast<float>(Engine::GetInstance()->GetWindowSize().width);
-	float windowHeight = static_cast<float>(Engine::GetInstance()->GetWindowSize().height);
-
-	//2D用正射影行列
-	//Left=0, Right=width, Bottom=height, Top=0 に指定することで画面左上原点とする
-	DirectX::XMMATRIX proj = DirectX::XMMatrixOrthographicOffCenterLH(0.0f, windowWidth, windowHeight, 0.0f, 0.0f, 1.0f);
-
-	//4.2D用ビュー行列（単位行列）
-	DirectX::XMMATRIX view = DirectX::XMMatrixIdentity();
-
-	Vector3 scale = transform.scale;
-	Vector3 rotation = transform.rotation;
-	Vector3 position = transform.position;
-
-	// ワールド行列の計算
-	DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z)
-		* DirectX::XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z)
-		* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-
-	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
-	{
-		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
-		ptr->World = world;
-		ptr->View = view;
-		ptr->Proj = proj;
-	}
 }

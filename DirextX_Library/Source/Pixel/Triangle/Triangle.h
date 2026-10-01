@@ -1,30 +1,13 @@
 #pragma once
-#include "../../ShaderStruct/ShaderStruct.h"
+#include "../Polygon2D .h"
 
-class VertexBuffer;
-class ConstBuffer;
-class PipelineState;
-class RootSignature;
-
-class Triangle
+class Triangle : public Polygon2D
 {
 public:
 	Triangle();
 	~Triangle();
 
-	void Update();
-	void Draw();
-
-	Transform& GetTransform() { return transform; };
-
 private:
-	std::unique_ptr<VertexBuffer> vertexBuffer;
-	std::unique_ptr<RootSignature> rootSignature;
-	std::unique_ptr<PipelineState> pipelineState;
-
-	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;
-
-	void SetTriangleMatrix();
-
-	Transform transform;
+	void Update()override;
+	void Draw()override;
 };

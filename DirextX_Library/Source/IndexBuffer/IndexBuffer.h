@@ -10,6 +10,8 @@ public:
 	bool IsSuccess();
 	const D3D12_INDEX_BUFFER_VIEW& View() const;
 
+	void BufferMapping(size_t size, const void* pInitData);
+
 private:
 	bool success = false;
 	ComPtr<ID3D12Resource> pBuffer; // インデックスバッファ

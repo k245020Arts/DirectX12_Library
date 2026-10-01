@@ -16,10 +16,11 @@
 
 #include "../Window/Window.h"
 #include "../Comptr.h"
+#include "../SingleTon/SingletonBase.h"
 
 static constexpr int FRAME_BUFFER_COUNT = 2;
 
-class Engine
+class Engine : public SingletonBase<Engine>
 {
 public:
 
@@ -33,20 +34,6 @@ public:
 	ID3D12Device6* Device();
 	ID3D12GraphicsCommandList* CommandList();
 	UINT CurrentBackBufferIndex();
-
-	static Engine* GetInstance() {
-
-		if (engine == nullptr) {
-			engine = new Engine();
-		}
-		return engine;
-	};
-
-	static void Destory() {
-		if (engine != nullptr) {
-			delete engine;
-		}
-	}
 
 	const Size& GetWindowSize() { return windowSize; }
 
@@ -95,5 +82,5 @@ private:
 
 	void WaitRender();
 
-	static Engine* engine;
+	friend class SingletonBase<Engine>;
 };

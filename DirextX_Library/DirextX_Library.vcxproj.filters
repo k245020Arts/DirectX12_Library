@@ -61,6 +61,12 @@
     <Filter Include="Source\Pixel\Star">
       <UniqueIdentifier>{bbc68d15-b960-418a-bccd-2869b2dc7d3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Object2D">
+      <UniqueIdentifier>{c9b492ef-aef3-4ce8-9e63-530aa15f973c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\SingleTon">
+      <UniqueIdentifier>{793dfaa7-0792-40ed-8656-00bdb695d021}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -108,8 +114,14 @@
     <ClCompile Include="Source\Pixel\Line\Line2D.cpp">
       <Filter>Source\Pixel\Line</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Pixel\Star\Star2D.cpp">
+    <ClCompile Include="Source\Pixel\Star\Star.cpp">
       <Filter>Source\Pixel\Star</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Pixel\Polygon2D .cpp">
+      <Filter>Source\Pixel</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Object2D\Object2DManager.cpp">
+      <Filter>Source\Object2D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -160,6 +172,18 @@
     </ClInclude>
     <ClInclude Include="Source\Pixel\Star\Star2D.h">
       <Filter>Source\Pixel\Star</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Object2D\Object2D.h">
+      <Filter>Source\Object2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Pixel\Polygon2D .h">
+      <Filter>Source\Pixel</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Object2D\Object2DManager.h">
+      <Filter>Source\Object2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SingleTon\SingletonBase.h">
+      <Filter>Source\SingleTon</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

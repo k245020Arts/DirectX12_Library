@@ -1,36 +1,22 @@
 #pragma once
-#include "../../ShaderStruct/ShaderStruct.h"
+#include "../Polygon2D .h"
 
-class VertexBuffer;
-class ConstBuffer;
-class PipelineState;
-class RootSignature;
-class IndexBuffer;
-
-class Star2D
+class Star2D : public Polygon2D
 {
 public:
 	Star2D();
 	~Star2D();
 
-	void Update();
-	void Draw();
+	void SetRadius(float _radius);
 
-	Transform& GetTransform() { return transform; };
+	void SetFill(bool _fill)override;
 
 private:
-	std::unique_ptr<VertexBuffer> vertexBuffer;
-	std::unique_ptr<RootSignature> rootSignature;
-	std::unique_ptr<PipelineState> pipelineState;
-	std::unique_ptr<IndexBuffer> indexBuffer;
 
-	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;
-
-	void SetTriangleMatrix();
-
-	Transform transform;
-
-	UINT indexSize;
+	void Update()override;
+	void Draw()override;
 
 	std::vector<Vertex> CreateStarVertices(float _centerX, float _centerY, float _radius, DirectX::XMFLOAT4 _color);
+
+	float radius;
 };

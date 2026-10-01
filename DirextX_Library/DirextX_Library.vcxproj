@@ -131,12 +131,14 @@
     <ClCompile Include="Source\Engine\Engine.cpp" />
     <ClCompile Include="Source\IndexBuffer\IndexBuffer.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\Object2D\Object2DManager.cpp" />
     <ClCompile Include="Source\PipelineState\PipelineState.cpp" />
     <ClCompile Include="Source\Pixel\Box\Box2D.cpp" />
     <ClCompile Include="Source\Pixel\CIcle\Cicle2D.cpp" />
     <ClCompile Include="Source\Pixel\Line\Line2D.cpp" />
     <ClCompile Include="Source\Pixel\Pixel\Pixel.cpp" />
-    <ClCompile Include="Source\Pixel\Star\Star2D.cpp" />
+    <ClCompile Include="Source\Pixel\Polygon2D .cpp" />
+    <ClCompile Include="Source\Pixel\Star\Star.cpp" />
     <ClCompile Include="Source\Pixel\Triangle\Triangle.cpp" />
     <ClCompile Include="Source\RootSignature\RootSignature.cpp" />
     <ClCompile Include="Source\Scene\Scene.cpp" />
@@ -149,16 +151,20 @@
     <ClInclude Include="Source\ConstBuffer\ConstBuffer.h" />
     <ClInclude Include="Source\Engine\Engine.h" />
     <ClInclude Include="Source\IndexBuffer\IndexBuffer.h" />
+    <ClInclude Include="Source\Object2D\Object2D.h" />
+    <ClInclude Include="Source\Object2D\Object2DManager.h" />
     <ClInclude Include="Source\PipelineState\PipelineState.h" />
     <ClInclude Include="Source\Pixel\Box\Box2D.h" />
     <ClInclude Include="Source\Pixel\CIcle\Cicle2D.h" />
     <ClInclude Include="Source\Pixel\Line\Line2D.h" />
     <ClInclude Include="Source\Pixel\Pixel\Pixel.h" />
+    <ClInclude Include="Source\Pixel\Polygon2D .h" />
     <ClInclude Include="Source\Pixel\Star\Star2D.h" />
     <ClInclude Include="Source\Pixel\Triangle\Triangle.h" />
     <ClInclude Include="Source\RootSignature\RootSignature.h" />
     <ClInclude Include="Source\Scene\Scene.h" />
     <ClInclude Include="Source\ShaderStruct\ShaderStruct.h" />
+    <ClInclude Include="Source\SingleTon\SingletonBase.h" />
     <ClInclude Include="Source\VertexBuffer\VertexBuffer.h" />
     <ClInclude Include="Source\Window\Window.h" />
   </ItemGroup>

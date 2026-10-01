@@ -14,6 +14,7 @@ PipelineState::PipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE _desc)
 	// パイプラインステートの設定
 	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT); // ラスタライザーはデフォルト
 	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; // カリングはなし
+	desc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID; // 塗りつぶし
 	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT); // ブレンドステートもデフォルト
 	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // 深度ステンシルはデフォルトを使う
 	desc.SampleMask = UINT_MAX;
@@ -30,7 +31,7 @@ bool PipelineState::IsSuccess()
 	return success;
 }
 
-void PipelineState::SetInputLayout(D3D12_INPUT_LAYOUT_DESC layout)
+void PipelineState::SetInputLayout(const D3D12_INPUT_LAYOUT_DESC& layout)
 {
 	desc.InputLayout = layout;
 }
@@ -79,11 +80,23 @@ void PipelineState::Create()
 		OutputDebugStringW(L"パイプラインステートの生成に失敗");
 		return;
 	}
+	desc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 
+	hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(pipelineStateWireframe.ReleaseAndGetAddressOf()));
+	if (FAILED(hr))
+	{
+		OutputDebugStringW(L"ワイヤーフレーム用パイプラインステートの生成に失敗");
+		return;
+	}
 	success = true;
 }
 
-ID3D12PipelineState* PipelineState::Get()
+ID3D12PipelineState* PipelineState::GetPipelineState()
 {
 	return pipelineState.Get();
+}
+
+ID3D12PipelineState* PipelineState::GetPipelineStateWireFrame()
+{
+	return pipelineStateWireframe.Get();
 }

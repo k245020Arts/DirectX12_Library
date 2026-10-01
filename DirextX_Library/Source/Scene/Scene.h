@@ -28,4 +28,7 @@ private:
 
 	Line2D* line2D;
 	Star2D* star2D;
+
+	float value1;
+	float value2;
 };

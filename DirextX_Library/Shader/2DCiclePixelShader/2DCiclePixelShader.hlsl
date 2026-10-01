@@ -1,12 +1,20 @@
 #include "../2DBaseShader/BasicShaderHeader.hlsli"
 
+cbuffer Transform : register(b0)
+{
+    float wireFrame; //ワイヤーフレーム用の変数
+}
+
 float4 Cicle2DPixelShader(VSOutput input) : SV_TARGET
 {
-	//中心からの距離を計算
-    float distance = length(input.uv - float2(0.5, 0.5));
+	 //1中心からの距離を計算
+    float dist = length(input.uv - float2(0.5, 0.5));
 
-    //距離が0.5を超えたらピクセルを破棄
-    clip(0.5 - distance);
+    //2円の外側をカット
+    clip(0.5 - dist);
+
+    //3外枠モードのときだけ「内側」をくり抜く
+    clip((dist - 0.48) * wireFrame);
 
     return input.color;
 }

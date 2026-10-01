@@ -21,23 +21,7 @@ VertexBuffer::VertexBuffer(size_t size, size_t stride, const void* pInitData)
 	view.SizeInBytes = static_cast<UINT>(size);
 	view.StrideInBytes = static_cast<UINT>(stride);
 
-	// マッピングする
-	if (pInitData != nullptr)
-	{
-		void* ptr = nullptr;
-		hr = pBuffer->Map(0, nullptr, &ptr);
-		if (FAILED(hr))
-		{
-			OutputDebugStringW(L"頂点バッファマッピングに失敗");
-			return;
-		}
-
-		// 頂点データをマッピング先に設定
-		memcpy(ptr, pInitData, size);
-
-		// マッピング解除
-		pBuffer->Unmap(0, nullptr);
-	}
+	BufferMapping(pInitData);
 
 	success = true;
 }
@@ -50,4 +34,25 @@ const D3D12_VERTEX_BUFFER_VIEW& VertexBuffer::GetView() const
 bool VertexBuffer::IsSuccess()
 {
 	return success;
+}
+
+void VertexBuffer::BufferMapping(const void* pInitData)
+{
+	// マッピングする
+	if (pInitData != nullptr)
+	{
+		void* ptr = nullptr;
+		auto hr = pBuffer->Map(0, nullptr, &ptr);
+		if (FAILED(hr))
+		{
+			OutputDebugStringW(L"頂点バッファマッピングに失敗");
+			return;
+		}
+
+		// 頂点データをマッピング先に設定
+		memcpy(ptr, pInitData, view.SizeInBytes);
+
+		// マッピング解除
+		pBuffer->Unmap(0, nullptr);
+	}
 }

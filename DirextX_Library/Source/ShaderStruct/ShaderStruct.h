@@ -26,7 +26,9 @@ struct alignas(256) MatrixTransform
     DirectX::XMMATRIX Proj; // ìäâeçsóÒ
 };
 
+typedef DirectX::XMFLOAT4 Vector4;
 typedef DirectX::XMFLOAT3 Vector3;
+typedef DirectX::XMFLOAT2 Vector2;
 
 struct Transform
 {

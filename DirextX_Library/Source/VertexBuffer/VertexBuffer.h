@@ -8,6 +8,7 @@ public:
 	VertexBuffer(size_t size, size_t stride, const void* pInitData); // コンストラクタでバッファを生成
 	const D3D12_VERTEX_BUFFER_VIEW& GetView() const; // 頂点バッファビューを取得
 	bool IsSuccess(); // バッファの生成に成功したかを取得
+	void BufferMapping(const void* pInitData);
 
 private:
 	bool success = false; // バッファの生成に成功したかを取得

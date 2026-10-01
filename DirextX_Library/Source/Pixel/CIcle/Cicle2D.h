@@ -1,32 +1,30 @@
 #pragma once
-#include "../../ShaderStruct/ShaderStruct.h"
+#include "../Polygon2D .h"
 
-class VertexBuffer;
-class ConstBuffer;
-class PipelineState;
-class RootSignature;
-class IndexBuffer;
+struct alignas(256) CicleWireFrame
+{
+	float wireFrame;
+};
 
-class Cicle2D
+class Cicle2D : public Polygon2D
 {
 public:
 	Cicle2D();
 	~Cicle2D();
 
-	void Update();
-	void Draw();
+	void SetRadius(float _radius);
 
-	Transform& GetTransform() { return transform; };
+	void SetFill(bool _fill)override;
+
+	void FillConstShaderUpdate();
 
 private:
-	std::unique_ptr<VertexBuffer> vertexBuffer;
-	std::unique_ptr<RootSignature> rootSignature;
-	std::unique_ptr<PipelineState> pipelineState;
-	std::unique_ptr<IndexBuffer> indexBuffer;
+	void Update()override;
+	void Draw()override;
 
-	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;
+	float radius;
 
-	void SetTriangleMatrix();
+	std::vector<std::shared_ptr<ConstBuffer>> cicleWireFrameConstBuffer;
 
-	Transform transform;
+	bool fill;
 };

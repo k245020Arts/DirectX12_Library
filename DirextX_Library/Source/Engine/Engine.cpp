@@ -1,7 +1,5 @@
 #include "Engine.h"
 
-Engine* Engine::engine = nullptr;
-
 Engine::~Engine()
 {
     if (commandQueue && fence)
