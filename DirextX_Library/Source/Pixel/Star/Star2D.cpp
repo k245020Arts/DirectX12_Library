@@ -1,46 +1,55 @@
-#include "Box2D.h"
+#include "Star2D.h"
 #include "../../VertexBuffer/VertexBuffer.h"
 #include "../../Engine/Engine.h"
 #include "../../ConstBuffer/ConstBuffer.h"
 #include "../../PipelineState/PipelineState.h"
 #include "../../RootSignature/RootSignature.h"
 #include "../../IndexBuffer/IndexBuffer.h"
+#include <math.h>
 
-Box2D::Box2D()
+Star2D::Star2D()
 {
 	constBuffer.resize(FRAME_BUFFER_COUNT);
 
-	// 頂点を4つにして四角形を定義する
-	Vertex vertices[4] = {};
-	vertices[0].position = DirectX::XMFLOAT3(-50.0f, 50.0f, 0.0f);
-	vertices[0].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	std::vector<Vertex> vertices = CreateStarVertices(100,100,100,DirectX::XMFLOAT4(1.0f, 1.0f,0.0f,0.0f));
 
-	vertices[1].position = DirectX::XMFLOAT3(50.0f, 50.0f, 0.0f);
-	vertices[1].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	Vertex centerVertex;
+	centerVertex.position = DirectX::XMFLOAT3(100, 100, 0.0f);
+	centerVertex.color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
+	vertices.push_back(centerVertex); // これで全11頂点
 
-	vertices[2].position = DirectX::XMFLOAT3(50.0f, -50.0f, 0.0f);
-	vertices[2].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
-	vertices[3].position = DirectX::XMFLOAT3(-50.0f, -50.0f, 0.0f);
-	vertices[3].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
-
-	auto vertexSize = sizeof(Vertex) * std::size(vertices);
+	auto vertexSize = sizeof(Vertex) * vertices.size();
 	auto vertexStride = sizeof(Vertex);
-	vertexBuffer = std::make_unique<VertexBuffer>(vertexSize, vertexStride, vertices);
+	vertexBuffer = std::make_unique<VertexBuffer>(vertexSize, vertexStride, vertices.data());
 	if (!vertexBuffer->IsSuccess())
 	{
 		OutputDebugStringW(L"頂点バッファの生成に失敗\n");
+		assert(false);
 	}
 
-	uint32_t indices[] = { 0, 1, 2, 0, 2, 3 }; // これに書かれている順序で描画する
+	// 中心点(10)を使って、すべての三角形を時計回りに結ぶ
+	uint32_t indices[] = {
+		10, 0, 1,
+		10, 1, 2,
+		10, 2, 3,
+		10, 3, 4,
+		10, 4, 5,
+		10, 5, 6,
+		10, 6, 7,
+		10, 7, 8,
+		10, 8, 9,
+		10, 9, 0  // 最後は0に戻って閉じる
+	};
 
 	// インデックスバッファの生成
 	auto size = sizeof(uint32_t) * std::size(indices);
-	indexBuffer = std::make_unique <IndexBuffer>(size, indices);
+	indexBuffer = std::make_unique<IndexBuffer>(size, indices);
 	if (!indexBuffer->IsSuccess())
 	{
 		OutputDebugStringW(L"インデックスバッファの生成に失敗\n");
 	}
+
+	indexSize = std::size(indices);
 
 	const auto eyePos = DirectX::XMVectorSet(0.0f, 0.0f, 5.0f, 0.0f); // 視点の位置
 	const auto targetPos = DirectX::XMVectorZero(); // 視点を向ける座標
@@ -78,20 +87,19 @@ Box2D::Box2D()
 	}
 }
 
-Box2D::~Box2D()
+Star2D::~Star2D()
 {
 
 }
 
-void Box2D::Update()
+void Star2D::Update()
 {
 	transform.position.x += 1.0f;
 	transform.position.y += 1.0f;
-	//transform.rotation.z += 0.01f;
 	SetTriangleMatrix();
 }
 
-void Box2D::Draw()
+void Star2D::Draw()
 {
 	auto currentIndex = Engine::GetInstance()->CurrentBackBufferIndex(); // 現在のフレーム番号を取得する
 	auto commandList = Engine::GetInstance()->CommandList(); // コマンドリスト
@@ -103,14 +111,14 @@ void Box2D::Draw()
 
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形を描画する設定にする
 	commandList->IASetVertexBuffers(0, 1, &vbView); // 頂点バッファをスロット0番を使って1個だけ設定する
-	commandList->IASetIndexBuffer(&indexBuffer->View()); // インデックスバッファをセットする
 
-	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0); // 6個のインデックスで描画する
+	commandList->IASetIndexBuffer(&indexBuffer->View());
 
+	commandList->DrawIndexedInstanced(indexSize, 1, 0, 0, 0); //星のインデックスの数分描画する
 
 }
 
-void Box2D::SetTriangleMatrix()
+void Star2D::SetTriangleMatrix()
 {
 	//ウィンドウサイズを取得
 	float windowWidth = static_cast<float>(Engine::GetInstance()->GetWindowSize().width);
@@ -139,4 +147,23 @@ void Box2D::SetTriangleMatrix()
 		ptr->View = view;
 		ptr->Proj = proj;
 	}
+}
+
+std::vector<Vertex> Star2D::CreateStarVertices(float _centerX, float _centerY, float _radius, DirectX::XMFLOAT4 _color)
+{
+	const int SIZE = 10;
+	std::vector<Vertex> vertices(SIZE);
+	const float GoldenRatio = 0.382f;
+	float r = _radius * GoldenRatio; // 黄金比に基づく内半径
+	const float PI = 3.14159265358979323846f;
+
+	for (int i = 0; i < SIZE; i++) {
+		// 頂点ごとに36度（π / 5）ずつずらす。真上から始めるために - π / 2 する
+		const float angle = i * (PI / 5.0f) - (PI / 2.0f);
+		const float radius = (i % 2 == 0) ? _radius : r; // 偶数は外側、奇数は内側
+
+		vertices[i].position = DirectX::XMFLOAT3(_centerX + radius * cosf(angle), _centerY + radius * sinf(angle), 0.0f);
+		vertices[i].color = _color;
+	}
+	return vertices;
 }

@@ -7,13 +7,8 @@ IndexBuffer::IndexBuffer(size_t size, const uint32_t* pInitData)
 	D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(size);	// リソースの設定
 
 	// リソースを生成
-	auto hr = Engine::GetInstance()->Device()->CreateCommittedResource(
-		&prop,
-		D3D12_HEAP_FLAG_NONE,
-		&desc,
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(pBuffer.GetAddressOf()));
+	auto hr = Engine::GetInstance()->Device()->CreateCommittedResource(&prop,D3D12_HEAP_FLAG_NONE,&desc,D3D12_RESOURCE_STATE_GENERIC_READ,nullptr,IID_PPV_ARGS(pBuffer.GetAddressOf()));
+
 	if (FAILED(hr))
 	{
 		printf("[OnInit] インデックスバッファリソースの生成に失敗");

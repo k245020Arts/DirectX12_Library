@@ -4,7 +4,12 @@
 
 #pragma comment(lib, "d3dcompiler.lib")
 
-PipelineState::PipelineState()
+PipelineState::PipelineState() : PipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
+{
+	
+}
+
+PipelineState::PipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE _desc)
 {
 	// パイプラインステートの設定
 	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT); // ラスタライザーはデフォルト
@@ -12,7 +17,7 @@ PipelineState::PipelineState()
 	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT); // ブレンドステートもデフォルト
 	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // 深度ステンシルはデフォルトを使う
 	desc.SampleMask = UINT_MAX;
-	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; // 三角形を描画
+	desc.PrimitiveTopologyType = _desc; //指定した形を描画
 	desc.NumRenderTargets = 1; // 描画対象は1
 	desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;

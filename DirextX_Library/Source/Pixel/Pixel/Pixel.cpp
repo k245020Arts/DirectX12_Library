@@ -1,28 +1,17 @@
-#include "Box2D.h"
+#include "Pixel.h"
 #include "../../VertexBuffer/VertexBuffer.h"
 #include "../../Engine/Engine.h"
 #include "../../ConstBuffer/ConstBuffer.h"
 #include "../../PipelineState/PipelineState.h"
 #include "../../RootSignature/RootSignature.h"
-#include "../../IndexBuffer/IndexBuffer.h"
 
-Box2D::Box2D()
+Pixel::Pixel()
 {
 	constBuffer.resize(FRAME_BUFFER_COUNT);
 
-	// 頂点を4つにして四角形を定義する
-	Vertex vertices[4] = {};
-	vertices[0].position = DirectX::XMFLOAT3(-50.0f, 50.0f, 0.0f);
+	Vertex vertices[1] = {};
+	vertices[0].position = DirectX::XMFLOAT3(0.0f, -50.0f, 0.0f); // 上
 	vertices[0].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-
-	vertices[1].position = DirectX::XMFLOAT3(50.0f, 50.0f, 0.0f);
-	vertices[1].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-
-	vertices[2].position = DirectX::XMFLOAT3(50.0f, -50.0f, 0.0f);
-	vertices[2].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
-	vertices[3].position = DirectX::XMFLOAT3(-50.0f, -50.0f, 0.0f);
-	vertices[3].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
 
 	auto vertexSize = sizeof(Vertex) * std::size(vertices);
 	auto vertexStride = sizeof(Vertex);
@@ -30,16 +19,7 @@ Box2D::Box2D()
 	if (!vertexBuffer->IsSuccess())
 	{
 		OutputDebugStringW(L"頂点バッファの生成に失敗\n");
-	}
-
-	uint32_t indices[] = { 0, 1, 2, 0, 2, 3 }; // これに書かれている順序で描画する
-
-	// インデックスバッファの生成
-	auto size = sizeof(uint32_t) * std::size(indices);
-	indexBuffer = std::make_unique <IndexBuffer>(size, indices);
-	if (!indexBuffer->IsSuccess())
-	{
-		OutputDebugStringW(L"インデックスバッファの生成に失敗\n");
+		assert(false);
 	}
 
 	const auto eyePos = DirectX::XMVectorSet(0.0f, 0.0f, 5.0f, 0.0f); // 視点の位置
@@ -65,7 +45,7 @@ Box2D::Box2D()
 		OutputDebugStringW(L"ルートシグネチャの生成に失敗\n");
 	}
 
-	pipelineState = std::make_unique<PipelineState>();
+	pipelineState = std::make_unique<PipelineState>(D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT);
 	pipelineState->SetInputLayout(Vertex::InputLayout);
 	pipelineState->SetRootSignature(rootSignature->Get());
 	pipelineState->SetVS(L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS");
@@ -78,20 +58,19 @@ Box2D::Box2D()
 	}
 }
 
-Box2D::~Box2D()
+Pixel::~Pixel()
 {
-
 }
 
-void Box2D::Update()
+
+void Pixel::Update()
 {
-	transform.position.x += 1.0f;
-	transform.position.y += 1.0f;
-	//transform.rotation.z += 0.01f;
+	//transform.position.x += 1.0f;
+	//transform.position.y += 1.0f;
 	SetTriangleMatrix();
 }
 
-void Box2D::Draw()
+void Pixel::Draw()
 {
 	auto currentIndex = Engine::GetInstance()->CurrentBackBufferIndex(); // 現在のフレーム番号を取得する
 	auto commandList = Engine::GetInstance()->CommandList(); // コマンドリスト
@@ -101,16 +80,14 @@ void Box2D::Draw()
 	commandList->SetPipelineState(pipelineState->Get()); // パイプラインステートをセット
 	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形を描画する設定にする
+	commandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_POINTLIST); // ポリゴンを描画する設定にする
 	commandList->IASetVertexBuffers(0, 1, &vbView); // 頂点バッファをスロット0番を使って1個だけ設定する
-	commandList->IASetIndexBuffer(&indexBuffer->View()); // インデックスバッファをセットする
 
-	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0); // 6個のインデックスで描画する
-
+	commandList->DrawInstanced(1, 1, 0, 0); // 1個の頂点を描画する
 
 }
 
-void Box2D::SetTriangleMatrix()
+void Pixel::SetTriangleMatrix()
 {
 	//ウィンドウサイズを取得
 	float windowWidth = static_cast<float>(Engine::GetInstance()->GetWindowSize().width);

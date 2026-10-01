@@ -1,8 +1,12 @@
 #pragma once
+#include <vector>
 
 class Triangle;
 class Box2D;
 class Cicle2D;
+class Pixel;
+class Line2D;
+class Star2D;
 
 class Scene
 {
@@ -19,4 +23,9 @@ private:
 
 	Box2D* boxTest;
 	Cicle2D* cicleTest;
+
+	std::vector<Pixel*> pixels;
+
+	Line2D* line2D;
+	Star2D* star2D;
 };

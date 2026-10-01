@@ -7,11 +7,11 @@ class PipelineState;
 class RootSignature;
 class IndexBuffer;
 
-class Cicle2D
+class Star2D
 {
 public:
-	Cicle2D();
-	~Cicle2D();
+	Star2D();
+	~Star2D();
 
 	void Update();
 	void Draw();
@@ -29,4 +29,8 @@ private:
 	void SetTriangleMatrix();
 
 	Transform transform;
+
+	UINT indexSize;
+
+	std::vector<Vertex> CreateStarVertices(float _centerX, float _centerY, float _radius, DirectX::XMFLOAT4 _color);
 };

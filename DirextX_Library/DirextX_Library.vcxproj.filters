@@ -52,6 +52,15 @@
     <Filter Include="Source\Shader\2DCicleShader">
       <UniqueIdentifier>{c4db815f-03d7-4087-8557-2ad17f61d054}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Pixel\Pixel">
+      <UniqueIdentifier>{5cec56e6-92c2-4ed1-9ddb-1b557ac3be33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Pixel\Line">
+      <UniqueIdentifier>{d0bd1fc9-bc0e-4961-b870-4814f7a58ba2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Pixel\Star">
+      <UniqueIdentifier>{bbc68d15-b960-418a-bccd-2869b2dc7d3e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -93,6 +102,15 @@
     <ClCompile Include="Source\Pixel\CIcle\Cicle2D.cpp">
       <Filter>Source\Pixel\Cicle</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Pixel\Pixel\Pixel.cpp">
+      <Filter>Source\Pixel\Pixel</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Pixel\Line\Line2D.cpp">
+      <Filter>Source\Pixel\Line</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Pixel\Star\Star2D.cpp">
+      <Filter>Source\Pixel\Star</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Window\Window.h">
@@ -133,6 +151,15 @@
     </ClInclude>
     <ClInclude Include="Source\Pixel\CIcle\Cicle2D.h">
       <Filter>Source\Pixel\Cicle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Pixel\Pixel\Pixel.h">
+      <Filter>Source\Pixel\Pixel</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Pixel\Line\Line2D.h">
+      <Filter>Source\Pixel\Line</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Pixel\Star\Star2D.h">
+      <Filter>Source\Pixel\Star</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

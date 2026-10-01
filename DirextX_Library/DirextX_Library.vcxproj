@@ -134,6 +134,9 @@
     <ClCompile Include="Source\PipelineState\PipelineState.cpp" />
     <ClCompile Include="Source\Pixel\Box\Box2D.cpp" />
     <ClCompile Include="Source\Pixel\CIcle\Cicle2D.cpp" />
+    <ClCompile Include="Source\Pixel\Line\Line2D.cpp" />
+    <ClCompile Include="Source\Pixel\Pixel\Pixel.cpp" />
+    <ClCompile Include="Source\Pixel\Star\Star2D.cpp" />
     <ClCompile Include="Source\Pixel\Triangle\Triangle.cpp" />
     <ClCompile Include="Source\RootSignature\RootSignature.cpp" />
     <ClCompile Include="Source\Scene\Scene.cpp" />
@@ -149,6 +152,9 @@
     <ClInclude Include="Source\PipelineState\PipelineState.h" />
     <ClInclude Include="Source\Pixel\Box\Box2D.h" />
     <ClInclude Include="Source\Pixel\CIcle\Cicle2D.h" />
+    <ClInclude Include="Source\Pixel\Line\Line2D.h" />
+    <ClInclude Include="Source\Pixel\Pixel\Pixel.h" />
+    <ClInclude Include="Source\Pixel\Star\Star2D.h" />
     <ClInclude Include="Source\Pixel\Triangle\Triangle.h" />
     <ClInclude Include="Source\RootSignature\RootSignature.h" />
     <ClInclude Include="Source\Scene\Scene.h" />

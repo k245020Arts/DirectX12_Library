@@ -6,7 +6,8 @@
 class PipelineState
 {
 public:
-	PipelineState(); // コンストラクタである程度の設定をする
+	PipelineState();
+	PipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE _desc); // コンストラクタである程度の設定をする
 	bool IsSuccess(); // 生成に成功したかどうかを返す
 
 	void SetInputLayout(D3D12_INPUT_LAYOUT_DESC _layout); // 入力レイアウトを設定

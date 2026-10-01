@@ -5,13 +5,12 @@ class VertexBuffer;
 class ConstBuffer;
 class PipelineState;
 class RootSignature;
-class IndexBuffer;
 
-class Cicle2D
+class Pixel
 {
 public:
-	Cicle2D();
-	~Cicle2D();
+	Pixel();
+	~Pixel();
 
 	void Update();
 	void Draw();
@@ -19,10 +18,10 @@ public:
 	Transform& GetTransform() { return transform; };
 
 private:
+
 	std::unique_ptr<VertexBuffer> vertexBuffer;
 	std::unique_ptr<RootSignature> rootSignature;
 	std::unique_ptr<PipelineState> pipelineState;
-	std::unique_ptr<IndexBuffer> indexBuffer;
 
 	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;
 
