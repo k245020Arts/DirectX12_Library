@@ -19,6 +19,7 @@ Pixel::Pixel()
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_POINTLIST;
 
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT,L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS", L"Shader/2DBaseShader/Basic_PixelShader.hlsl", "BasicPS");
+	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE,L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS", L"Shader/2DBaseShader/Basic_PixelShader.hlsl", "BasicPS");
 }
 
 Pixel::~Pixel()

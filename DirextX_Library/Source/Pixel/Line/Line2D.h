@@ -7,7 +7,7 @@ public:
 	Line2D();
 	~Line2D();
 
-	void SetLength(float _length);
+	void SetLength(const float _length);
 
 private:
 	void Update()override;

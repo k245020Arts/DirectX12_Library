@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include "../../DirectX12_Library/d3dx12.h"
 #include "../Comptr.h"
 

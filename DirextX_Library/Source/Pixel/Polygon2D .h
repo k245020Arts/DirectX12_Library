@@ -16,17 +16,21 @@ public:
 	/// <param name="_fill">ìhÇËÇ¬Ç‘Ç∑èÍçáÇÕtrue</param>
 	virtual void SetFill(bool _fill);
 
+	virtual void SetColor(Vector4 _color);
+
 protected:
 
 	void Init(const std::vector<Vertex>& _vertices,const std::vector<uint32_t>& _indices);
 
 	void SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology,std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint);
+	void SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology,std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint);
 
     void Set2DMatrix();
 
 	std::unique_ptr<VertexBuffer> vertexBuffer;
 	std::unique_ptr<RootSignature> rootSignature;
 	std::unique_ptr<PipelineState> pipelineState;
+	std::unique_ptr<PipelineState> wireFramePipelineState;
 	std::unique_ptr<IndexBuffer> indexBuffer;
 
 	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;

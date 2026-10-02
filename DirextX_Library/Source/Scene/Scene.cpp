@@ -18,7 +18,7 @@ Scene::Scene()
 	boxTest->GetTransform().position = Vector3(400.0f, 0.0f, 0.0f);
 
 	cicleTest = new Cicle2D();
-	cicleTest->GetTransform().position = Vector3(600.0f, 0.0f, 0.0f);
+	cicleTest->GetTransform().position = Vector3(600.0f, 200.0f, 0.0f);
 
 	for (int i = 0; i < 5; i++) {
 		Pixel* pixel = new Pixel();
@@ -32,6 +32,7 @@ Scene::Scene()
 	star2D = new Star2D();
 	star2D->GetTransform().position = Vector3(200, 100, 0);
 	cicleTest->SetFill(true);
+	line2D->SetColor(Vector4(1.0f,0.0f,1.0f,1.0f));
 
 	/*Star2D* star2D2 = new Star2D();
 	star2D->GetTransform().position = Vector3(350, 200, 0);

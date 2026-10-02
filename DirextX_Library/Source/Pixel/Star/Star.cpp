@@ -35,6 +35,7 @@ Star2D::Star2D()
 	Init(vertices, indices);
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS", L"Shader/2DBaseShader/Basic_PixelShader.hlsl", "BasicPS");
+	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE,L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS", L"Shader/2DBaseShader/Basic_PixelShader.hlsl", "BasicPS");
 }
 
 Star2D::~Star2D()
@@ -68,6 +69,8 @@ void Star2D::SetRadius(float _radius)
 
 	vertices.push_back(centerVertex);
 
+	auto vertexSize = sizeof(Vertex) * vertices.size();
+
 	vertexBuffer->BufferMapping(vertices.data());
 }
 
@@ -79,7 +82,8 @@ void Star2D::SetFill(bool _fill)
 		};
 		indexSize = indices.size();
 		auto size = sizeof(uint32_t) * indices.size();
-		indexBuffer->BufferMapping(size, indices.data());
+		indexBuffer->Resize(size);
+		indexBuffer->BufferMapping(indices.data());
 	}
 	else {
 		std::vector<uint32_t> indices = {
@@ -96,7 +100,7 @@ void Star2D::SetFill(bool _fill)
 		};
 		indexSize = indices.size();
 		auto size = sizeof(uint32_t) * indices.size();
-		indexBuffer->BufferMapping(size, indices.data());
+		indexBuffer->BufferMapping(indices.data());
 	}
 
 	Polygon2D::SetFill(_fill);

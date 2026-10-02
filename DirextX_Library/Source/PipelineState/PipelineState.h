@@ -16,14 +16,14 @@ public:
 	void SetPS(std::wstring _filePath, std::string _entryPoint); // ピクセルシェーダーを設定
 	void Create(); // パイプラインステートを生成
 
+	void SetDrawLayOut(D3D12_FILL_MODE _fillMode);
+
 	ID3D12PipelineState* GetPipelineState();
-	ID3D12PipelineState* GetPipelineStateWireFrame();
 
 private:
 	bool success = false; // 生成に成功したかどうか
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {}; // パイプラインステートの設定
-	ComPtr<ID3D12PipelineState> pipelineState = nullptr; // パイプラインステート(塗りつぶし表示用)
-	ComPtr<ID3D12PipelineState> pipelineStateWireframe = nullptr; // パイプラインステート(ワイヤーフレーム表示用)
+	ComPtr<ID3D12PipelineState> pipelineState = nullptr; // パイプラインステート
 	ComPtr<ID3DBlob> pVSBlob; // 頂点シェーダー
 	ComPtr<ID3DBlob> pPSBlob; // ピクセルシェーダー
 	ComPtr<ID3DBlob> errorBlob; // エラー検出用

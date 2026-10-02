@@ -20,13 +20,14 @@ Line2D::Line2D()
 	Init(vertices, {});
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_LINELIST;
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE,L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS", L"Shader/2DBaseShader/Basic_PixelShader.hlsl", "BasicPS");
+	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE,L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS", L"Shader/2DBaseShader/Basic_PixelShader.hlsl", "BasicPS");
 }
 
 Line2D::~Line2D()
 {
 }
 
-void Line2D::SetLength(float _length)
+void Line2D::SetLength(const float _length)
 {
 	length = _length;
 
@@ -35,6 +36,8 @@ void Line2D::SetLength(float _length)
 	vertices[0].position = DirectX::XMFLOAT3(LENGTH, 0.0f, 0.0f);
 
 	vertices[1].position = DirectX::XMFLOAT3(-LENGTH, 0.0f, 0.0f);
+
+	auto vertexSize = sizeof(Vertex) * vertices.size();
 
 	vertexBuffer->BufferMapping(vertices.data());
 }

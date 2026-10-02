@@ -10,7 +10,8 @@ public:
 	bool IsSuccess();
 	const D3D12_INDEX_BUFFER_VIEW& View() const;
 
-	void BufferMapping(size_t size, const void* pInitData);
+	void BufferMapping(const void* pInitData);
+	void Resize(size_t size);
 
 private:
 	bool success = false;
@@ -19,5 +20,7 @@ private:
 
 	IndexBuffer(const IndexBuffer&) = delete;
 	void operator = (const IndexBuffer&) = delete;
+
+	size_t bufferSize;
 };
 

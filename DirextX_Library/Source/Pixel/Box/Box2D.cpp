@@ -29,6 +29,7 @@ Box2D::Box2D()
 	Init(vertices, indices);
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS", L"Shader/2DBaseShader/Basic_PixelShader.hlsl", "BasicPS");
+	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE,L"Shader/2DBaseShader/Basic_VertexShader.hlsl", "BasicVS", L"Shader/2DBaseShader/Basic_PixelShader.hlsl", "BasicPS");
 }
 
 Box2D::~Box2D()
@@ -59,13 +60,15 @@ void Box2D::SetFill(bool _fill)
 		std::vector<uint32_t> indices = { 0, 1, 2,3,0 }; // ‚±‚ê‚É‘‚©‚ê‚Ä‚¢‚é‡˜‚Å•`‰æ‚·‚é
 		indexSize = indices.size();
 		auto size = sizeof(uint32_t) * indices.size();
-		indexBuffer->BufferMapping(size, indices.data());
+		indexBuffer->Resize(size);
+		indexBuffer->BufferMapping(indices.data());
 	}
 	else {
 		std::vector<uint32_t> indices = { 0, 1, 2, 0, 2, 3 }; // ‚±‚ê‚É‘‚©‚ê‚Ä‚¢‚é‡˜‚Å•`‰æ‚·‚é
 		indexSize = indices.size();
 		auto size = sizeof(uint32_t) * indices.size();
-		indexBuffer->BufferMapping(size, indices.data());
+		indexBuffer->Resize(size);
+		indexBuffer->BufferMapping(indices.data());
 	}
 	
 	Polygon2D::SetFill(_fill);

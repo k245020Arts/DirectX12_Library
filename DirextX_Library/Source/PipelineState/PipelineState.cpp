@@ -80,23 +80,16 @@ void PipelineState::Create()
 		OutputDebugStringW(L"パイプラインステートの生成に失敗");
 		return;
 	}
-	desc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 
-	hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(pipelineStateWireframe.ReleaseAndGetAddressOf()));
-	if (FAILED(hr))
-	{
-		OutputDebugStringW(L"ワイヤーフレーム用パイプラインステートの生成に失敗");
-		return;
-	}
 	success = true;
+}
+
+void PipelineState::SetDrawLayOut(D3D12_FILL_MODE _fillMode)
+{
+	desc.RasterizerState.FillMode = _fillMode;
 }
 
 ID3D12PipelineState* PipelineState::GetPipelineState()
 {
 	return pipelineState.Get();
-}
-
-ID3D12PipelineState* PipelineState::GetPipelineStateWireFrame()
-{
-	return pipelineStateWireframe.Get();
 }

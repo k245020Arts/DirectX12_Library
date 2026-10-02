@@ -17,7 +17,7 @@ void Polygon2D::Draw()
 		commandList->SetPipelineState(pipelineState->GetPipelineState()); // パイプラインステートをセット
 	}
 	else {
-		commandList->SetPipelineState(pipelineState->GetPipelineStateWireFrame()); // パイプラインステートをセット
+		commandList->SetPipelineState(wireFramePipelineState->GetPipelineState()); // パイプラインステートをセット
 	}
 	
 	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
@@ -44,6 +44,14 @@ void Polygon2D::Draw()
 void Polygon2D::SetFill(bool _fill)
 {
 	fillMode = _fill;
+}
+
+void Polygon2D::SetColor(Vector4 _color)
+{
+	for (auto& vertex : vertices) {
+		vertex.color = _color;
+	}
+	vertexBuffer->BufferMapping(vertices.data());
 }
 
 void Polygon2D::Init(const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices)
@@ -105,11 +113,28 @@ void Polygon2D::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology,std::wst
 	pipelineState = std::make_unique<PipelineState>(topology);
 	pipelineState->SetInputLayout(Vertex::InputLayout);
 	pipelineState->SetRootSignature(rootSignature->Get());
+	pipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
 	pipelineState->SetVS(_VSfilePath, _VSentryPoint);
 	pipelineState->SetPS(_PSfilePath, _PSentryPoint);
 	pipelineState->Create();
 
 	if (!pipelineState->IsSuccess())
+	{
+		OutputDebugStringW(L"パイプラインステートの生成に失敗\n");
+	}
+}
+
+void Polygon2D::SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint)
+{
+	wireFramePipelineState = std::make_unique<PipelineState>(topology);
+	wireFramePipelineState->SetInputLayout(Vertex::InputLayout);
+	wireFramePipelineState->SetRootSignature(rootSignature->Get());
+	wireFramePipelineState->SetDrawLayOut(D3D12_FILL_MODE_WIREFRAME);
+	wireFramePipelineState->SetVS(_VSfilePath, _VSentryPoint);
+	wireFramePipelineState->SetPS(_PSfilePath, _PSentryPoint);
+	wireFramePipelineState->Create();
+
+	if (!wireFramePipelineState->IsSuccess())
 	{
 		OutputDebugStringW(L"パイプラインステートの生成に失敗\n");
 	}

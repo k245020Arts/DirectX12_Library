@@ -9,6 +9,7 @@ public:
 	const D3D12_VERTEX_BUFFER_VIEW& GetView() const; // 頂点バッファビューを取得
 	bool IsSuccess(); // バッファの生成に成功したかを取得
 	void BufferMapping(const void* pInitData);
+	void Resize(size_t _size);
 
 private:
 	bool success = false; // バッファの生成に成功したかを取得
@@ -17,4 +18,7 @@ private:
 
 	VertexBuffer(const VertexBuffer&) = delete;
 	void operator = (const VertexBuffer&) = delete;
+
+	size_t bufferSize;
+	size_t strideSize;
 };
