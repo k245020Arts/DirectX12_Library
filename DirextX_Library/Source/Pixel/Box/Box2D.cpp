@@ -58,14 +58,14 @@ void Box2D::SetFill(bool _fill)
 {
 	if (!_fill) {
 		std::vector<uint32_t> indices = { 0, 1, 2,3,0 }; // ‚±‚ê‚É‘‚©‚ê‚Ä‚¢‚é‡˜‚Å•`‰æ‚·‚é
-		indexSize = indices.size();
+		indexSize = (UINT)indices.size();
 		auto size = sizeof(uint32_t) * indices.size();
 		indexBuffer->Resize(size);
 		indexBuffer->BufferMapping(indices.data());
 	}
 	else {
 		std::vector<uint32_t> indices = { 0, 1, 2, 0, 2, 3 }; // ‚±‚ê‚É‘‚©‚ê‚Ä‚¢‚é‡˜‚Å•`‰æ‚·‚é
-		indexSize = indices.size();
+		indexSize = (UINT)indices.size();
 		auto size = sizeof(uint32_t) * indices.size();
 		indexBuffer->Resize(size);
 		indexBuffer->BufferMapping(indices.data());

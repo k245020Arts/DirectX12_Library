@@ -18,6 +18,10 @@ public:
 
 	virtual void SetColor(Vector4 _color);
 
+	void SetBlendMode(BlendState _blendState);
+
+	void SetAlpha(float _alphaValue);
+
 protected:
 
 	void Init(const std::vector<Vertex>& _vertices,const std::vector<uint32_t>& _indices);

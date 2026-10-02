@@ -66,7 +66,7 @@ void Polygon2D::Init(const std::vector<Vertex>& _vertices, const std::vector<uin
 	}
 
 	useIndex = false;
-	polygonSize = vertices.size();
+	polygonSize = (UINT)vertices.size();
 
 	// インデックスバッファの生成
 	if (!_indices.empty())
@@ -75,7 +75,7 @@ void Polygon2D::Init(const std::vector<Vertex>& _vertices, const std::vector<uin
 
 		indexBuffer = std::make_unique<IndexBuffer>(size,_indices.data());
 
-		indexSize = _indices.size();
+		indexSize = (UINT)_indices.size();
 
 		if (!indexBuffer->IsSuccess())
 		{
@@ -169,4 +169,18 @@ void Polygon2D::Set2DMatrix()
 		ptr->View = view;
 		ptr->Proj = proj;
 	}
+}
+
+void Polygon2D::SetBlendMode(BlendState _blendState)
+{
+	pipelineState->SetBlendMode(_blendState);
+}
+
+void Polygon2D::SetAlpha(float _alphaValue)
+{
+	const float alpha = _alphaValue >= 1.0f ? 1.0f : _alphaValue;
+	for (auto& vertex : vertices) {
+		vertex.color.w = _alphaValue;
+	}
+	vertexBuffer->BufferMapping(vertices.data());
 }

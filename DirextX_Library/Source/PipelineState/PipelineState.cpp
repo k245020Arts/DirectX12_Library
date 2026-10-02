@@ -74,13 +74,19 @@ void PipelineState::SetPS(std::wstring filePath, std::string _entryPoint)
 void PipelineState::Create()
 {
 	// パイプラインステートを生成
-	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(pipelineState.ReleaseAndGetAddressOf()));
+	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(defalutPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
 	{
 		OutputDebugStringW(L"パイプラインステートの生成に失敗");
 		return;
 	}
 
+	CreateMulPipelineState();
+	CreateAddPipelineState();
+	CreateSubPipelineState();
+	CreateAlphaPipelineState();
+
+	currentPipelineState = defalutPipelineState;
 	success = true;
 }
 
@@ -89,7 +95,134 @@ void PipelineState::SetDrawLayOut(D3D12_FILL_MODE _fillMode)
 	desc.RasterizerState.FillMode = _fillMode;
 }
 
+void PipelineState::SetBlendMode(BlendState _state)
+{
+	switch (_state)
+	{
+	case NO_BLEND:
+		currentPipelineState = defalutPipelineState;
+		break;
+	case ALPHA:
+		currentPipelineState = alphaPipelineState;
+		break;
+	case ADD:
+		currentPipelineState = addPipelineState;
+		break;
+	case SUB:
+		currentPipelineState = subPipelineState;
+		break;
+	case MUL:
+		currentPipelineState = mulPipelineState;
+		break;
+	default:
+		assert(false && "こちらのブレンドはありません");
+		break;
+	}
+
+	blendState = _state;
+}
+
 ID3D12PipelineState* PipelineState::GetPipelineState()
 {
-	return pipelineState.Get();
+	return currentPipelineState.Get();
+}
+
+void PipelineState::CreateAlphaPipelineState()
+{
+	D3D12_RENDER_TARGET_BLEND_DESC renderTargetBlendDesc = {};
+
+	renderTargetBlendDesc.BlendEnable = true;
+	renderTargetBlendDesc.LogicOpEnable = false;
+	renderTargetBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	renderTargetBlendDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	renderTargetBlendDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+
+	//Alphag側も設定しないと正常にパイプラインがCreate出来ないため一応書く
+	renderTargetBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	renderTargetBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	renderTargetBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+	renderTargetBlendDesc.LogicOpEnable = false;
+	renderTargetBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
+	desc.BlendState.IndependentBlendEnable = false;
+	desc.BlendState.AlphaToCoverageEnable = false;
+
+	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(alphaPipelineState.ReleaseAndGetAddressOf()));
+	if (FAILED(hr))
+	{
+		OutputDebugStringW(L"パイプラインステートの生成に失敗");
+		return;
+	}
+}
+
+void PipelineState::CreateMulPipelineState()
+{
+	D3D12_RENDER_TARGET_BLEND_DESC renderTargetBlendDesc = {};
+
+	renderTargetBlendDesc.BlendEnable = true;
+	renderTargetBlendDesc.LogicOpEnable = false;
+	renderTargetBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	renderTargetBlendDesc.SrcBlend = D3D12_BLEND_ZERO;
+	renderTargetBlendDesc.DestBlend = D3D12_BLEND_SRC_COLOR;
+
+	//Alphag側も設定しないと正常にパイプラインがCreate出来ないため一応書く
+	renderTargetBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	renderTargetBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	renderTargetBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+	renderTargetBlendDesc.LogicOpEnable = false;
+	renderTargetBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
+	desc.BlendState.IndependentBlendEnable = false;
+	desc.BlendState.AlphaToCoverageEnable = false;
+
+	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(mulPipelineState.ReleaseAndGetAddressOf()));
+	if (FAILED(hr))
+	{
+		OutputDebugStringW(L"パイプラインステートの生成に失敗");
+		return;
+	}
+}
+
+void PipelineState::CreateAddPipelineState()
+{
+	D3D12_RENDER_TARGET_BLEND_DESC renderTargetBlendDesc = {};
+
+	renderTargetBlendDesc.BlendEnable = true;
+	renderTargetBlendDesc.LogicOpEnable = false;
+	renderTargetBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	renderTargetBlendDesc.SrcBlend = D3D12_BLEND_ONE;
+	renderTargetBlendDesc.DestBlend = D3D12_BLEND_ONE;
+
+	//Alphag側も設定しないと正常にパイプラインがCreate出来ないため一応書く
+	renderTargetBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	renderTargetBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	renderTargetBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+	renderTargetBlendDesc.LogicOpEnable = false;
+	renderTargetBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
+	desc.BlendState.IndependentBlendEnable = false;
+	desc.BlendState.AlphaToCoverageEnable = false;
+
+	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(addPipelineState.ReleaseAndGetAddressOf()));
+	if (FAILED(hr))
+	{
+		OutputDebugStringW(L"パイプラインステートの生成に失敗");
+		return;
+	}
+}
+
+void PipelineState::CreateSubPipelineState()
+{
+	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(subPipelineState.ReleaseAndGetAddressOf()));
+	if (FAILED(hr))
+	{
+		OutputDebugStringW(L"パイプラインステートの生成に失敗");
+		return;
+	}
 }

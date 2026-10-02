@@ -31,7 +31,8 @@ Scene::Scene()
 
 	star2D = new Star2D();
 	star2D->GetTransform().position = Vector3(200, 100, 0);
-	cicleTest->SetFill(true);
+	star2D->SetFill(false);
+	cicleTest->SetBlendMode(NO_BLEND);
 	line2D->SetColor(Vector4(1.0f,0.0f,1.0f,1.0f));
 
 	/*Star2D* star2D2 = new Star2D();
@@ -57,9 +58,12 @@ Scene::~Scene()
 
 void Scene::Update()
 {
-	value1 = 200;
+	value1 = 50;
 	value2 = 100;
 	cicleTest->SetRadius(value1);
+
+	alphaMode += 0.001f;
+	cicleTest->SetAlpha(alphaMode);
 }
 
 void Scene::Draw()

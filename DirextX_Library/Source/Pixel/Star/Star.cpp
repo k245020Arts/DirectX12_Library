@@ -80,7 +80,7 @@ void Star2D::SetFill(bool _fill)
 		std::vector<uint32_t> indices = {
 		0,1,2,3,4,5,6,7,8,9,0
 		};
-		indexSize = indices.size();
+		indexSize = (UINT)indices.size();
 		auto size = sizeof(uint32_t) * indices.size();
 		indexBuffer->Resize(size);
 		indexBuffer->BufferMapping(indices.data());
@@ -98,7 +98,7 @@ void Star2D::SetFill(bool _fill)
 		10, 8, 9,
 		10, 9, 0  // ÅŒã‚Í0‚É–ß‚Á‚Ä•Â‚¶‚é
 		};
-		indexSize = indices.size();
+		indexSize = (UINT)indices.size();
 		auto size = sizeof(uint32_t) * indices.size();
 		indexBuffer->BufferMapping(indices.data());
 	}

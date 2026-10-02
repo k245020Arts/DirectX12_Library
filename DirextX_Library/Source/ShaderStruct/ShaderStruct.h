@@ -57,3 +57,12 @@ struct Transform
         scale = _scale;
     };
 };
+
+enum BlendState
+{
+    NO_BLEND,
+    ALPHA,
+    ADD,
+    SUB,
+    MUL,
+};

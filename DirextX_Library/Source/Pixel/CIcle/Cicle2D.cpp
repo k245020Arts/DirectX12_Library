@@ -17,19 +17,19 @@ Cicle2D::Cicle2D()
 	radius = 100.0f;
 
 	vertices[0].position = DirectX::XMFLOAT3(-50.0f, 50.0f, 0.0f);
-	vertices[0].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	vertices[0].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 0.5f);
 	vertices[0].uv = DirectX::XMFLOAT2(0.0f, 0.0f);
 
 	vertices[1].position = DirectX::XMFLOAT3(50.0f, 50.0f, 0.0f);
-	vertices[1].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	vertices[1].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 0.5f);
 	vertices[1].uv = DirectX::XMFLOAT2(1.0f, 0.0f);
 
 	vertices[2].position = DirectX::XMFLOAT3(50.0f, -50.0f, 0.0f);
-	vertices[2].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	vertices[2].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 0.5f);
 	vertices[2].uv = DirectX::XMFLOAT2(1.0f, 1.0f);
 
 	vertices[3].position = DirectX::XMFLOAT3(-50.0f, -50.0f, 0.0f);
-	vertices[3].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
+	vertices[3].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 0.5f);
 	vertices[3].uv = DirectX::XMFLOAT2(0.0f, 1.0f);
 
 	std::vector<uint32_t> indices = { 0, 1, 2, 0, 2, 3 }; //‚±‚ê‚É‘‚©‚ê‚Ä‚¢‚é‡˜‚Å•`‰æ‚·‚é
@@ -91,7 +91,7 @@ void Cicle2D::SetFill(bool _fill)
         // ÅŒã‚©‚çÅ‰‚Ö–ß‚·
         indices.push_back(0);
 
-        indexSize = indices.size();
+        indexSize = (UINT)indices.size();
 
         auto size = sizeof(uint32_t) * indices.size();
 
@@ -103,7 +103,7 @@ void Cicle2D::SetFill(bool _fill)
         vertexBuffer->Resize(verSize);
         vertexBuffer->BufferMapping(vertices.data());
 
-        polygonSize = vertices.size();
+        polygonSize = (UINT)vertices.size();
     }
     else
     {
@@ -128,7 +128,7 @@ void Cicle2D::SetFill(bool _fill)
             0, 2, 3
         };
 
-        indexSize = indices.size();
+        indexSize = (UINT)indices.size();
 
         auto size = sizeof(uint32_t) * indices.size();
 
@@ -140,7 +140,7 @@ void Cicle2D::SetFill(bool _fill)
         vertexBuffer->Resize(verSize);
         vertexBuffer->BufferMapping(vertices.data());
 
-        polygonSize = vertices.size();
+        polygonSize = (UINT)vertices.size();
     }
 
     Polygon2D::SetFill(_fill);
