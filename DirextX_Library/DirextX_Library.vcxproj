@@ -143,6 +143,7 @@
     <ClCompile Include="Source\RootSignature\RootSignature.cpp" />
     <ClCompile Include="Source\Scene\Scene.cpp" />
     <ClCompile Include="Source\ShaderStruct\ShaderStruct.cpp" />
+    <ClCompile Include="Source\Time\DeltaTime.cpp" />
     <ClCompile Include="Source\VertexBuffer\VertexBuffer.cpp" />
     <ClCompile Include="Source\Window\Window.cpp" />
   </ItemGroup>
@@ -165,6 +166,7 @@
     <ClInclude Include="Source\Scene\Scene.h" />
     <ClInclude Include="Source\ShaderStruct\ShaderStruct.h" />
     <ClInclude Include="Source\SingleTon\SingletonBase.h" />
+    <ClInclude Include="Source\Time\DeltaTime.h" />
     <ClInclude Include="Source\VertexBuffer\VertexBuffer.h" />
     <ClInclude Include="Source\Window\Window.h" />
   </ItemGroup>

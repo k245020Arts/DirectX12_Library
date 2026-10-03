@@ -8,6 +8,7 @@
 #endif // _DEBUG
 #include "Scene/Scene.h"
 #include "Object2D/Object2DManager.h"
+#include "Time/DeltaTime.h"
 
 #include <vector>
 
@@ -38,19 +39,28 @@ int WINAPI WinMain(HINSTANCE,HINSTANCE,LPSTR,int)
 	return true;
 }
 
+//#define UseConsole;
+
 void Main::Run()
 {
-	Window window;
-	if (!window.Create(Size(1280, 720), L"DX12_Library", L"Window")) { //初期化
-		assert(false && "ウィンドウ作成失敗");
-		return ;
-	}
 
-	// 描画エンジンの初期化を行う
-	if (!Engine::GetInstance()->Init(window.GetHwnd(), window.GetWindowSize()))
-	{
+#ifdef UseConsole
+	if (AllocConsole()) {
+		FILE* fp = nullptr;
+		freopen_s(&fp, "CONOUT$", "w", stdout);
+	}
+#endif
+
+	Window window;
+	if (!window.Create(Size(1280, 720), L"DX12_Library", L"Window")) {
+		assert(false && "ウィンドウ作成失敗");
 		return;
 	}
+
+	if (!Engine::GetInstance()->Init(window.GetHwnd(), window.GetWindowSize())) {
+		return;
+	}
+
 	std::unique_ptr<Scene> scene = std::make_unique<Scene>();
 	while (true)
 	{
@@ -58,13 +68,16 @@ void Main::Run()
 			break;
 		}
 
-		scene->Update(); //シーンでの更新処理
-		Object2DManager::GetInstance()->Update(); //2DObjectの座標の位置更新処理(ここでスクリーン座標にしている)
-		Engine::GetInstance()->BeginRender(); //描画の準備
-		scene->Draw(); //必要ならデータを流す
-		Object2DManager::GetInstance()->Draw(); //2DObjectの描画の情報をコマンドリストに流し込む
-		Engine::GetInstance()->EndRender(); //流した情報を画面に描画させる
+		DeltaTime::GetInstance()->Update();
+		scene->Update();
+		Object2DManager::GetInstance()->Update();
+		Engine::GetInstance()->BeginRender();
+		scene->Draw();
+		Object2DManager::GetInstance()->Draw();
+		Engine::GetInstance()->EndRender();
 
+		std::string fps = std::to_string(DeltaTime::GetInstance()->GetFPS());
+		printf("%s \n", fps.c_str());
 	}
 
 	Engine::GetInstance()->Destroy();

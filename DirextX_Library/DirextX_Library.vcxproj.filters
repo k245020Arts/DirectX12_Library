@@ -67,6 +67,9 @@
     <Filter Include="Source\SingleTon">
       <UniqueIdentifier>{793dfaa7-0792-40ed-8656-00bdb695d021}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Time">
+      <UniqueIdentifier>{b7612b41-e303-4591-a4a4-f25192e4e783}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -122,6 +125,9 @@
     </ClCompile>
     <ClCompile Include="Source\Object2D\Object2DManager.cpp">
       <Filter>Source\Object2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Time\DeltaTime.cpp">
+      <Filter>Source\Time</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -184,6 +190,9 @@
     </ClInclude>
     <ClInclude Include="Source\SingleTon\SingletonBase.h">
       <Filter>Source\SingleTon</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Time\DeltaTime.h">
+      <Filter>Source\Time</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
