@@ -9,6 +9,7 @@
 #include "Scene/Scene.h"
 #include "Object2D/Object2DManager.h"
 #include "Time/DeltaTime.h"
+#include "Texture/TextureLoader.h"
 
 #include <vector>
 
@@ -39,20 +40,24 @@ int WINAPI WinMain(HINSTANCE,HINSTANCE,LPSTR,int)
 	return true;
 }
 
-//#define UseConsole;
+//#define UseConsole
+
+typedef Size ScreenSize;
 
 void Main::Run()
 {
 
 #ifdef UseConsole
-	if (AllocConsole()) {
+	if (AllocConsole()) { //コンソールウィンドウを表示
 		FILE* fp = nullptr;
 		freopen_s(&fp, "CONOUT$", "w", stdout);
 	}
 #endif
 
+	const int WINDOW_WINDTH = 1280;
+	const int WINDOW_HEIGHT = 720;
 	Window window;
-	if (!window.Create(Size(1280, 720), L"DX12_Library", L"Window")) {
+	if (!window.Create(ScreenSize(WINDOW_WINDTH, WINDOW_HEIGHT), L"DX12_Library", L"Window")) {
 		assert(false && "ウィンドウ作成失敗");
 		return;
 	}
@@ -68,18 +73,19 @@ void Main::Run()
 			break;
 		}
 
-		DeltaTime::GetInstance()->Update();
-		scene->Update();
-		Object2DManager::GetInstance()->Update();
-		Engine::GetInstance()->BeginRender();
-		scene->Draw();
-		Object2DManager::GetInstance()->Draw();
-		Engine::GetInstance()->EndRender();
+		DeltaTime::GetInstance()->Update(); //デルタタイムの計測と固定FPSの制御
+		scene->Update(); //シーンの更新
+		Object2DManager::GetInstance()->Update(); //オブジェクト2Dの更新処理(スクリーン座標に置き換え等をしてる)
+		Engine::GetInstance()->BeginRender(); //描画をする前の処理
+		scene->Draw(); //描画に必要な情報を流し込む
+		Object2DManager::GetInstance()->Draw(); //オブジェクト2Dの描画に必要な情報を流し込む
+		Engine::GetInstance()->EndRender(); //描画
 
 		std::string fps = std::to_string(DeltaTime::GetInstance()->GetFPS());
 		printf("%s \n", fps.c_str());
 	}
 
 	Engine::GetInstance()->Destroy();
+	TextureLoader::GetInstance()->Destroy();
 	Object2DManager::GetInstance()->Destroy();
 }

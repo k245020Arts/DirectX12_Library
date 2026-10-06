@@ -4,7 +4,7 @@
 #include <chrono>
 #include "../SingleTon/SingletonBase.h"
 
-class DeltaTime : SingletonBase<DeltaTime>
+class DeltaTime : public SingletonBase<DeltaTime>
 {
 public:
 

@@ -11,6 +11,9 @@ public:
 	bool IsSuccess(); // ルートシグネチャの生成に成功したかどうかを返す
 	ID3D12RootSignature* Get(); // ルートシグネチャを返す
 
+	void SetTextureRootSampler();
+	void SetNormalRootSignature();
+
 private:
 	bool success = false; // ルートシグネチャの生成に成功したかどうか
 	ComPtr<ID3D12RootSignature> pRootSignature = nullptr; // ルートシグネチャ

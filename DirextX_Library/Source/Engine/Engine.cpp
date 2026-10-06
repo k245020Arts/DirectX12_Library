@@ -160,6 +160,49 @@ UINT Engine::CurrentBackBufferIndex()
     return currentBackBufferIndex;
 }
 
+void Engine::UploadTexture(ID3D12Resource* uploadBuffer,ID3D12Resource* textureBuffer,const D3D12_TEXTURE_COPY_LOCATION& src,const D3D12_TEXTURE_COPY_LOCATION& dst)
+{
+    assert(src.pResource != nullptr);
+    assert(dst.pResource != nullptr);
+
+    D3D12_HEAP_PROPERTIES srcHeap{};
+    D3D12_HEAP_PROPERTIES dstHeap{};
+
+    src.pResource->GetHeapProperties(&srcHeap, nullptr);
+    dst.pResource->GetHeapProperties(&dstHeap, nullptr);
+
+    assert(srcHeap.Type == D3D12_HEAP_TYPE_UPLOAD);
+    assert(dstHeap.Type == D3D12_HEAP_TYPE_DEFAULT);
+
+    uploadCommandAllocator->Reset();
+
+    uploadCommandList->Reset(uploadCommandAllocator.Get(),nullptr);
+
+    uploadCommandList->CopyTextureRegion(&dst,0,0,0,&src,nullptr);
+
+    auto barrier =CD3DX12_RESOURCE_BARRIER::Transition(textureBuffer,D3D12_RESOURCE_STATE_COPY_DEST,D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+    uploadCommandList->ResourceBarrier(1, &barrier);
+
+    uploadCommandList->Close();
+
+    ID3D12CommandList* lists[] = {uploadCommandList.Get()};
+
+    commandQueue->ExecuteCommandLists(1, lists);
+
+    const UINT64 fenceValue = ++m_fenceValue;
+
+    commandQueue->Signal(fence.Get(), fenceValue );
+
+    if (fence->GetCompletedValue() < fenceValue)
+    {
+        fence->SetEventOnCompletion(fenceValue,m_fenceEvent );
+
+        WaitForSingleObject(m_fenceEvent,INFINITE);
+    }
+}
+
+
 void Engine::CreateDebugLayer()
 {
 
@@ -322,6 +365,13 @@ bool Engine::CreateCommandList()
         return false;
     }
 
+    hr = pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(uploadCommandAllocator.ReleaseAndGetAddressOf()));
+
+    if (FAILED(hr))
+    {
+        return false;
+    }
+
     // コマンドリストの生成
     hr = pDevice->CreateCommandList(0,D3D12_COMMAND_LIST_TYPE_DIRECT,commandAllocator[currentBackBufferIndex].Get(), nullptr,IID_PPV_ARGS(&commandList));
 
@@ -330,8 +380,16 @@ bool Engine::CreateCommandList()
         return false;
     }
 
+    hr = pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, uploadCommandAllocator.Get(), nullptr, IID_PPV_ARGS(&uploadCommandList));
+
+    if (FAILED(hr))
+    {
+        return false;
+    }
+
     //コマンドリストは開かれている状態で作成されるので、いったん閉じる。
     commandList->Close();
+    uploadCommandList->Close();
     return true;
 }
 

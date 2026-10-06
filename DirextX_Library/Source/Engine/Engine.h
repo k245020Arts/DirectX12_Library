@@ -37,6 +37,8 @@ public:
 
 	const Size& GetWindowSize() { return windowSize; }
 
+	void UploadTexture(ID3D12Resource* uploadBuffer, ID3D12Resource* textureBuffer, const D3D12_TEXTURE_COPY_LOCATION& src, const D3D12_TEXTURE_COPY_LOCATION& dst);
+
 private:
 
 	void CreateDebugLayer(); //デバックレイヤーの生成
@@ -60,7 +62,9 @@ private:
 	ComPtr<ID3D12CommandQueue> commandQueue = nullptr; 
 	ComPtr<IDXGISwapChain3> swapChain = nullptr; 
 	std::vector<ComPtr<ID3D12CommandAllocator>> commandAllocator = { nullptr };
+	ComPtr<ID3D12CommandAllocator> uploadCommandAllocator = nullptr;
 	ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	ComPtr<ID3D12GraphicsCommandList> uploadCommandList = nullptr;
 	HANDLE m_fenceEvent = nullptr;
 	ComPtr<ID3D12Fence> fence = nullptr;
 	UINT64 m_fenceValue = 0;

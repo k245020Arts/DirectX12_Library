@@ -102,10 +102,13 @@ void Polygon2D::Init(const std::vector<Vertex>& _vertices, const std::vector<uin
 	Set2DMatrix();
 
 	rootSignature = std::make_unique<RootSignature>();
+	rootSignature->SetNormalRootSignature();
 	if (!rootSignature->IsSuccess())
 	{
 		OutputDebugStringW(L"ルートシグネチャの生成に失敗\n");
 	}
+
+	uvRect = { 0.0f,0.0f,1.0f,1.0f };
 }
 
 void Polygon2D::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology,std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint)
@@ -168,6 +171,7 @@ void Polygon2D::Set2DMatrix()
 		ptr->World = world;
 		ptr->View = view;
 		ptr->Proj = proj;
+		ptr->uvRect = uvRect;
 	}
 }
 

@@ -3,6 +3,9 @@ cbuffer Transform : register(b0)
     float4x4 World; // ワールド行列
     float4x4 View; // ビュー行列
     float4x4 Proj; // 投影行列
+    
+    float4 uvRect;
+
 }
 
 struct VSInput

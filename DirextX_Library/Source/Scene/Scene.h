@@ -7,6 +7,7 @@ class Cicle2D;
 class Pixel;
 class Line2D;
 class Star2D;
+class Texture2D;
 
 class Scene
 {
@@ -33,4 +34,12 @@ private:
 	float value2;
 
 	float alphaMode;
+
+	Texture2D* texture2D;
+	Texture2D* texture2D1;
+	Texture2D* texture2D2;
+	Texture2D* texture2D3;
+
+	float animationCount;
+	int count;
 };

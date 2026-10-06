@@ -24,6 +24,8 @@ PipelineState::PipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE _desc)
 	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	desc.SampleDesc.Count = 1; // ÉTÉìÉvÉâÅ[ÇÕ1
 	desc.SampleDesc.Quality = 0;
+
+	blendState = BlendState::NO_BLEND;
 }
 
 bool PipelineState::IsSuccess()
@@ -99,19 +101,19 @@ void PipelineState::SetBlendMode(BlendState _state)
 {
 	switch (_state)
 	{
-	case NO_BLEND:
+	case BlendState::NO_BLEND:
 		currentPipelineState = defalutPipelineState;
 		break;
-	case ALPHA:
+	case BlendState::ALPHA:
 		currentPipelineState = alphaPipelineState;
 		break;
-	case ADD:
+	case BlendState::ADD:
 		currentPipelineState = addPipelineState;
 		break;
-	case SUB:
+	case BlendState::SUB:
 		currentPipelineState = subPipelineState;
 		break;
-	case MUL:
+	case BlendState::MUL:
 		currentPipelineState = mulPipelineState;
 		break;
 	default:

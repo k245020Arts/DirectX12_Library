@@ -51,4 +51,6 @@ protected:
 	virtual void Draw() override;
 
 	bool fillMode;
+
+	Vector4 uvRect;
 };

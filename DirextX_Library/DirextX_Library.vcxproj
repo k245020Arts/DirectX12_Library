@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\ConstBuffer\ConstBuffer.cpp" />
+    <ClCompile Include="Source\DescriptorHeap\DescriptorHeap.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
     <ClCompile Include="Source\IndexBuffer\IndexBuffer.cpp" />
     <ClCompile Include="Source\main.cpp" />
@@ -143,6 +144,8 @@
     <ClCompile Include="Source\RootSignature\RootSignature.cpp" />
     <ClCompile Include="Source\Scene\Scene.cpp" />
     <ClCompile Include="Source\ShaderStruct\ShaderStruct.cpp" />
+    <ClCompile Include="Source\Texture\Texture2D.cpp" />
+    <ClCompile Include="Source\Texture\TextureLoader.cpp" />
     <ClCompile Include="Source\Time\DeltaTime.cpp" />
     <ClCompile Include="Source\VertexBuffer\VertexBuffer.cpp" />
     <ClCompile Include="Source\Window\Window.cpp" />
@@ -150,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="Source\Comptr.h" />
     <ClInclude Include="Source\ConstBuffer\ConstBuffer.h" />
+    <ClInclude Include="Source\DescriptorHeap\DescriptorHeap.h" />
     <ClInclude Include="Source\Engine\Engine.h" />
     <ClInclude Include="Source\IndexBuffer\IndexBuffer.h" />
     <ClInclude Include="Source\Object2D\Object2D.h" />
@@ -166,6 +170,8 @@
     <ClInclude Include="Source\Scene\Scene.h" />
     <ClInclude Include="Source\ShaderStruct\ShaderStruct.h" />
     <ClInclude Include="Source\SingleTon\SingletonBase.h" />
+    <ClInclude Include="Source\Texture\Texture2D.h" />
+    <ClInclude Include="Source\Texture\TextureLoader.h" />
     <ClInclude Include="Source\Time\DeltaTime.h" />
     <ClInclude Include="Source\VertexBuffer\VertexBuffer.h" />
     <ClInclude Include="Source\Window\Window.h" />
@@ -198,6 +204,26 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shader\2DTextureShader\2DTexturePixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TexPsMain</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TexPsMain</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shader\2DTextureShader\2DTextureVertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TexVsMain</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TexVsMain</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

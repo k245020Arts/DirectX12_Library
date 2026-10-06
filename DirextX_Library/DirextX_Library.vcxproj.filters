@@ -70,6 +70,15 @@
     <Filter Include="Source\Time">
       <UniqueIdentifier>{b7612b41-e303-4591-a4a4-f25192e4e783}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Texture">
+      <UniqueIdentifier>{2e81adf0-794a-4b42-b248-d9f4a9b62536}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\DescriptorHeap">
+      <UniqueIdentifier>{ff80e3a3-3313-4cb0-82e5-e12a3ea7d518}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Shader\2DTextureShader">
+      <UniqueIdentifier>{839e4bf4-d897-4ccf-82e4-57e96fc5cb06}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -128,6 +137,15 @@
     </ClCompile>
     <ClCompile Include="Source\Time\DeltaTime.cpp">
       <Filter>Source\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Texture\TextureLoader.cpp">
+      <Filter>Source\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\DescriptorHeap\DescriptorHeap.cpp">
+      <Filter>Source\DescriptorHeap</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Texture\Texture2D.cpp">
+      <Filter>Source\Texture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -194,6 +212,15 @@
     <ClInclude Include="Source\Time\DeltaTime.h">
       <Filter>Source\Time</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Texture\TextureLoader.h">
+      <Filter>Source\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\DescriptorHeap\DescriptorHeap.h">
+      <Filter>Source\DescriptorHeap</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Texture\Texture2D.h">
+      <Filter>Source\Texture</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\2DBaseShader\Basic_VertexShader.hlsl">
@@ -204,6 +231,12 @@
     </FxCompile>
     <FxCompile Include="Shader\2DCiclePixelShader\2DCiclePixelShader.hlsl">
       <Filter>Source\Shader\2DCicleShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\2DTextureShader\2DTexturePixelShader.hlsl">
+      <Filter>Source\Shader\2DTextureShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\2DTextureShader\2DTextureVertexShader.hlsl">
+      <Filter>Source\Shader\2DTextureShader</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

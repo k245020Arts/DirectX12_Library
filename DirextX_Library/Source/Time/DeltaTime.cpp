@@ -3,7 +3,7 @@
 #include <iostream>
 
 namespace {
-    const int FPS = 60;
+    const int FPS = 120;
     //デバックでストップした時にデルタタイムがデカくなりすぎないように制御
     const float maxDeltaTime = 0.5f;
 }
