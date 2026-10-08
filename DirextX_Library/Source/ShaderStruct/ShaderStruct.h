@@ -60,6 +60,13 @@ struct Transform
     };
 };
 
+struct Mesh
+{
+    std::vector<Vertex> Vertices; // 頂点データの配列
+    std::vector<uint32_t> Indices; // インデックスの配列
+    std::wstring DiffuseMap; // テクスチャのファイルパス
+};
+
 enum class BlendState
 {
     NO_BLEND,

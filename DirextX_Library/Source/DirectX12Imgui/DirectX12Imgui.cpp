@@ -5,6 +5,7 @@
 
 DirectX12Imgui::DirectX12Imgui()
 {
+	
 }
 
 DirectX12Imgui::~DirectX12Imgui()
@@ -81,6 +82,21 @@ void DirectX12Imgui::SetUpImGui(HWND hwnd)
 	c[ImGuiCol_ResizeGripHovered] = ImVec4(0.90f, 0.10f, 0.20f, 0.85f);
 	c[ImGuiCol_ResizeGripActive] = ImVec4(1.00f, 0.30f, 0.35f, 1.00f);
 
+	ImGuiIO& ioo = ImGui::GetIO();
+
+	printf("ConfigFlags   : 0x%08X\n", ioo.ConfigFlags);
+	printf("BackendFlags  : 0x%08X\n", ioo.BackendFlags);
+	printf("PlatformName  : %s\n", ioo.BackendPlatformName);
+	printf("RendererName  : %s\n", ioo.BackendRendererName);
+
+	printf("PlatformHasViewports : %s\n",
+		(ioo.BackendFlags & ImGuiBackendFlags_PlatformHasViewports)
+		? "YES" : "NO");
+
+	printf("RendererHasViewports : %s\n",
+		(ioo.BackendFlags & ImGuiBackendFlags_RendererHasViewports)
+		? "YES" : "NO");
+
 #endif
 
 }
@@ -134,8 +150,6 @@ void DirectX12Imgui::DebugRenderer()
 	ImGui::Text("FPS = %s \n", fps.c_str());
 
 	ImGui::End();
-
-	
 
 #endif //  _DEBUG
 

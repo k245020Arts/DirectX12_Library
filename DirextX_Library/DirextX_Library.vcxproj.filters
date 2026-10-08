@@ -85,6 +85,12 @@
     <Filter Include="Imgui">
       <UniqueIdentifier>{3350c41e-6dd5-4e84-905d-dc7459466bcc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\AssimpLoader">
+      <UniqueIdentifier>{e1ae021e-1427-4c0a-87e6-000c59dd3f8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\FBXModel">
+      <UniqueIdentifier>{6ee06111-a714-4bb5-9ef8-ff11be20d91f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -194,6 +200,9 @@
     </ClCompile>
     <ClCompile Include="ImGui\imgui_widgets.cpp">
       <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\assimp\AssimpLoader.cpp">
+      <Filter>Source\AssimpLoader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -322,6 +331,9 @@
     </ClInclude>
     <ClInclude Include="ImGui\imstb_truetype.h">
       <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\assimp\AssimpLoader.h">
+      <Filter>Source\AssimpLoader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
