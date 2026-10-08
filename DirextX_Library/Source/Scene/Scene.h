@@ -8,6 +8,7 @@ class Pixel;
 class Line2D;
 class Star2D;
 class Texture2D;
+class FBXModel;
 
 class Scene
 {
@@ -42,4 +43,6 @@ private:
 
 	float animationCount;
 	int count;
+
+	FBXModel* model;
 };

@@ -18,6 +18,7 @@ public:
 	DescriptorHeap(); // コンストラクタで生成する
 	ComPtr<ID3D12DescriptorHeap> GetHeap(); // ディスクリプタヒープを返す
 	DescriptorHandle* Register(TextureLoader* texture, const std::string& _path); // テクスチャーをディスクリプタヒープに登録し、ハンドルを返す
+	DescriptorHandle* Register(TextureLoader* texture, const std::wstring& _path); // テクスチャーをディスクリプタヒープに登録し、ハンドルを返す
 
 	DescriptorHandle* Allocate();
 private:

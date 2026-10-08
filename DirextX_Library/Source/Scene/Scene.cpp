@@ -8,9 +8,14 @@
 #include "../Texture/Texture2D.h"
 #include "../Time/DeltaTime.h"
 #include "../DirectX12Imgui/DirectX12Imgui.h"
+#include "../FBXModel/FBXModel.h"
+
+//#define ON2D
+
 
 Scene::Scene()
 {
+#ifdef ON2D
 	test = new Triangle();
 	test->GetTransform().position = Vector3(200.0f, 0.0f, 0.0f);
 
@@ -36,7 +41,7 @@ Scene::Scene()
 	star2D->GetTransform().position = Vector3(200, 100, 0);
 	star2D->SetFill(true);
 	cicleTest->SetBlendMode(BlendState::NO_BLEND);
-	line2D->SetColor(Vector4(1.0f,0.0f,1.0f,1.0f));
+	line2D->SetColor(Vector4(1.0f, 0.0f, 1.0f, 1.0f));
 
 	/*Star2D* star2D2 = new Star2D();
 	star2D->GetTransform().position = Vector3(350, 200, 0);
@@ -66,10 +71,20 @@ Scene::Scene()
 	texture2D3->GetTransform().position = Vector3(400, 400, 0);
 	texture2D3->SetRect(Vector4(0.0f, 0.0f, 240.0f, 240.0f));
 	texture2D3->SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+#endif // ON2D
+
+	//L"data/Alicia/FBX/Alicia_solid_Unity.FBX"
+	model = new FBXModel(); 
+	model->Load("data/Alicia/FBX/Alicia_solid_Unity.FBX");
+
+	texture2D2 = new Texture2D();
+	texture2D2->Load("data/textest.png");
+	texture2D2->GetTransform().position = Vector3(200, 200, 0);
 }
 
 Scene::~Scene()
 {
+	delete model;
 	/*delete test;
 	delete test2;
 	delete boxTest;
@@ -86,6 +101,7 @@ Scene::~Scene()
 
 void Scene::Update()
 {
+#ifdef  ON2D
 	value1 = 50;
 	value2 = 100;
 	cicleTest->SetRadius(value1);
@@ -106,12 +122,16 @@ void Scene::Update()
 			count = 0;
 		}
 	}
-	
+
 	/*texture2D1->GetTransform().rotation.z += 0.02f;
 	texture2D->GetTransform().rotation.z += 0.01f;*/
+#endif //  ON2D
+
+	model->GetTransform().rotation.y += 0.005f;
+	model->Update();
 }
 
 void Scene::Draw()
 {
-	
+	model->Draw();
 }

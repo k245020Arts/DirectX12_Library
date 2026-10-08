@@ -67,6 +67,38 @@ DescriptorHandle* DescriptorHeap::Register(TextureLoader* texture,const std::str
 	return pHandle; // ハンドルを返す
 }
 
+DescriptorHandle* DescriptorHeap::Register(TextureLoader* texture, const std::wstring& _path)
+{
+	auto count = m_pHandles.size();
+	if (HANDLE_MAX <= count)
+	{
+		return nullptr;
+	}
+
+	DescriptorHandle* pHandle = new DescriptorHandle();
+
+	auto handleCPU = m_pHeap->GetCPUDescriptorHandleForHeapStart(); // ディスクリプタヒープの最初のアドレス
+	handleCPU.ptr += m_IncrementSize * count; // 最初のアドレスからcount番目が今回追加されたリソースのハンドル
+
+	auto handleGPU = m_pHeap->GetGPUDescriptorHandleForHeapStart(); // ディスクリプタヒープの最初のアドレス
+	handleGPU.ptr += m_IncrementSize * count; // 最初のアドレスからcount番目が今回追加されたリソースのハンドル
+
+	pHandle->handleCPU = handleCPU;
+	pHandle->handleGPU = handleGPU;
+
+	auto device = Engine::GetInstance()->Device();
+	auto textureData = texture->Get(_path);
+	if (textureData == nullptr) {
+		assert(false && "適切なパスがないです");
+	}
+	auto resource = textureData->texture.Get();
+	auto desc = texture->ViewDesc(_path);
+	device->CreateShaderResourceView(resource, &desc, pHandle->handleCPU); // シェーダーリソースビュー作成
+
+	m_pHandles.push_back(pHandle);
+	return pHandle; // ハンドルを返す
+}
+
 DescriptorHandle* DescriptorHeap::Allocate()
 {
 	auto count = m_pHandles.size();

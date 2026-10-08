@@ -40,6 +40,7 @@ std::wstring ToWideString(const std::string& str)
     assert(num1 == num2);
     return wstr;
 }
+
 bool AssimpLoader::Load(ImportSettings setting)
 {
     if (setting.filename == nullptr) {
@@ -64,7 +65,7 @@ bool AssimpLoader::Load(ImportSettings setting)
     flag |= aiProcess_RemoveRedundantMaterials;
     flag |= aiProcess_OptimizeMeshes;
 
-    auto scene = importer.ReadFile(path, aiProcess_ConvertToLeftHanded);
+    auto scene = importer.ReadFile(path, flag);
 
     if (scene == nullptr) 
     {
