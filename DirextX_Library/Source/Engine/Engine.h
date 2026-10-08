@@ -33,6 +33,7 @@ public:
 	void EndRender();
 	ID3D12Device6* Device();
 	ID3D12GraphicsCommandList* CommandList();
+	ID3D12CommandQueue* CommandQueue();
 	UINT CurrentBackBufferIndex();
 
 	const Size& GetWindowSize() { return windowSize; }

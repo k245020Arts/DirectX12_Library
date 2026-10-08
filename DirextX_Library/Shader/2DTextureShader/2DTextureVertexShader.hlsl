@@ -18,6 +18,5 @@ VSOutput TexVsMain(VSInput input)
     output.uv.x = uvRect.x + input.uv.x * uvRect.z;
     output.uv.y = uvRect.y + input.uv.y * uvRect.w;
 
-    
     return output;
 }

@@ -74,6 +74,12 @@ public:
     /// </summary>
     void SetSize();
 
+    /// <summary>
+    /// F‚Ì•ÏX
+    /// </summary>
+    /// <param name="_rect"></param>
+    void SetColor(const Vector4& _color);
+
 private:
 
 	void Update()override;
@@ -86,7 +92,6 @@ private:
 	TextureData textureData;
 
     // SRV
-    std::unique_ptr<DescriptorHeap> descriptorHeap;
     DescriptorHandle* descriptorHandle = nullptr;
 
     // •`‰æ—p

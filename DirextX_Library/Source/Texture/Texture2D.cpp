@@ -34,9 +34,7 @@ bool Texture2D::Load(std::string _path)
 
 	textureData = *texture;
 	
-    descriptorHeap = std::make_unique<DescriptorHeap>();
-
-    descriptorHandle = descriptorHeap->Register(TextureLoader::GetInstance(), _path);
+	descriptorHandle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), _path);
 
     if (descriptorHandle == nullptr)
     {
@@ -144,6 +142,16 @@ void Texture2D::SetSize()
 	defalutSize = false;
 }
 
+void Texture2D::SetColor(const Vector4& _color)
+{
+	vertices[0].color = _color;
+	vertices[1].color = _color;
+	vertices[2].color = _color;
+	vertices[3].color = _color;
+
+	vertexBuffer->BufferMapping(vertices.data());
+}
+
 void Texture2D::Update()
 {
 	//transform.rotation.z += 0.01f;
@@ -158,7 +166,7 @@ void Texture2D::Draw()
 
 	commandList->SetGraphicsRootSignature(rootSignature->Get()); // ルートシグネチャをセット
 	commandList->SetPipelineState(pipelineState->GetPipelineState()); // パイプラインステートをセット
-	commandList->SetDescriptorHeaps(1, descriptorHeap->GetHeap().GetAddressOf());
+	commandList->SetDescriptorHeaps(1, DescriptorHeap::GetInstance()->GetHeap().GetAddressOf());
 	
 	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 	commandList->SetGraphicsRootDescriptorTable(1, descriptorHandle->handleGPU);

@@ -59,14 +59,21 @@ bool TextureLoader::Load(const std::wstring& _path)
 	auto ext = FileExtension(_path);
 
 	HRESULT hr = S_FALSE;
-	//if (ext == L"png") // pngの時はWICFileを使う
-	//{
+
+	std::string pngString = "png";
+	std::string tgaString = "tga";
+
+	auto png = GetWideString(pngString);
+	auto tga = GetWideString(tgaString);
+
+	if (ext == png) // pngの時はWICFileを使う
+	{
 		hr = DirectX::LoadFromWICFile(_path.c_str(), DirectX::WIC_FLAGS_NONE, &metadata, scratchImg);
-	//}
-	//else if (ext == L"tga") // tgaの時はTGAFileを使う
-	//{
-		//hr = DirectX::LoadFromTGAFile(_path.c_str(), &metadata, scratchImg);
-	//}
+	}
+	else if (ext == tga) // tgaの時はTGAFileを使う
+	{
+		hr = DirectX::LoadFromTGAFile(_path.c_str(), &metadata, scratchImg);
+	}
 
 	if (FAILED(hr))
 	{
@@ -244,9 +251,9 @@ bool TextureLoader::CreateTexture(DirectX::TexMetadata& metadata, DirectX::Scrat
 	src.pResource = upLoadBuffer.Get();
 	src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT; //フットプリント指定
 	src.PlacedFootprint.Offset = 0;
-	src.PlacedFootprint.Footprint.Width = metadata.width;
-	src.PlacedFootprint.Footprint.Height = metadata.height;
-	src.PlacedFootprint.Footprint.Depth = metadata.depth;
+	src.PlacedFootprint.Footprint.Width = (UINT)metadata.width;
+	src.PlacedFootprint.Footprint.Height = (UINT)metadata.height;
+	src.PlacedFootprint.Footprint.Depth = (UINT)metadata.depth;
 	src.PlacedFootprint.Footprint.RowPitch = AlignmentedSize(image->rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 	src.PlacedFootprint.Footprint.Format = image->format;
 

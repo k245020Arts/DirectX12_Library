@@ -10,8 +10,16 @@
 #include "Object2D/Object2DManager.h"
 #include "Time/DeltaTime.h"
 #include "Texture/TextureLoader.h"
+#include "DirectX12Imgui/DirectX12Imgui.h"
 
 #include <vector>
+
+
+
+#include "../ImGui/imgui.h"
+#include "../ImGui/imgui_impl_win32.h"
+#include "../ImGui/imgui_impl_dx12.h"
+
 
 class Main
 {
@@ -54,6 +62,8 @@ void Main::Run()
 	}
 #endif
 
+	DirectX12Imgui imgui;
+
 	const int WINDOW_WINDTH = 1280;
 	const int WINDOW_HEIGHT = 720;
 	Window window;
@@ -66,6 +76,8 @@ void Main::Run()
 		return;
 	}
 
+	imgui.SetUpImGui(window.GetHwnd());
+
 	std::unique_ptr<Scene> scene = std::make_unique<Scene>();
 	while (true)
 	{
@@ -74,18 +86,26 @@ void Main::Run()
 		}
 
 		DeltaTime::GetInstance()->Update(); //デルタタイムの計測と固定FPSの制御
+
+		imgui.BeginRenderImGui();
+
+		imgui.DebugRenderer();
+
 		scene->Update(); //シーンの更新
 		Object2DManager::GetInstance()->Update(); //オブジェクト2Dの更新処理(スクリーン座標に置き換え等をしてる)
 		Engine::GetInstance()->BeginRender(); //描画をする前の処理
 		scene->Draw(); //描画に必要な情報を流し込む
 		Object2DManager::GetInstance()->Draw(); //オブジェクト2Dの描画に必要な情報を流し込む
-		Engine::GetInstance()->EndRender(); //描画
 
-		std::string fps = std::to_string(DeltaTime::GetInstance()->GetFPS());
-		printf("%s \n", fps.c_str());
+		imgui.EndRenderImGui();
+
+		Engine::GetInstance()->EndRender(); //描画
 	}
+
+	imgui.ReleaseImGui();
 
 	Engine::GetInstance()->Destroy();
 	TextureLoader::GetInstance()->Destroy();
 	Object2DManager::GetInstance()->Destroy();
+	DescriptorHeap::GetInstance()->Destroy();
 }

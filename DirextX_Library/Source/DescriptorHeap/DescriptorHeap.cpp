@@ -66,3 +66,32 @@ DescriptorHandle* DescriptorHeap::Register(TextureLoader* texture,const std::str
 	m_pHandles.push_back(pHandle);
 	return pHandle; // ƒnƒ“ƒhƒ‹‚ð•Ô‚·
 }
+
+DescriptorHandle* DescriptorHeap::Allocate()
+{
+	auto count = m_pHandles.size();
+
+	if (HANDLE_MAX <= count)
+	{
+		return nullptr;
+	}
+
+	DescriptorHandle* pHandle = new DescriptorHandle();
+
+	auto handleCPU =
+		m_pHeap->GetCPUDescriptorHandleForHeapStart();
+
+	handleCPU.ptr += m_IncrementSize * count;
+
+	auto handleGPU =
+		m_pHeap->GetGPUDescriptorHandleForHeapStart();
+
+	handleGPU.ptr += m_IncrementSize * count;
+
+	pHandle->handleCPU = handleCPU;
+	pHandle->handleGPU = handleGPU;
+
+	m_pHandles.push_back(pHandle);
+
+	return pHandle;
+}

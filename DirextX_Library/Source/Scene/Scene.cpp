@@ -7,6 +7,7 @@
 #include "../Pixel/Star/Star2D.h"
 #include "../Texture/Texture2D.h"
 #include "../Time/DeltaTime.h"
+#include "../DirectX12Imgui/DirectX12Imgui.h"
 
 Scene::Scene()
 {
@@ -55,7 +56,7 @@ Scene::Scene()
 	texture2D2 = new Texture2D();
 	texture2D2->Load("data/textest.png");
 	texture2D2->GetTransform().position = Vector3(200, 200, 0);
-	texture2D2->SetSize(256, 256);
+	//texture2D2->SetSize(256, 256);
 	texture2D2->SetRect(Vector4(0.0f, 0.0f, 128.0f, 128.0f));
 	//texture2D2->SetFlipX(false);
 	//texture2D2->SetFlipY(true);
@@ -63,7 +64,8 @@ Scene::Scene()
 	texture2D3 = new Texture2D();
 	texture2D3->Load("data/animation2.png");
 	texture2D3->GetTransform().position = Vector3(400, 400, 0);
-	texture2D3->SetRect(Vector4(0.0f, 0.0f, 240.0f, 240.0f));	
+	texture2D3->SetRect(Vector4(0.0f, 0.0f, 240.0f, 240.0f));
+	texture2D3->SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 }
 
 Scene::~Scene()
@@ -93,11 +95,11 @@ void Scene::Update()
 
 	//texture2D2->GetTransform().position.y += 1.0f;
 
-	const int animationSize = 240.0f;
+	const int animationSize = 240;
 
 	animationCount += DeltaTime::GetInstance()->GetDeltaTimeMulTimeScale();
 	if (animationCount >= 0.2f) {
-		texture2D3->SetRect(Vector4(count * animationSize, 0.0f, animationSize, animationSize));
+		texture2D3->SetRect(Vector4(count * (float)animationSize, 0.0f, animationSize, animationSize));
 		animationCount = 0.0f;
 		count++;
 		if (count >= 10) {

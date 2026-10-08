@@ -1,21 +1,26 @@
 #include "Window.h"
 #include <assert.h>
-
+#include "../../ImGui/imgui.h"
 
 //using namespace DirectX;
 
 //HRESULT D3D12CreateDevice(IUnknown* pAdapter, D3D_FEATURE_LEVEL MiniumuFeatureLevel, REFIID riid, void** ppDevice);
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-
-LRESULT WindowProcedure(HWND hwud, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	//ウィンドウが破棄されたら呼ばれる
-	if (msg == WM_DESTROY) {
-		PostQuitMessage(0); // OSに対してこのアプリは終わると伝える
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
+		return true;
+
+	switch (msg)
+	{
+	case WM_DESTROY:
+		PostQuitMessage(0);
 		return 0;
 	}
-	return DefWindowProc(hwud, msg, wparam, lparam);
+
+	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
 int AlignmentedSize(size_t size, size_t alignment) 

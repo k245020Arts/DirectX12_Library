@@ -14,6 +14,17 @@ struct TextureData
 	UINT height = 0;
 
 	DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
+
+	TextureData()
+	{
+		texture = nullptr;
+		upload = nullptr;
+
+		width = 0;
+		height = 0;
+
+		format = DXGI_FORMAT_UNKNOWN;
+	}
 };
 
 class TextureLoader : public SingletonBase<TextureLoader>
@@ -39,7 +50,7 @@ public:
 
 private:
 
-	bool success;
+	bool success = false;
 	std::unordered_map<std::wstring, TextureData> textureBuffer;
 
 	bool CreateTexture(DirectX::TexMetadata& metadata, DirectX::ScratchImage& scratchImg, const std::wstring& _path);
