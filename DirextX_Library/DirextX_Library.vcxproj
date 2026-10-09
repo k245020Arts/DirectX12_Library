@@ -168,8 +168,11 @@
     <ClCompile Include="Source\Object2D\Object2DManager.cpp" />
     <ClCompile Include="Source\PipelineState\PipelineState.cpp" />
     <ClCompile Include="Source\Pixel\Box\Box2D.cpp" />
+    <ClCompile Include="Source\Pixel\Box\Box3D.cpp" />
     <ClCompile Include="Source\Pixel\CIcle\Cicle2D.cpp" />
+    <ClCompile Include="Source\Pixel\CIcle\Sphere3D.cpp" />
     <ClCompile Include="Source\Pixel\Line\Line2D.cpp" />
+    <ClCompile Include="Source\Pixel\Line\Line3D.cpp" />
     <ClCompile Include="Source\Pixel\Pixel\Pixel.cpp" />
     <ClCompile Include="Source\Pixel\Polygon2D .cpp" />
     <ClCompile Include="Source\Pixel\Star\Star.cpp" />
@@ -213,8 +216,11 @@
     <ClInclude Include="Source\Object2D\Object2DManager.h" />
     <ClInclude Include="Source\PipelineState\PipelineState.h" />
     <ClInclude Include="Source\Pixel\Box\Box2D.h" />
+    <ClInclude Include="Source\Pixel\Box\Box3D.h" />
     <ClInclude Include="Source\Pixel\CIcle\Cicle2D.h" />
+    <ClInclude Include="Source\Pixel\CIcle\Sphere3D.h" />
     <ClInclude Include="Source\Pixel\Line\Line2D.h" />
+    <ClInclude Include="Source\Pixel\Line\Line3D.h" />
     <ClInclude Include="Source\Pixel\Pixel\Pixel.h" />
     <ClInclude Include="Source\Pixel\Polygon2D .h" />
     <ClInclude Include="Source\Pixel\Star\Star2D.h" />

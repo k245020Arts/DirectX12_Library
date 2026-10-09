@@ -9,6 +9,9 @@
 #include "../Time/DeltaTime.h"
 #include "../DirectX12Imgui/DirectX12Imgui.h"
 #include "../FBXModel/FBXModel.h"
+#include "../Pixel/Box/Box3D.h"
+#include"../Pixel/CIcle/Sphere3D.h"
+#include "../Pixel/Line/Line3D.h"
 
 //#define ON2D
 
@@ -80,11 +83,21 @@ Scene::Scene()
 	texture2D2 = new Texture2D();
 	texture2D2->Load("data/textest.png");
 	texture2D2->GetTransform().position = Vector3(200, 200, 0);
+
+	sphere3D = new Sphere3D();
+	sphere3D->GetTransform().position = Vector3(100.0f,0.0f,0.0f);
+	box3D = new Box3D();
+	box3D->GetTransform().position = Vector3(-100.0f, 0.0f, 0.0f);
+	line3D = new Line3D();
+	line3D->GetTransform().position = Vector3(0.0f, 0.0f, 0.0f);
 }
 
 Scene::~Scene()
 {
 	delete model;
+	delete box3D;
+	delete sphere3D;
+	delete line3D;
 	/*delete test;
 	delete test2;
 	delete boxTest;
@@ -129,9 +142,20 @@ void Scene::Update()
 
 	model->GetTransform().rotation.y += 0.005f;
 	model->Update();
+
+	box3D->Update();
+	box3D->GetTransform().rotation.y += 0.01f;
+
+	sphere3D->Update();
+	sphere3D->GetTransform().rotation.x += 0.01f;
+	
+	line3D->Update();
 }
 
 void Scene::Draw()
 {
 	model->Draw();
+	box3D->Draw();
+	sphere3D->Draw();
+	line3D->Draw();
 }

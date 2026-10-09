@@ -210,6 +210,15 @@
     <ClCompile Include="Source\FBXModel\FBXModel.cpp">
       <Filter>Source\FBXModel</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Pixel\Box\Box3D.cpp">
+      <Filter>Source\Pixel\Box</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Pixel\CIcle\Sphere3D.cpp">
+      <Filter>Source\Pixel\Cicle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Pixel\Line\Line3D.cpp">
+      <Filter>Source\Pixel\Line</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Window\Window.h">
@@ -343,6 +352,15 @@
     </ClInclude>
     <ClInclude Include="Source\FBXModel\FBXModel.h">
       <Filter>Source\FBXModel</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Pixel\Box\Box3D.h">
+      <Filter>Source\Pixel\Box</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Pixel\CIcle\Sphere3D.h">
+      <Filter>Source\Pixel\Cicle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Pixel\Line\Line3D.h">
+      <Filter>Source\Pixel\Line</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

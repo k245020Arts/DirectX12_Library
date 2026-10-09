@@ -3,9 +3,12 @@
 
 class Triangle;
 class Box2D;
+class Box3D;
 class Cicle2D;
+class Sphere3D;
 class Pixel;
 class Line2D;
+class Line3D;
 class Star2D;
 class Texture2D;
 class FBXModel;
@@ -45,4 +48,8 @@ private:
 	int count;
 
 	FBXModel* model;
+
+	Box3D* box3D;
+	Sphere3D* sphere3D;
+	Line3D* line3D;
 };

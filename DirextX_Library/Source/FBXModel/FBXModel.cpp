@@ -24,6 +24,7 @@ FBXModel::FBXModel()
 
 FBXModel::~FBXModel()
 {
+
 }
 
 bool FBXModel::Load(const std::string& _modelFilePath)
@@ -120,11 +121,11 @@ void FBXModel::VertexMapping()
 		* DirectX::XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z)
 		* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 
-	auto eyePos = DirectX::XMVectorSet(0.0f, 120.0, 75.0, 0.0f);
-	auto targetPos = DirectX::XMVectorSet(0.0f, 120.0, 0.0, 0.0f);
-	auto upward = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	DirectX::XMVECTOR eyePos = DirectX::XMVectorSet(0.0f, 120.0, 75.0, 0.0f);
+	DirectX::XMVECTOR targetPos = DirectX::XMVectorSet(0.0f, 120.0, 0.0, 0.0f);
+	DirectX::XMVECTOR upward = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	constexpr float fov = DirectX::XMConvertToRadians(60);
-	auto aspect = static_cast<float>(Engine::GetInstance()->GetWindowSize().width) / static_cast<float>(Engine::GetInstance()->GetWindowSize().height); // アスペクト比
+	const auto aspect = static_cast<float>(Engine::GetInstance()->GetWindowSize().width) / static_cast<float>(Engine::GetInstance()->GetWindowSize().height); // アスペクト比
 
 	const DirectX::XMMATRIX view = DirectX::XMMatrixLookAtRH(eyePos, targetPos, upward);
 	const DirectX::XMMATRIX proj = DirectX::XMMatrixPerspectiveFovRH(fov, aspect, 0.3f, 1000.0f);

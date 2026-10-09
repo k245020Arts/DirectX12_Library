@@ -63,7 +63,7 @@ bool TextureLoader::Load(const std::wstring& _path)
 
 	if (FAILED(hr))
 	{
-		ColorTexture(_path, Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+		ColorTexture(_path, Vector4(1.0f, 0.0f, 1.0f, 1.0f));
 		return false;
 	}
 

@@ -23,7 +23,7 @@ struct ImportSettings // インポートするときのパラメータ
 class AssimpLoader
 {
 public:
-    bool Load(ImportSettings setting); // モデルをロードする
+    bool Load(const ImportSettings& setting); // モデルをロードする
 
 private:
     void LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool inverseV);
