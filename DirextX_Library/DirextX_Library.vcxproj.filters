@@ -10,14 +10,8 @@
     <Filter Include="Source\Engine">
       <UniqueIdentifier>{2805df9e-56d7-449b-8f5c-53b314c771a0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Pixel">
-      <UniqueIdentifier>{eeff02e3-3246-4faf-a699-87b6f75ea737}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Scene">
       <UniqueIdentifier>{836206ef-76ee-4aa5-a9aa-873794152de7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Pixel\Triangle">
-      <UniqueIdentifier>{76bb703b-4475-4de5-8a09-99f119165dfd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\VertexBuffer">
       <UniqueIdentifier>{9d125a4e-ac1a-47e7-81ef-fa1b2206a443}</UniqueIdentifier>
@@ -34,23 +28,8 @@
     <Filter Include="Source\PipelineState">
       <UniqueIdentifier>{c37bfd06-febe-47fa-8643-1ce1b7051db7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Pixel\Box">
-      <UniqueIdentifier>{8d4d649f-e1a9-46ed-8dab-906d577061b1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\IndexBuffer">
       <UniqueIdentifier>{de371ca5-e235-4a7b-a777-ed8961a20493}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Pixel\Cicle">
-      <UniqueIdentifier>{49821720-b316-4189-9614-67be8c1a76bf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Pixel\Pixel">
-      <UniqueIdentifier>{5cec56e6-92c2-4ed1-9ddb-1b557ac3be33}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Pixel\Line">
-      <UniqueIdentifier>{d0bd1fc9-bc0e-4961-b870-4814f7a58ba2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Pixel\Star">
-      <UniqueIdentifier>{bbc68d15-b960-418a-bccd-2869b2dc7d3e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Object2D">
       <UniqueIdentifier>{c9b492ef-aef3-4ce8-9e63-530aa15f973c}</UniqueIdentifier>
@@ -94,6 +73,33 @@
     <Filter Include="Shader\3DBaseShader">
       <UniqueIdentifier>{018db0c3-4401-4c9b-b8f8-693bea4da8e2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Primitives">
+      <UniqueIdentifier>{eeff02e3-3246-4faf-a699-87b6f75ea737}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Primitives\Triangle">
+      <UniqueIdentifier>{76bb703b-4475-4de5-8a09-99f119165dfd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Primitives\Box">
+      <UniqueIdentifier>{8d4d649f-e1a9-46ed-8dab-906d577061b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Primitives\Cicle">
+      <UniqueIdentifier>{49821720-b316-4189-9614-67be8c1a76bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Primitives\Pixel">
+      <UniqueIdentifier>{5cec56e6-92c2-4ed1-9ddb-1b557ac3be33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Primitives\Line">
+      <UniqueIdentifier>{d0bd1fc9-bc0e-4961-b870-4814f7a58ba2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Primitives\Star">
+      <UniqueIdentifier>{bbc68d15-b960-418a-bccd-2869b2dc7d3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Primitives\Cylinder">
+      <UniqueIdentifier>{8c8253ae-bd1d-4572-b1c7-ebe5d2dd8660}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Primitives\Capsule">
+      <UniqueIdentifier>{0d3bdf86-cef9-40ab-906d-8beae2fecdf6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -107,9 +113,6 @@
     </ClCompile>
     <ClCompile Include="Source\Scene\Scene.cpp">
       <Filter>Source\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Pixel\Triangle\Triangle.cpp">
-      <Filter>Source\Pixel\Triangle</Filter>
     </ClCompile>
     <ClCompile Include="Source\VertexBuffer\VertexBuffer.cpp">
       <Filter>Source\VertexBuffer</Filter>
@@ -128,24 +131,6 @@
     </ClCompile>
     <ClCompile Include="Source\IndexBuffer\IndexBuffer.cpp">
       <Filter>Source\IndexBuffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Pixel\Box\Box2D.cpp">
-      <Filter>Source\Pixel\Box</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Pixel\CIcle\Cicle2D.cpp">
-      <Filter>Source\Pixel\Cicle</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Pixel\Pixel\Pixel.cpp">
-      <Filter>Source\Pixel\Pixel</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Pixel\Line\Line2D.cpp">
-      <Filter>Source\Pixel\Line</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Pixel\Star\Star.cpp">
-      <Filter>Source\Pixel\Star</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Pixel\Polygon2D .cpp">
-      <Filter>Source\Pixel</Filter>
     </ClCompile>
     <ClCompile Include="Source\Object2D\Object2DManager.cpp">
       <Filter>Source\Object2D</Filter>
@@ -210,14 +195,47 @@
     <ClCompile Include="Source\FBXModel\FBXModel.cpp">
       <Filter>Source\FBXModel</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Pixel\Box\Box3D.cpp">
-      <Filter>Source\Pixel\Box</Filter>
+    <ClCompile Include="Source\Primitives\Polygon2D .cpp">
+      <Filter>Source\Primitives</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Pixel\CIcle\Sphere3D.cpp">
-      <Filter>Source\Pixel\Cicle</Filter>
+    <ClCompile Include="Source\Primitives\Triangle\Triangle.cpp">
+      <Filter>Source\Primitives\Triangle</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Pixel\Line\Line3D.cpp">
-      <Filter>Source\Pixel\Line</Filter>
+    <ClCompile Include="Source\Primitives\Star\Star.cpp">
+      <Filter>Source\Primitives\Star</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Primitives\Pixel\Pixel.cpp">
+      <Filter>Source\Primitives\Pixel</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Primitives\Line\Line2D.cpp">
+      <Filter>Source\Primitives\Line</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Primitives\Line\Line3D.cpp">
+      <Filter>Source\Primitives\Line</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Primitives\CIcle\Cicle2D.cpp">
+      <Filter>Source\Primitives\Cicle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Primitives\CIcle\Sphere3D.cpp">
+      <Filter>Source\Primitives\Cicle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Primitives\Box\Box2D.cpp">
+      <Filter>Source\Primitives\Box</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Primitives\Box\Box3D.cpp">
+      <Filter>Source\Primitives\Box</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Primitives\Cylinder\Cylinder.cpp">
+      <Filter>Source\Primitives\Cylinder</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Primitives\Capsule\Capsule.cpp">
+      <Filter>Source\Primitives\Capsule</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Primitives\Triangle\Triangle3D.cpp">
+      <Filter>Source\Primitives\Triangle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Primitives\Triangle\TriangularPrism.cpp">
+      <Filter>Source\Primitives\Triangle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -229,9 +247,6 @@
     </ClInclude>
     <ClInclude Include="Source\Scene\Scene.h">
       <Filter>Source\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Pixel\Triangle\Triangle.h">
-      <Filter>Source\Pixel\Triangle</Filter>
     </ClInclude>
     <ClInclude Include="Source\VertexBuffer\VertexBuffer.h">
       <Filter>Source\VertexBuffer</Filter>
@@ -251,29 +266,11 @@
     <ClInclude Include="Source\PipelineState\PipelineState.h">
       <Filter>Source\PipelineState</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Pixel\Box\Box2D.h">
-      <Filter>Source\Pixel\Box</Filter>
-    </ClInclude>
     <ClInclude Include="Source\IndexBuffer\IndexBuffer.h">
       <Filter>Source\IndexBuffer</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Pixel\CIcle\Cicle2D.h">
-      <Filter>Source\Pixel\Cicle</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Pixel\Pixel\Pixel.h">
-      <Filter>Source\Pixel\Pixel</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Pixel\Line\Line2D.h">
-      <Filter>Source\Pixel\Line</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Pixel\Star\Star2D.h">
-      <Filter>Source\Pixel\Star</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Object2D\Object2D.h">
       <Filter>Source\Object2D</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Pixel\Polygon2D .h">
-      <Filter>Source\Pixel</Filter>
     </ClInclude>
     <ClInclude Include="Source\Object2D\Object2DManager.h">
       <Filter>Source\Object2D</Filter>
@@ -353,14 +350,47 @@
     <ClInclude Include="Source\FBXModel\FBXModel.h">
       <Filter>Source\FBXModel</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Pixel\Box\Box3D.h">
-      <Filter>Source\Pixel\Box</Filter>
+    <ClInclude Include="Source\Primitives\Polygon2D .h">
+      <Filter>Source\Primitives</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Pixel\CIcle\Sphere3D.h">
-      <Filter>Source\Pixel\Cicle</Filter>
+    <ClInclude Include="Source\Primitives\Triangle\Triangle.h">
+      <Filter>Source\Primitives\Triangle</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Pixel\Line\Line3D.h">
-      <Filter>Source\Pixel\Line</Filter>
+    <ClInclude Include="Source\Primitives\Star\Star2D.h">
+      <Filter>Source\Primitives\Star</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Primitives\Pixel\Pixel.h">
+      <Filter>Source\Primitives\Pixel</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Primitives\Line\Line2D.h">
+      <Filter>Source\Primitives\Line</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Primitives\Line\Line3D.h">
+      <Filter>Source\Primitives\Line</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Primitives\CIcle\Cicle2D.h">
+      <Filter>Source\Primitives\Cicle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Primitives\CIcle\Sphere3D.h">
+      <Filter>Source\Primitives\Cicle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Primitives\Box\Box2D.h">
+      <Filter>Source\Primitives\Box</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Primitives\Box\Box3D.h">
+      <Filter>Source\Primitives\Box</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Primitives\Cylinder\Cylinder.h">
+      <Filter>Source\Primitives\Cylinder</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Primitives\Capsule\Capsule.h">
+      <Filter>Source\Primitives\Capsule</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Primitives\Triangle\Triangle3D.h">
+      <Filter>Source\Primitives\Triangle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Primitives\Triangle\TriangularPrism.h">
+      <Filter>Source\Primitives\Triangle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

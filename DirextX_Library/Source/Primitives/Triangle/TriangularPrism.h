@@ -1,6 +1,5 @@
 #pragma once
 #include "../../ShaderStruct/ShaderStruct.h"
-#include "../../ShaderStruct/ShaderStruct.h"
 #include "../../Texture/TextureLoader.h"
 #include "../../DescriptorHeap/DescriptorHeap.h"
 
@@ -10,11 +9,13 @@ class PipelineState;
 class RootSignature;
 class IndexBuffer;
 
-class Sphere3D
+
+class TriangularPrism
 {
 public:
-	Sphere3D();
-	~Sphere3D();
+	TriangularPrism();
+	~TriangularPrism();
+
 	void Update();
 	void Draw();
 

@@ -2,6 +2,8 @@
 #include <vector>
 
 class Triangle;
+class Triangle3D;
+class Cylinder;
 class Box2D;
 class Box3D;
 class Cicle2D;
@@ -12,6 +14,8 @@ class Line3D;
 class Star2D;
 class Texture2D;
 class FBXModel;
+
+class Capsule;
 
 class Scene
 {
@@ -52,4 +56,8 @@ private:
 	Box3D* box3D;
 	Sphere3D* sphere3D;
 	Line3D* line3D;
+	Triangle3D* triangle3D;
+	Cylinder* cylinder;
+
+	Capsule* capsule;
 };

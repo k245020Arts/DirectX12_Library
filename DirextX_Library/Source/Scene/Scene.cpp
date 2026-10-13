@@ -1,17 +1,20 @@
 #include "Scene.h"
-#include "../Pixel/Triangle/Triangle.h"
-#include "../Pixel/Box/Box2D.h"
-#include "../Pixel/CIcle/Cicle2D.h"
-#include "../Pixel/Pixel/Pixel.h"
-#include "../Pixel/Line/Line2D.h"
-#include "../Pixel/Star/Star2D.h"
+#include "../Primitives/Triangle/Triangle.h"
+#include "../Primitives/Box/Box2D.h"
+#include "../Primitives/CIcle/Cicle2D.h"
+#include "../Primitives/Pixel/Pixel.h"
+#include "../Primitives/Line/Line2D.h"
+#include "../Primitives/Star/Star2D.h"
 #include "../Texture/Texture2D.h"
 #include "../Time/DeltaTime.h"
 #include "../DirectX12Imgui/DirectX12Imgui.h"
 #include "../FBXModel/FBXModel.h"
-#include "../Pixel/Box/Box3D.h"
-#include"../Pixel/CIcle/Sphere3D.h"
-#include "../Pixel/Line/Line3D.h"
+#include "../Primitives/Box/Box3D.h"
+#include"../Primitives/CIcle/Sphere3D.h"
+#include "../Primitives/Line/Line3D.h"
+#include "../Primitives/Triangle/Triangle3D.h"
+#include "../Primitives/Cylinder/Cylinder.h"
+#include "../Primitives/Capsule/Capsule.h"
 
 //#define ON2D
 
@@ -77,27 +80,42 @@ Scene::Scene()
 #endif // ON2D
 
 	//L"data/Alicia/FBX/Alicia_solid_Unity.FBX"
-	model = new FBXModel(); 
-	model->Load("data/Alicia/FBX/Alicia_solid_Unity.FBX");
+	/*model = new FBXModel(); 
+	model->Load("data/Alicia/FBX/Alicia_solid_Unity.FBX");*/
 
-	texture2D2 = new Texture2D();
+	/*texture2D2 = new Texture2D();
 	texture2D2->Load("data/textest.png");
-	texture2D2->GetTransform().position = Vector3(200, 200, 0);
+	texture2D2->GetTransform().position = Vector3(200, 200, 0);*/
 
 	sphere3D = new Sphere3D();
-	sphere3D->GetTransform().position = Vector3(100.0f,0.0f,0.0f);
+	sphere3D->GetTransform().position = Vector3(0.0f,0.0f,0.0f);
 	box3D = new Box3D();
 	box3D->GetTransform().position = Vector3(-100.0f, 0.0f, 0.0f);
 	line3D = new Line3D();
 	line3D->GetTransform().position = Vector3(0.0f, 0.0f, 0.0f);
+
+	triangle3D = new Triangle3D();
+
+	triangle3D->GetTransform().position = Vector3(150.0f, 0.0f, 0.0f);
+
+	cylinder = new Cylinder();
+
+	cylinder->GetTransform().position = Vector3(-170.0f, 0.0f, -150.0f);
+
+	capsule = new Capsule();
+
+	capsule->GetTransform().position = Vector3(170.0f, 0.0f, -150.0f);
 }
 
 Scene::~Scene()
 {
-	delete model;
+	/*delete model;*/
 	delete box3D;
 	delete sphere3D;
 	delete line3D;
+	delete triangle3D;
+	delete cylinder;
+	delete capsule;
 	/*delete test;
 	delete test2;
 	delete boxTest;
@@ -140,8 +158,8 @@ void Scene::Update()
 	texture2D->GetTransform().rotation.z += 0.01f;*/
 #endif //  ON2D
 
-	model->GetTransform().rotation.y += 0.005f;
-	model->Update();
+	/*model->GetTransform().rotation.y += 0.005f;
+	model->Update();*/
 
 	box3D->Update();
 	box3D->GetTransform().rotation.y += 0.01f;
@@ -150,12 +168,27 @@ void Scene::Update()
 	sphere3D->GetTransform().rotation.x += 0.01f;
 	
 	line3D->Update();
+
+	triangle3D->Update();
+	triangle3D->GetTransform().rotation.y += 0.01f;
+
+	cylinder->Update();
+	cylinder->GetTransform().rotation.y += 0.01f;
+
+	capsule->Update();
+	capsule->GetTransform().rotation.y += 0.01f;
+	
 }
 
 void Scene::Draw()
 {
-	model->Draw();
+	/*model->Draw();*/
 	box3D->Draw();
 	sphere3D->Draw();
 	line3D->Draw();
+
+	triangle3D->Draw();
+	cylinder->Draw();
+
+	capsule->Draw();
 }
