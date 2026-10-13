@@ -1,4 +1,4 @@
-#include "Polygon2D .h"
+#include "Polygon2D.h"
 #include "../VertexBuffer/VertexBuffer.h"
 #include "../Engine/Engine.h"
 #include "../ConstBuffer/ConstBuffer.h"
@@ -46,7 +46,7 @@ void Polygon2D::SetFill(bool _fill)
 	fillMode = _fill;
 }
 
-void Polygon2D::SetColor(Vector4 _color)
+void Polygon2D::SetColor(const Vector4& _color)
 {
 	for (auto& vertex : vertices) {
 		vertex.color = _color;

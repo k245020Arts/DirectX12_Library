@@ -15,6 +15,8 @@
 #include "../Primitives/Triangle/Triangle3D.h"
 #include "../Primitives/Cylinder/Cylinder.h"
 #include "../Primitives/Capsule/Capsule.h"
+#include "../Camera3D/Camera3D.h"
+#include "../Billboard/Billboard.h"
 
 //#define ON2D
 
@@ -100,22 +102,29 @@ Scene::Scene()
 
 	cylinder = new Cylinder();
 
-	cylinder->GetTransform().position = Vector3(-170.0f, 0.0f, -150.0f);
+	cylinder->GetTransform().position = Vector3(-170.0f, 0.0f, 150.0f);
 
 	capsule = new Capsule();
 
-	capsule->GetTransform().position = Vector3(170.0f, 0.0f, -150.0f);
+	capsule->GetTransform().position = Vector3(170.0f, 0.0f, 150.0f);
+
+	billboard = new Billboard();
+	billboard->Load("data/textest.png");
+	billboard->GetTransform().position = Vector3(170.0f, 50.0f, 250.0f);
+	billboard->SetRectUV(Vector4(0.0f,0.0f,0.5f,0.5f));
+	//billboard->SetBillBoardType(false);
 }
 
 Scene::~Scene()
 {
 	/*delete model;*/
-	delete box3D;
+	/*delete box3D;
 	delete sphere3D;
 	delete line3D;
 	delete triangle3D;
 	delete cylinder;
 	delete capsule;
+	delete billboard;*/
 	/*delete test;
 	delete test2;
 	delete boxTest;
@@ -129,6 +138,8 @@ Scene::~Scene()
 	delete line2D;
 	delete star2D;*/
 }
+
+#define CAMERA_TEST
 
 void Scene::Update()
 {
@@ -161,34 +172,81 @@ void Scene::Update()
 	/*model->GetTransform().rotation.y += 0.005f;
 	model->Update();*/
 
-	box3D->Update();
+	//box3D->Update();
 	box3D->GetTransform().rotation.y += 0.01f;
 
-	sphere3D->Update();
+	//sphere3D->Update();
 	sphere3D->GetTransform().rotation.x += 0.01f;
 	
-	line3D->Update();
+	//line3D->Update();
 
-	triangle3D->Update();
+	//triangle3D->Update();
 	triangle3D->GetTransform().rotation.y += 0.01f;
 
-	cylinder->Update();
+	//cylinder->Update();
 	cylinder->GetTransform().rotation.y += 0.01f;
 
-	capsule->Update();
+	//capsule->Update();
 	capsule->GetTransform().rotation.y += 0.01f;
+
+	billboard->GetTransform().rotation.y -= 0.01f;
+	/*Camera3D::GetInstance()->SetTarget(billboard->GetTransform().position);
+	Vector3 nowpos = Camera3D::GetInstance()->GetPosition();
+	Vector3 finalPos = Vector3(nowpos.x + -5.0f, nowpos.y, nowpos.z - 1.0f);
+	Camera3D::GetInstance()->SetPosition(finalPos);*/
+
+#ifdef CAMERA_TEST
+
+	auto* camera = Camera3D::GetInstance();
+
+	// ƒrƒ‹ƒ{[ƒh‚ð’Ž‹‚·‚é
+	Vector3 target = billboard->GetTransform().position;
+	camera->SetTarget(target);
+
+	// ‰ñ“]‘¬“xi1•b‚Å1Žüj
+	constexpr float ROTATION_SPEED =
+		DirectX::XM_2PI / 6.0f; // 3•b‚Å1Žü
+
+	// Œo‰ßŽžŠÔ‚ð“n‚¹‚é‚È‚ç deltaTime ‚ðŽg‚¤
+	cameraAngle += ROTATION_SPEED * DeltaTime::GetInstance()->GetDeltaTime();
+
+	// 1Žü‚µ‚½‚çŠp“x‚ð–ß‚·
+	if (cameraAngle >= DirectX::XM_2PI)
+	{
+		cameraAngle -= DirectX::XM_2PI;
+	}
+
+	// ’Ž‹“_‚©‚ç‚Ì‹——£
+	constexpr float RADIUS = 500.0f;
+	constexpr float HEIGHT = 50.0f;
+
+	const Vector3 nowPos = { 0.0f, 150.0f, -200.0f };
+
+	// ‰~‹O“¹ã‚ÌƒJƒƒ‰ˆÊ’ui¶ŽèÀ•WŒn‚Å‚à‚±‚ÌˆÊ’uŒvŽZ‚ÅOKj
+	Vector3 finalPos(
+		nowPos.x + std::sin(cameraAngle) * RADIUS,
+		nowPos.y + HEIGHT,
+		nowPos.z - std::cos(cameraAngle) * RADIUS
+	);
+	 //std::sin(cameraAngle) * RADIUS;
+	camera->SetPosition(finalPos);
+
+#endif // CAMERA_TEST
+
 	
 }
+
+
 
 void Scene::Draw()
 {
 	/*model->Draw();*/
-	box3D->Draw();
-	sphere3D->Draw();
-	line3D->Draw();
+	//box3D->Draw();
+	//sphere3D->Draw();
+	//line3D->Draw();
 
-	triangle3D->Draw();
-	cylinder->Draw();
+	//triangle3D->Draw();
+	//cylinder->Draw();
 
-	capsule->Draw();
+	//capsule->Draw();
 }

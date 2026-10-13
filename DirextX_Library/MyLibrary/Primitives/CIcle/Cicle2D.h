@@ -1,5 +1,5 @@
 #pragma once
-#include "../Polygon2D .h"
+#include "../Polygon2D.h"
 
 struct alignas(256) CicleWireFrame
 {

@@ -14,8 +14,8 @@ class Line3D;
 class Star2D;
 class Texture2D;
 class FBXModel;
-
 class Capsule;
+class Billboard;
 
 class Scene
 {
@@ -60,4 +60,7 @@ private:
 	Cylinder* cylinder;
 
 	Capsule* capsule;
+	Billboard* billboard;
+
+	float cameraAngle = 0.0f;
 };

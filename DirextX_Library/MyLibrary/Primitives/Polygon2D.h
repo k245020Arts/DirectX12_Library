@@ -16,7 +16,7 @@ public:
 	/// <param name="_fill">“h‚è‚Â‚Ô‚·ê‡‚Ítrue</param>
 	virtual void SetFill(bool _fill);
 
-	virtual void SetColor(Vector4 _color);
+	virtual void SetColor(const Vector4& _color);
 
 	void SetBlendMode(BlendState _blendState);
 

@@ -18,10 +18,7 @@
 #include "../ImGui/imgui_impl_win32.h"
 #include "../ImGui/imgui_impl_dx12.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
+#include "Application/Application.h"
 
 class Main
 {
@@ -64,8 +61,6 @@ void Main::Run()
 	}
 #endif
 
-	DirectX12Imgui imgui;
-
 	const int WINDOW_WINDTH = 1280;
 	const int WINDOW_HEIGHT = 720;
 	Window window;
@@ -78,7 +73,7 @@ void Main::Run()
 		return;
 	}
 
-	imgui.SetUpImGui(window.GetHwnd());
+	Application::GetInstance()->ApplicationInit(window);
 
 	std::unique_ptr<Scene> scene = std::make_unique<Scene>();
 	while (true)
@@ -87,27 +82,17 @@ void Main::Run()
 			break;
 		}
 
-		DeltaTime::GetInstance()->Update(); //デルタタイムの計測と固定FPSの制御
-
-		imgui.BeginRenderImGui();
-
-		imgui.DebugRenderer();
+		Application::GetInstance()->BeginUpdate(); //SceneのUpdateの前にしないといけない処理
 
 		scene->Update(); //シーンの更新
-		Object2DManager::GetInstance()->Update(); //オブジェクト2Dの更新処理(スクリーン座標に置き換え等をしてる)
-		Engine::GetInstance()->BeginRender(); //描画をする前の処理
+		
+		Application::GetInstance()->ApplicationUpdate(); //SceneのDrawの前にしないといけない処理
+
 		scene->Draw(); //描画に必要な情報を流し込む
-		Object2DManager::GetInstance()->Draw(); //オブジェクト2Dの描画に必要な情報を流し込む
 
-		imgui.EndRenderImGui();
-
-		Engine::GetInstance()->EndRender(); //描画
+		Application::GetInstance()->ApplicationDraw(); // 最終的な描画
 	}
 
-	imgui.ReleaseImGui();
-
-	Engine::GetInstance()->Destroy();
-	TextureLoader::GetInstance()->Destroy();
-	Object2DManager::GetInstance()->Destroy();
-	DescriptorHeap::GetInstance()->Destroy();
+	Application::GetInstance()->ApplicationRelease(); //内部で回しているものの破棄処理
+	Application::Destroy(); //最後にアプリケーションの破棄
 }

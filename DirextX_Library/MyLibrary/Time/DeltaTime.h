@@ -43,5 +43,5 @@ private:
 	int writeP;
 
 	friend class SingletonBase<DeltaTime>;
-	friend class Main;
+	friend class Application;
 };

@@ -25,5 +25,5 @@ private:
 
 	void DebugRenderer();
 
-	friend class Main;
+	friend class Application;
 };

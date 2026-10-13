@@ -8,27 +8,7 @@
 
 Box3D::Box3D()
 {
-	std::wstring white = L"white";
-	bool result = TextureLoader::GetInstance()->ColorTexture(white,Vector4(1.0f,1.0f,1.0f,1.0f));
-	//bool result = TextureLoader::GetInstance()->Load("data/textest.png");
-
-	TextureData* texture = TextureLoader::GetInstance()->Get(white);
-	//TextureData* texture = TextureLoader::GetInstance()->Get("data/textest.png");
-
-	if (texture == nullptr) {
-		std::string error = "白色のパスがありません";
-		assert(false && error.c_str());
-	}
-
-	textureData = *texture;
-
-	descriptorHandle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), white);
-	//descriptorHandle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), "data/textest.png");
-
-	if (descriptorHandle == nullptr)
-	{
-		assert(false && "Descriptorの登録に失敗しました");
-	}
+	CreateWhiteTextureHandle();
 
 	constBuffer.resize(FRAME_BUFFER_COUNT);
 
@@ -130,7 +110,7 @@ Box3D::~Box3D()
 
 void Box3D::Update()
 {
-	VertexMapping();
+	//VertexMapping();
 }
 
 void Box3D::Draw()
@@ -168,138 +148,5 @@ void Box3D::Draw()
 	}
 	else {
 		commandList->DrawInstanced(polygonSize, 1, 0, 0); // 形に応じた頂点の数を描画する
-	}
-}
-
-void Box3D::Init(const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices)
-{
-	fillMode = true;
-	auto vertexSize = sizeof(Vertex) * std::size(_vertices);
-	auto vertexStride = sizeof(Vertex);
-	vertexBuffer = std::make_unique<VertexBuffer>(vertexSize, vertexStride, _vertices.data());
-	if (!vertexBuffer->IsSuccess())
-	{
-		OutputDebugStringW(L"頂点バッファの生成に失敗\n");
-	}
-
-	useIndex = false;
-	polygonSize = (UINT)vertices.size();
-
-	// インデックスバッファの生成
-	if (!_indices.empty())
-	{
-		auto size = sizeof(uint32_t) * _indices.size();
-
-		indexBuffer = std::make_unique<IndexBuffer>(size, _indices.data());
-
-		indexSize = (UINT)_indices.size();
-
-		if (!indexBuffer->IsSuccess())
-		{
-			OutputDebugStringW(L"インデックスバッファの生成に失敗\n");
-		}
-		useIndex = true;
-	}
-
-	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
-	{
-		constBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
-		if (!constBuffer[i]->IsValid())
-		{
-			OutputDebugStringW(L"変換行列用定数バッファの生成に失敗\n");
-		}
-	}
-
-	DirectX::XMVECTOR eyePos = DirectX::XMVectorSet(0.0f, 120.0, -120.0f, 0.0f);
-	DirectX::XMVECTOR targetPos = DirectX::XMVectorSet(0.0f, 120.0, 0.0, 0.0f);
-	DirectX::XMVECTOR upward = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	constexpr float fov = DirectX::XMConvertToRadians(60);
-	const auto aspect = static_cast<float>(Engine::GetInstance()->GetWindowSize().width) / static_cast<float>(Engine::GetInstance()->GetWindowSize().height); // アスペクト比
-
-	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
-	{
-		constBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
-		if (!constBuffer[i]->IsValid())
-		{
-			OutputDebugStringW(L"変換行列用定数バッファの生成に失敗\n");
-		}
-
-		// 変換行列の登録
-		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
-		ptr->World = DirectX::XMMatrixIdentity();
-		ptr->View = DirectX::XMMatrixLookAtRH(eyePos, targetPos, upward);
-		ptr->Proj = DirectX::XMMatrixPerspectiveFovRH(fov, aspect, 0.3f, 2000.0f);
-	}
-
-	rootSignature = std::make_unique<RootSignature>();
-	rootSignature->SetTextureRootSampler();
-	if (!rootSignature->IsSuccess())
-	{
-		OutputDebugStringW(L"ルートシグネチャの生成に失敗\n");
-	}
-
-	uvRect = { 0.0f,0.0f,1.0f,1.0f };
-}
-
-void Box3D::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint)
-{
-	pipelineState = std::make_unique<PipelineState>(topology);
-	pipelineState->SetInputLayout(Vertex::InputLayout);
-	pipelineState->SetRootSignature(rootSignature->Get());
-	pipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
-	pipelineState->SetVS(_VSfilePath, _VSentryPoint);
-	pipelineState->SetPS(_PSfilePath, _PSentryPoint);
-	pipelineState->Create();
-
-	if (!pipelineState->IsSuccess())
-	{
-		OutputDebugStringW(L"パイプラインステートの生成に失敗\n");
-	}
-}
-
-void Box3D::SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint)
-{
-	wireFramePipelineState = std::make_unique<PipelineState>(topology);
-	wireFramePipelineState->SetInputLayout(Vertex::InputLayout);
-	wireFramePipelineState->SetRootSignature(rootSignature->Get());
-	wireFramePipelineState->SetDrawLayOut(D3D12_FILL_MODE_WIREFRAME);
-	wireFramePipelineState->SetVS(_VSfilePath, _VSentryPoint);
-	wireFramePipelineState->SetPS(_PSfilePath, _PSentryPoint);
-	wireFramePipelineState->Create();
-
-	if (!wireFramePipelineState->IsSuccess())
-	{
-		OutputDebugStringW(L"パイプラインステートの生成に失敗\n");
-	}
-}
-
-
-void Box3D::VertexMapping()
-{
-	Vector3 scale = transform.scale;
-	Vector3 rotation = transform.rotation;
-	Vector3 position = transform.position;
-
-	// ワールド行列の計算
-	DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z)
-		* DirectX::XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z)
-		* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-
-	DirectX::XMVECTOR eyePos = DirectX::XMVectorSet(0.0f, 150.0f, 200.0f, 0.0f);
-	DirectX::XMVECTOR targetPos = DirectX::XMVectorSet(0.0f, 0.0f, 0.0, 0.0f);
-	DirectX::XMVECTOR upward = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	constexpr float fov = DirectX::XMConvertToRadians(60);
-	const auto aspect = static_cast<float>(Engine::GetInstance()->GetWindowSize().width) / static_cast<float>(Engine::GetInstance()->GetWindowSize().height); // アスペクト比
-
-	const DirectX::XMMATRIX view = DirectX::XMMatrixLookAtRH(eyePos, targetPos, upward);
-	const DirectX::XMMATRIX proj = DirectX::XMMatrixPerspectiveFovRH(fov, aspect, 0.3f, 2000.0f);
-
-	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
-	{
-		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
-		ptr->World = world;
-		ptr->View = view;
-		ptr->Proj = proj;
-		ptr->uvRect = Vector4();
 	}
 }

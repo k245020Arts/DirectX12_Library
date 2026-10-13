@@ -29,5 +29,5 @@ private:
 	void Update();
 	void Draw();
 
-	friend class Main;
+	friend class Application;
 };

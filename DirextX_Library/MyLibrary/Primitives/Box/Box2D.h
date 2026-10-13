@@ -1,5 +1,5 @@
 #pragma once
-#include "../Polygon2D .h"
+#include "../Polygon2D.h"
 
 class Box2D : public Polygon2D
 {

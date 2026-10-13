@@ -103,6 +103,15 @@
     <Filter Include="MyLibrary\Object3D">
       <UniqueIdentifier>{c83e190e-22f5-4afe-919b-26e33a1f2136}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MyLibrary\Application">
+      <UniqueIdentifier>{7ddff4e3-5b58-479e-b73f-acc5d7c2aab4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLibrary\Camera3D">
+      <UniqueIdentifier>{5382d5a4-3ab3-4245-9927-5f1a6cae3185}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLibrary\Billboard">
+      <UniqueIdentifier>{5e2e0fc4-0d48-4bc7-906e-b028f415a7b3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImGui\crude_json.cpp">
@@ -210,7 +219,7 @@
     <ClCompile Include="MyLibrary\Primitives\Triangle\TriangularPrism.cpp">
       <Filter>MyLibrary\Primitives\Triangle</Filter>
     </ClCompile>
-    <ClCompile Include="MyLibrary\Primitives\Polygon2D .cpp">
+    <ClCompile Include="MyLibrary\Primitives\Polygon2D.cpp">
       <Filter>MyLibrary\Primitives</Filter>
     </ClCompile>
     <ClCompile Include="MyLibrary\RootSignature\RootSignature.cpp">
@@ -239,6 +248,21 @@
     </ClCompile>
     <ClCompile Include="MyLibrary\main.cpp">
       <Filter>MyLibrary</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\Object3D\Object3DManager.cpp">
+      <Filter>MyLibrary\Object3D</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\Application\Application.cpp">
+      <Filter>MyLibrary\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\Primitives\Polygon3D.cpp">
+      <Filter>MyLibrary\Primitives</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\Camera3D\Camera3D.cpp">
+      <Filter>MyLibrary\Camera3D</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\Billboard\Billboard.cpp">
+      <Filter>MyLibrary\Billboard</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -362,7 +386,7 @@
     <ClInclude Include="MyLibrary\Primitives\Triangle\TriangularPrism.h">
       <Filter>MyLibrary\Primitives\Triangle</Filter>
     </ClInclude>
-    <ClInclude Include="MyLibrary\Primitives\Polygon2D .h">
+    <ClInclude Include="MyLibrary\Primitives\Polygon2D.h">
       <Filter>MyLibrary\Primitives</Filter>
     </ClInclude>
     <ClInclude Include="MyLibrary\RootSignature\RootSignature.h">
@@ -394,6 +418,24 @@
     </ClInclude>
     <ClInclude Include="MyLibrary\Comptr.h">
       <Filter>MyLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Object3D\Object3D.h">
+      <Filter>MyLibrary\Object3D</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Object3D\Object3DManager.h">
+      <Filter>MyLibrary\Object3D</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Application\Application.h">
+      <Filter>MyLibrary\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Primitives\Polygon3D.h">
+      <Filter>MyLibrary\Primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Camera3D\Camera3D.h">
+      <Filter>MyLibrary\Camera3D</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Billboard\Billboard.h">
+      <Filter>MyLibrary\Billboard</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
