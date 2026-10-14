@@ -70,6 +70,7 @@ void Main::Run()
 	}
 
 	if (!Engine::GetInstance()->Init(window.GetHwnd(), window.GetWindowSize())) {
+		assert(false && "‰Šú‰»ƒ~ƒX");
 		return;
 	}
 

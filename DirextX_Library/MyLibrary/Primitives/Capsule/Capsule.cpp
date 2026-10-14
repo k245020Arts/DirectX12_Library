@@ -122,6 +122,78 @@ Capsule::Capsule()
 	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
 }
 
+void Capsule::CreateCausulePosition(const int STACKS, const int SLICES, const float RADIUS, const float HALF_CYL_HEIGHT, int& vIndex)
+{
+	//è„îºãÖ
+	for (int y = 0; y < STACKS; ++y) {
+		float phi1 = (DirectX::XM_PIDIV2 * y) / STACKS;
+		float phi2 = (DirectX::XM_PIDIV2 * (y + 1)) / STACKS;
+
+		for (int x = 0; x < SLICES; ++x) {
+			float theta1 = (2.0f * DirectX::XM_PI * x) / SLICES;
+			float theta2 = (2.0f * DirectX::XM_PI * (x + 1)) / SLICES;
+
+			DirectX::XMFLOAT3 p0(RADIUS * sinf(phi1) * cosf(theta1), RADIUS * cosf(phi1) + HALF_CYL_HEIGHT, RADIUS * sinf(phi1) * sinf(theta1));
+			DirectX::XMFLOAT3 p1(RADIUS * sinf(phi1) * cosf(theta2), RADIUS * cosf(phi1) + HALF_CYL_HEIGHT, RADIUS * sinf(phi1) * sinf(theta2));
+			DirectX::XMFLOAT3 p2(RADIUS * sinf(phi2) * cosf(theta2), RADIUS * cosf(phi2) + HALF_CYL_HEIGHT, RADIUS * sinf(phi2) * sinf(theta2));
+			DirectX::XMFLOAT3 p3(RADIUS * sinf(phi2) * cosf(theta1), RADIUS * cosf(phi2) + HALF_CYL_HEIGHT, RADIUS * sinf(phi2) * sinf(theta1));
+
+			vertices[vIndex].position = p0;
+			vertices[vIndex + 1].position = p1;
+			vertices[vIndex + 2].position = p2;
+			vertices[vIndex + 3].position = p3;
+
+			for (int j = 0; j < 4; ++j) {
+				vertices[vIndex + j].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // è„îºãÖÇÕóŒ
+			}
+
+			vIndex += 4;
+		}
+	}
+
+	//íÜâõÇÃâ~íåë§ñ 
+	for (int x = 0; x < SLICES; ++x) {
+		float theta1 = (2.0f * DirectX::XM_PI * x) / SLICES;
+		float theta2 = (2.0f * DirectX::XM_PI * (x + 1)) / SLICES;
+
+		vertices[vIndex].position = DirectX::XMFLOAT3(RADIUS * cosf(theta1), HALF_CYL_HEIGHT, RADIUS * sinf(theta1)); // ç∂è„
+		vertices[vIndex + 1].position = DirectX::XMFLOAT3(RADIUS * cosf(theta2), HALF_CYL_HEIGHT, RADIUS * sinf(theta2)); // âEè„
+		vertices[vIndex + 2].position = DirectX::XMFLOAT3(RADIUS * cosf(theta2), -HALF_CYL_HEIGHT, RADIUS * sinf(theta2)); // âEâ∫
+		vertices[vIndex + 3].position = DirectX::XMFLOAT3(RADIUS * cosf(theta1), -HALF_CYL_HEIGHT, RADIUS * sinf(theta1)); // ç∂â∫
+
+		for (int j = 0; j < 4; ++j) {
+			vertices[vIndex + j].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // ì∑ëÃÇÕê¬
+		}
+		vIndex += 4;
+	}
+
+	// â∫îºãÖ
+	for (int y = 0; y < STACKS; ++y) {
+		float phi1 = DirectX::XM_PIDIV2 + (DirectX::XM_PIDIV2 * y) / STACKS;
+		float phi2 = DirectX::XM_PIDIV2 + (DirectX::XM_PIDIV2 * (y + 1)) / STACKS;
+
+		for (int x = 0; x < SLICES; ++x) {
+			float theta1 = (2.0f * DirectX::XM_PI * x) / SLICES;
+			float theta2 = (2.0f * DirectX::XM_PI * (x + 1)) / SLICES;
+
+			DirectX::XMFLOAT3 p0(RADIUS * sinf(phi1) * cosf(theta1), RADIUS * cosf(phi1) - HALF_CYL_HEIGHT, RADIUS * sinf(phi1) * sinf(theta1));
+			DirectX::XMFLOAT3 p1(RADIUS * sinf(phi1) * cosf(theta2), RADIUS * cosf(phi1) - HALF_CYL_HEIGHT, RADIUS * sinf(phi1) * sinf(theta2));
+			DirectX::XMFLOAT3 p2(RADIUS * sinf(phi2) * cosf(theta2), RADIUS * cosf(phi2) - HALF_CYL_HEIGHT, RADIUS * sinf(phi2) * sinf(theta2));
+			DirectX::XMFLOAT3 p3(RADIUS * sinf(phi2) * cosf(theta1), RADIUS * cosf(phi2) - HALF_CYL_HEIGHT, RADIUS * sinf(phi2) * sinf(theta1));
+
+			vertices[vIndex].position = p0;
+			vertices[vIndex + 1].position = p1;
+			vertices[vIndex + 2].position = p2;
+			vertices[vIndex + 3].position = p3;
+
+			for (int j = 0; j < 4; ++j) {
+				vertices[vIndex + j].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // â∫îºãÖÇÕê‘
+			}
+			vIndex += 4;
+		}
+	}
+}
+
 Capsule::~Capsule()
 {
 

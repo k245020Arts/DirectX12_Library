@@ -93,3 +93,4 @@ inline std::wstring GetWideString(const std::string& str)
 
     return wstr;
 }
+

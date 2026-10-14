@@ -13,6 +13,7 @@
 #include"../Primitives/CIcle/Sphere3D.h"
 #include "../Primitives/Line/Line3D.h"
 #include "../Primitives/Triangle/Triangle3D.h"
+#include "../Primitives/Triangle/TriangularPrism.h"
 #include "../Primitives/Cylinder/Cylinder.h"
 #include "../Primitives/Capsule/Capsule.h"
 #include "../Camera3D/Camera3D.h"
@@ -93,12 +94,15 @@ Scene::Scene()
 	sphere3D->GetTransform().position = Vector3(0.0f,0.0f,0.0f);
 	box3D = new Box3D();
 	box3D->GetTransform().position = Vector3(-100.0f, 0.0f, 0.0f);
+	box3D->SetLength(Vector3(200.0f, 200.0f, 50.0f));
 	line3D = new Line3D();
 	line3D->GetTransform().position = Vector3(0.0f, 0.0f, 0.0f);
+	line3D->SetStartAndEnd(Vector3(100, 100, 500),Vector3(200,200,-500));
 
-	triangle3D = new Triangle3D();
+	triangle3D = new TriangularPrism();
 
 	triangle3D->GetTransform().position = Vector3(150.0f, 0.0f, 0.0f);
+	triangle3D->SetLength(Vector3(120.0f, 200.0f, 150.0f));
 
 	cylinder = new Cylinder();
 
@@ -108,11 +112,14 @@ Scene::Scene()
 
 	capsule->GetTransform().position = Vector3(170.0f, 0.0f, 150.0f);
 
+	capsule->SetAlpha(0.01f);
+	capsule->SetBlendMode(BlendState::NO_BLEND);
+
 	billboard = new Billboard();
 	billboard->Load("data/textest.png");
 	billboard->GetTransform().position = Vector3(170.0f, 50.0f, 250.0f);
 	billboard->SetRectUV(Vector4(0.0f,0.0f,0.5f,0.5f));
-	//billboard->SetBillBoardType(false);
+	//billboard->SetBillBoardType(true);
 }
 
 Scene::~Scene()
@@ -228,15 +235,13 @@ void Scene::Update()
 		nowPos.y + HEIGHT,
 		nowPos.z - std::cos(cameraAngle) * RADIUS
 	);
-	 //std::sin(cameraAngle) * RADIUS;
+	 //std::sin(cameraAngle) * RADIUS,
 	camera->SetPosition(finalPos);
 
 #endif // CAMERA_TEST
 
-	
+
 }
-
-
 
 void Scene::Draw()
 {

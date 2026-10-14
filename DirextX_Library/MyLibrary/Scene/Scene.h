@@ -3,6 +3,7 @@
 
 class Triangle;
 class Triangle3D;
+class TriangularPrism;
 class Cylinder;
 class Box2D;
 class Box3D;
@@ -56,7 +57,7 @@ private:
 	Box3D* box3D;
 	Sphere3D* sphere3D;
 	Line3D* line3D;
-	Triangle3D* triangle3D;
+	TriangularPrism* triangle3D;
 	Cylinder* cylinder;
 
 	Capsule* capsule;

@@ -10,7 +10,13 @@ public:
 	TriangularPrism();
 	~TriangularPrism();
 
+	void SetLength(const Vector3& _length);
+
 private:
 	void Update()override;
 	void Draw()override;
+
+	void SetVertices(const Vector3& _length);
+
+	Vector3 length;
 };

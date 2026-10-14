@@ -40,3 +40,27 @@ void Line3D::Draw()
 {
 	Polygon3D::Draw();
 }
+
+void Line3D::SetLength(const Vector3& _length)
+{
+	length.x = fabs(_length.x);
+	length.y = fabs(_length.y);
+	length.z = fabs(_length.z);
+
+	const Vector3 LENGTH = { length.x / 2.0f,length.y / 2.0f,length.z / 2.0f };
+
+	vertices[0].position = DirectX::XMFLOAT3(LENGTH);
+
+	vertices[1].position = DirectX::XMFLOAT3(LENGTH);
+
+	vertexBuffer->BufferMapping(vertices.data());
+}
+
+void Line3D::SetStartAndEnd(const Vector3& _start, const Vector3& _end)
+{
+	vertices[0].position = DirectX::XMFLOAT3(_start);
+
+	vertices[1].position = DirectX::XMFLOAT3(_end);
+
+	vertexBuffer->BufferMapping(vertices.data());
+}
