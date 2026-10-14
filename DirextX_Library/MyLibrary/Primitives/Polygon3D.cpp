@@ -220,6 +220,7 @@ void Polygon3D::SetAlpha(float _alphaValue)
 	for (auto& vertex : vertices) {
 		vertex.color.w = _alphaValue;
 	}
+	baseColor.w = _alphaValue;
 	vertexBuffer->BufferMapping(vertices.data());
 }
 
@@ -233,5 +234,8 @@ void Polygon3D::SetColor(const Vector4& _color)
 	for (auto& vertex : vertices) {
 		vertex.color = _color;
 	}
+
+	baseColor = _color;
+
 	vertexBuffer->BufferMapping(vertices.data());
 }

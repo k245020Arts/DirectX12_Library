@@ -12,6 +12,8 @@ Cylinder::Cylinder()
 
 	constBuffer.resize(FRAME_BUFFER_COUNT);
 
+	baseColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
 	const int SLICES = 24; // 円周の分割数 : 増やすほど滑らかな円柱
 	const float RADIUS = 50.0f;
 	const float HEIGHT = 100.0f;
@@ -109,6 +111,33 @@ Cylinder::~Cylinder()
 
 }
 
+void Cylinder::SetCylinderParam(const CylinderParam& _param)
+{
+	std::vector<uint32_t> indices;
+	param = _param;
+	CreateVertexCylider(param.slices, param.radius, param.height, indices);
+
+	if (indexSize != (UINT)indices.size()) {
+		indexSize = (UINT)indices.size();
+
+		auto size = sizeof(uint32_t) * indices.size();
+
+		indexBuffer->Resize(size);
+	}
+
+	indexBuffer->BufferMapping(indices.data());
+
+	if (indexSize != (UINT)vertices.size()) {
+
+		polygonSize = (UINT)vertices.size();
+		auto verSize = sizeof(Vertex) * vertices.size();
+		vertexBuffer->Resize(verSize);
+
+	}
+	vertexBuffer->BufferMapping(vertices.data());
+
+}
+
 void Cylinder::Update()
 {
 	//VertexMapping();
@@ -117,4 +146,92 @@ void Cylinder::Update()
 void Cylinder::Draw()
 {
 	Polygon3D::Draw();
+}
+
+void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, std::vector<uint32_t>& indices)
+{
+	const int SLICES = _slices; // 円周の分割数 : 増やすほど滑らかな円柱
+	const float RADIUS = _radius;
+	const float HEIGHT = _height;
+	const float HALF_HEIGHT = HEIGHT * 0.5f;
+
+	// 1つの四角形（面）あたり4頂点。
+	// 上面下面側面の合計
+	int totalFaces = SLICES + SLICES + SLICES;
+	vertices.resize(totalFaces * 4);
+
+	indices.reserve(totalFaces * 6);
+
+	int vIndex = 0;
+
+	//上面の蓋
+	for (int i = 0; i < SLICES; ++i) {
+		float theta1 = (2.0f * DirectX::XM_PI * i) / SLICES;
+		float theta2 = (2.0f * DirectX::XM_PI * (i + 1)) / SLICES;
+
+		//4つのポリゴンを生成する(左上と右上の頂点を同じにする)ルールを崩さずにするために同じ座標で点を2つ記入
+		vertices[vIndex].position = DirectX::XMFLOAT3(0.0f, HALF_HEIGHT, 0.0f); // 中心
+		vertices[vIndex + 1].position = DirectX::XMFLOAT3(0.0f, HALF_HEIGHT, 0.0f); // 中心
+		vertices[vIndex + 2].position = DirectX::XMFLOAT3(RADIUS * cosf(theta2), HALF_HEIGHT, RADIUS * sinf(theta2)); // 外周2
+		vertices[vIndex + 3].position = DirectX::XMFLOAT3(RADIUS * cosf(theta1), HALF_HEIGHT, RADIUS * sinf(theta1)); // 外周1
+
+		for (int j = 0; j < 4; ++j) {
+			vertices[vIndex + j].color = baseColor;
+		}
+
+		vIndex += 4;
+	}
+
+	// 下面の蓋
+	for (int i = 0; i < SLICES; ++i) {
+		float theta1 = (2.0f * DirectX::XM_PI * i) / SLICES;
+		float theta2 = (2.0f * DirectX::XM_PI * (i + 1)) / SLICES;
+
+		//4つのポリゴンを生成する(左上と右上の頂点を同じにする)ルールを崩さずにするために同じ座標で点を2つ記入
+		vertices[vIndex].position = DirectX::XMFLOAT3(0.0f, -HALF_HEIGHT, 0.0f); // 中心
+		vertices[vIndex + 1].position = DirectX::XMFLOAT3(0.0f, -HALF_HEIGHT, 0.0f); // 中心
+		vertices[vIndex + 2].position = DirectX::XMFLOAT3(RADIUS * cosf(theta1), -HALF_HEIGHT, RADIUS * sinf(theta1)); // 外周1
+		vertices[vIndex + 3].position = DirectX::XMFLOAT3(RADIUS * cosf(theta2), -HALF_HEIGHT, RADIUS * sinf(theta2)); // 外周2
+
+		for (int j = 0; j < 4; ++j) {
+			vertices[vIndex + j].color = baseColor;
+		}
+		vIndex += 4;
+	}
+
+	//側面 
+	for (int i = 0; i < SLICES; ++i) {
+		float theta1 = (2.0f * DirectX::XM_PI * i) / SLICES;
+		float theta2 = (2.0f * DirectX::XM_PI * (i + 1)) / SLICES;
+
+		float c1 = cosf(theta1), s1 = sinf(theta1);
+		float c2 = cosf(theta2), s2 = sinf(theta2);
+
+		vertices[vIndex].position = DirectX::XMFLOAT3(RADIUS * c1, HALF_HEIGHT, RADIUS * s1); // 左上
+		vertices[vIndex + 1].position = DirectX::XMFLOAT3(RADIUS * c2, HALF_HEIGHT, RADIUS * s2); // 右上
+		vertices[vIndex + 2].position = DirectX::XMFLOAT3(RADIUS * c2, -HALF_HEIGHT, RADIUS * s2); // 右下
+		vertices[vIndex + 3].position = DirectX::XMFLOAT3(RADIUS * c1, -HALF_HEIGHT, RADIUS * s1); // 左下
+
+		for (int j = 0; j < 4; ++j) {
+			vertices[vIndex + j].color = baseColor;
+		}
+		vIndex += 4;
+	}
+
+	// UV座標の設定
+	for (int f = 0; f < totalFaces; ++f) {
+		int baseV = f * 4;
+
+		vertices[baseV].uv = DirectX::XMFLOAT2(0.0f, 0.0f);
+		vertices[baseV + 1].uv = DirectX::XMFLOAT2(1.0f, 0.0f);
+		vertices[baseV + 2].uv = DirectX::XMFLOAT2(1.0f, 1.0f);
+		vertices[baseV + 3].uv = DirectX::XMFLOAT2(0.0f, 1.0f);
+
+		indices.push_back(baseV + 0);
+		indices.push_back(baseV + 1);
+		indices.push_back(baseV + 2);
+		indices.push_back(baseV + 0);
+		indices.push_back(baseV + 2);
+		indices.push_back(baseV + 3);
+	}
 }

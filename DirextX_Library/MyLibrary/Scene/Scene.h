@@ -57,7 +57,7 @@ private:
 	Box3D* box3D;
 	Sphere3D* sphere3D;
 	Line3D* line3D;
-	TriangularPrism* triangle3D;
+	Triangle3D* triangle3D;
 	Cylinder* cylinder;
 
 	Capsule* capsule;

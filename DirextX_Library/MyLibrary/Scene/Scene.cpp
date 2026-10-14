@@ -92,6 +92,8 @@ Scene::Scene()
 
 	sphere3D = new Sphere3D();
 	sphere3D->GetTransform().position = Vector3(0.0f,0.0f,0.0f);
+	sphere3D->SetSphereParam(Sphere3D::SphereParam(50.0f, 60, 60));
+
 	box3D = new Box3D();
 	box3D->GetTransform().position = Vector3(-100.0f, 0.0f, 0.0f);
 	box3D->SetLength(Vector3(200.0f, 200.0f, 50.0f));
@@ -99,7 +101,7 @@ Scene::Scene()
 	line3D->GetTransform().position = Vector3(0.0f, 0.0f, 0.0f);
 	line3D->SetStartAndEnd(Vector3(100, 100, 500),Vector3(200,200,-500));
 
-	triangle3D = new TriangularPrism();
+	triangle3D = new Triangle3D();
 
 	triangle3D->GetTransform().position = Vector3(150.0f, 0.0f, 0.0f);
 	triangle3D->SetLength(Vector3(120.0f, 200.0f, 150.0f));
@@ -107,10 +109,13 @@ Scene::Scene()
 	cylinder = new Cylinder();
 
 	cylinder->GetTransform().position = Vector3(-170.0f, 0.0f, 150.0f);
+	cylinder->SetCylinderParam(Cylinder::CylinderParam(50.0f, 200.0f));
 
 	capsule = new Capsule();
 
 	capsule->GetTransform().position = Vector3(170.0f, 0.0f, 150.0f);
+	capsule->SetCapsuleParam(Capsule::CapsuleParam(20, 10, 20, 100));
+	capsule->SetColor(Vector4(1.0f,0.0f,0.0f,1.0f));
 
 	capsule->SetAlpha(0.01f);
 	capsule->SetBlendMode(BlendState::NO_BLEND);

@@ -69,4 +69,5 @@ protected:
 	// SRV
 	DescriptorHandle* descriptorHandle = nullptr;
 
+	Vector4 baseColor;
 };
