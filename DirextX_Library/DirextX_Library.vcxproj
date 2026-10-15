@@ -167,6 +167,9 @@
     <ClCompile Include="MyLibrary\Engine\Engine.cpp" />
     <ClCompile Include="MyLibrary\FBXModel\FBXModel.cpp" />
     <ClCompile Include="MyLibrary\IndexBuffer\IndexBuffer.cpp" />
+    <ClCompile Include="MyLibrary\Input\InputManager.cpp" />
+    <ClCompile Include="MyLibrary\Input\Key\KeyInput.cpp" />
+    <ClCompile Include="MyLibrary\Input\Mouse\MouseInput.cpp" />
     <ClCompile Include="MyLibrary\main.cpp" />
     <ClCompile Include="MyLibrary\Object2D\Object2DManager.cpp" />
     <ClCompile Include="MyLibrary\Object3D\Object3DManager.cpp" />
@@ -224,6 +227,11 @@
     <ClInclude Include="MyLibrary\Engine\Engine.h" />
     <ClInclude Include="MyLibrary\FBXModel\FBXModel.h" />
     <ClInclude Include="MyLibrary\IndexBuffer\IndexBuffer.h" />
+    <ClInclude Include="MyLibrary\Input\InputManager.h" />
+    <ClInclude Include="MyLibrary\Input\Key\KeyCode.h" />
+    <ClInclude Include="MyLibrary\Input\Key\KeyInput.h" />
+    <ClInclude Include="MyLibrary\Input\Mouse\MouseCode.h" />
+    <ClInclude Include="MyLibrary\Input\Mouse\MouseInput.h" />
     <ClInclude Include="MyLibrary\Object2D\Object2D.h" />
     <ClInclude Include="MyLibrary\Object2D\Object2DManager.h" />
     <ClInclude Include="MyLibrary\Object3D\Object3D.h" />

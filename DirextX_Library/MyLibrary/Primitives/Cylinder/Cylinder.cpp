@@ -103,7 +103,7 @@ Cylinder::Cylinder()
 	drawType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
-	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
+	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
 }
 
 Cylinder::~Cylinder()
@@ -136,6 +136,30 @@ void Cylinder::SetCylinderParam(const CylinderParam& _param)
 	}
 	vertexBuffer->BufferMapping(vertices.data());
 
+}
+
+void Cylinder::SetFill(bool _fill)
+{
+	if (!_fill) {
+		std::vector<uint32_t> wireFrameIndices;
+		// インデックス設定
+		CreateIndexWireFrame(param.slices, wireFrameIndices);
+		indexSize = (UINT)wireFrameIndices.size();
+		auto size = sizeof(uint32_t) * wireFrameIndices.size();
+		indexBuffer->Resize(size);
+		indexBuffer->BufferMapping(wireFrameIndices.data());
+	}
+	else {
+		std::vector<uint32_t> indices;
+		// インデックス設定
+		CreateIndexFill(param.slices, indices);
+		indexSize = (UINT)indices.size();
+		auto size = sizeof(uint32_t) * indices.size();
+		indexBuffer->Resize(size);
+		indexBuffer->BufferMapping(indices.data());
+	}
+
+	Polygon3D::SetFill(_fill);
 }
 
 void Cylinder::Update()
@@ -226,6 +250,22 @@ void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, st
 		vertices[baseV + 1].uv = DirectX::XMFLOAT2(1.0f, 0.0f);
 		vertices[baseV + 2].uv = DirectX::XMFLOAT2(1.0f, 1.0f);
 		vertices[baseV + 3].uv = DirectX::XMFLOAT2(0.0f, 1.0f);
+	}
+
+	if (fillMode) {
+		CreateIndexFill(SLICES, indices);
+	}
+	else {
+		CreateIndexWireFrame(SLICES, indices);
+	}
+}
+
+void Cylinder::CreateIndexFill(int _slices, std::vector<uint32_t>& indices)
+{
+	const int TOTAL = _slices + _slices + _slices;
+	// UV座標の設定
+	for (int f = 0; f < TOTAL; ++f) {
+		int baseV = f * 4;
 
 		indices.push_back(baseV + 0);
 		indices.push_back(baseV + 1);
@@ -233,5 +273,48 @@ void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, st
 		indices.push_back(baseV + 0);
 		indices.push_back(baseV + 2);
 		indices.push_back(baseV + 3);
+	}
+}
+
+void Cylinder::CreateIndexWireFrame(int _slices, std::vector<uint32_t>& indices)
+{
+	indices.clear();
+
+	const int SLICES = _slices;
+
+	const int TOP_OFFSET = 0;
+	const int BOTTOM_OFFSET = SLICES * 4;
+	const int SIDE_OFFSET = SLICES * 8;
+
+	// 上面の円周
+	for (int i = 0; i < SLICES; ++i)
+	{
+		const uint32_t current = TOP_OFFSET + i * 4 + 3;
+
+		const uint32_t next = TOP_OFFSET + i * 4 + 2;
+
+		indices.push_back(current);
+		indices.push_back(next);
+	}
+
+	// 下面の円周
+	for (int i = 0; i < SLICES; ++i)
+	{
+		const uint32_t current = BOTTOM_OFFSET + i * 4 + 2;
+
+		const uint32_t next = BOTTOM_OFFSET + i * 4 + 3;
+
+		indices.push_back(current);
+		indices.push_back(next);
+	}
+
+	
+	// 側面の縦線
+	for (uint32_t i = 0; i < SLICES; ++i)
+	{
+		const uint32_t base = SIDE_OFFSET + i * 4;
+
+		indices.push_back(base);
+        indices.push_back(base + 3);
 	}
 }

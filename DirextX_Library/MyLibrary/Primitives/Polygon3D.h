@@ -43,31 +43,31 @@ protected:
 	void SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint);
 	void SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint);
 
-	std::unique_ptr<VertexBuffer> vertexBuffer;
-	std::unique_ptr<RootSignature> rootSignature;
-	std::unique_ptr<PipelineState> pipelineState;
-	std::unique_ptr<PipelineState> wireFramePipelineState;
-	std::unique_ptr<IndexBuffer> indexBuffer;
+	std::unique_ptr<VertexBuffer> vertexBuffer = nullptr;
+	std::unique_ptr<RootSignature> rootSignature = nullptr;
+	std::unique_ptr<PipelineState> pipelineState = nullptr;
+	std::unique_ptr<PipelineState> wireFramePipelineState = nullptr;
+	std::unique_ptr<IndexBuffer> indexBuffer = nullptr;
 
 	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;
 
-	bool useIndex;
+	bool useIndex = true;
 
-	UINT indexSize;
-	UINT polygonSize;
+	UINT indexSize = 0;
+	UINT polygonSize = 0;
 
 	std::vector<Vertex>vertices;
 
 	D3D12_PRIMITIVE_TOPOLOGY drawType;
 
-	bool fillMode;
+	bool fillMode = true;
 
-	Vector4 uvRect;
+	Vector4 uvRect = Vector4();
 
-	TextureData textureData;
+	TextureData textureData = TextureData();
 
 	// SRV
 	DescriptorHandle* descriptorHandle = nullptr;
 
-	Vector4 baseColor;
+	Vector4 baseColor = Vector4();
 };

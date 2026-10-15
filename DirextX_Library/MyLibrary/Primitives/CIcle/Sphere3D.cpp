@@ -88,7 +88,7 @@ Sphere3D::Sphere3D()
 	drawType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
-	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
+	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
 }
 
 Sphere3D::~Sphere3D()
@@ -124,6 +124,31 @@ void Sphere3D::SetSphereParam(const SphereParam& _param)
 	vertexBuffer->BufferMapping(vertices.data());
 }
 
+void Sphere3D::SetFill(bool _fill)
+{
+	if (!_fill) {
+		std::vector<uint32_t> wireFrameIndices;
+		// インデックス設定
+		CreateGridIndices(param.sliceCount, param.stackCount, wireFrameIndices);
+		indexSize = (UINT)wireFrameIndices.size();
+		auto size = sizeof(uint32_t) * wireFrameIndices.size();
+		indexBuffer->Resize(size);
+		indexBuffer->BufferMapping(wireFrameIndices.data());
+	}
+	else {
+		std::vector<uint32_t> indices;
+		// インデックス設定
+		CreateFillIndex(param.sliceCount, param.stackCount, indices);
+		indexSize = (UINT)indices.size();
+		auto size = sizeof(uint32_t) * indices.size();
+		indexBuffer->Resize(size);
+		indexBuffer->BufferMapping(indices.data());
+	}
+
+	Polygon3D::SetFill(_fill);
+}
+
+
 void Sphere3D::Update()
 {
 	//VertexMapping();
@@ -134,7 +159,7 @@ void Sphere3D::Draw()
 	Polygon3D::Draw();
 }
 
-void Sphere3D::CreateVertexSphere(float _radius, float _sliceCount, float _stackCount, std::vector<uint32_t>& indices)
+void Sphere3D::CreateVertexSphere(float _radius, uint32_t _sliceCount, uint32_t _stackCount, std::vector<uint32_t>& indices)
 {
 	// 球体の設定パラメータ 
 	const float radius = _radius;       //半径（キューブのサイズに合わせた大きさ）
@@ -180,12 +205,22 @@ void Sphere3D::CreateVertexSphere(float _radius, float _sliceCount, float _stack
 			vIndex++;
 		}
 	}
+	if (fillMode) {
+		CreateFillIndex(sliceCount, stackCount, indices);
+	}
+	else {
+		CreateGridIndices(sliceCount, stackCount, indices);
+	}
+	
+}
 
+void Sphere3D::CreateFillIndex(uint32_t _sliceCount, uint32_t _stackCount, std::vector<uint32_t>& indices)
+{
 	//各グリッドを時計回りの三角形2つ（インデックス6個）に分割
-	for (uint32_t i = 0; i < stackCount; ++i) {
-		for (uint32_t j = 0; j < sliceCount; ++j) {
-			uint32_t row1 = i * (sliceCount + 1);
-			uint32_t row2 = (i + 1) * (sliceCount + 1);
+	for (uint32_t i = 0; i < _stackCount; ++i) {
+		for (uint32_t j = 0; j < _sliceCount; ++j) {
+			uint32_t row1 = i * (_sliceCount + 1);
+			uint32_t row2 = (i + 1) * (_sliceCount + 1);
 
 			// 四角形の4頂点のインデックス
 			uint32_t topLeft = row1 + j;
@@ -202,6 +237,39 @@ void Sphere3D::CreateVertexSphere(float _radius, float _sliceCount, float _stack
 			indices.push_back(topLeft);
 			indices.push_back(bottomRight);
 			indices.push_back(bottomLeft);
+		}
+	}
+}
+
+void Sphere3D::CreateGridIndices(uint32_t _sliceCount,uint32_t _stackCount,std::vector<uint32_t>& indices)
+{
+	indices.clear();
+
+	const uint32_t stride = _sliceCount + 1;
+
+	// 経度方向の線（上から下）
+	for (uint32_t j = 0; j < _sliceCount; ++j)
+	{
+		for (uint32_t i = 0; i < _stackCount; ++i)
+		{
+			const uint32_t current = i * stride + j;
+			const uint32_t next = (i + 1) * stride + j;
+
+			indices.push_back(current);
+			indices.push_back(next);
+		}
+	}
+
+	// 緯度方向の線（左から右）
+	for (uint32_t i = 1; i < _stackCount; ++i)
+	{
+		for (uint32_t j = 0; j < _sliceCount; ++j)
+		{
+			const uint32_t current = i * stride + j;
+			const uint32_t next = current + 1;
+
+			indices.push_back(current);
+			indices.push_back(next);
 		}
 	}
 }

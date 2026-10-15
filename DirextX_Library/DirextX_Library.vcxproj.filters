@@ -112,6 +112,15 @@
     <Filter Include="MyLibrary\Billboard">
       <UniqueIdentifier>{5e2e0fc4-0d48-4bc7-906e-b028f415a7b3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MyLibrary\Input">
+      <UniqueIdentifier>{0460e0d5-c2f4-43c1-a129-19bd2a22f79b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLibrary\Input\Key">
+      <UniqueIdentifier>{4c15104e-c60c-476f-aa0b-9cbadc030dda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLibrary\Input\Mouse">
+      <UniqueIdentifier>{1b2b3ddb-2337-4615-9681-f59591781fc0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImGui\crude_json.cpp">
@@ -263,6 +272,15 @@
     </ClCompile>
     <ClCompile Include="MyLibrary\Billboard\Billboard.cpp">
       <Filter>MyLibrary\Billboard</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\Input\Key\KeyInput.cpp">
+      <Filter>MyLibrary\Input\Key</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\Input\InputManager.cpp">
+      <Filter>MyLibrary\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\Input\Mouse\MouseInput.cpp">
+      <Filter>MyLibrary\Input\Mouse</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -436,6 +454,21 @@
     </ClInclude>
     <ClInclude Include="MyLibrary\Billboard\Billboard.h">
       <Filter>MyLibrary\Billboard</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Input\Key\KeyInput.h">
+      <Filter>MyLibrary\Input\Key</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Input\InputManager.h">
+      <Filter>MyLibrary\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Input\Key\KeyCode.h">
+      <Filter>MyLibrary\Input\Key</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Input\Mouse\MouseInput.h">
+      <Filter>MyLibrary\Input\Mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Input\Mouse\MouseCode.h">
+      <Filter>MyLibrary\Input\Mouse</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -102,7 +102,7 @@ Box3D::Box3D()
 	drawType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
-	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
+	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
 }
 
 Box3D::~Box3D()
@@ -120,6 +120,47 @@ void Box3D::SetLength(const Vector3& _length)
 
 	vertexBuffer->BufferMapping(vertices.data());
 }
+
+void Box3D::SetFill(bool _fill)
+{
+	if (!_fill) {
+		std::vector<uint32_t> indices = {
+			// 前面
+			0,  1,  2,  3,  0,
+			// 背面
+			4,  5,  6,  7,  4,
+			// 上面
+			8,  9, 10, 11,  8,
+			// 下面
+			12, 13, 14, 15, 12,
+			// 左側面
+			16, 17, 18, 19, 16,
+			// 右側面
+			20, 21, 22, 23, 20
+		};
+		indexSize = (UINT)indices.size();
+		auto size = sizeof(uint32_t) * indices.size();
+		indexBuffer->Resize(size);
+		indexBuffer->BufferMapping(indices.data());
+	}
+	else {
+		std::vector<uint32_t> indices = {
+		 0,  1,  2,  0,  2,  3, //前面
+		 4,  5,  6,  4,  6,  7, //背面
+		 8,  9, 10,  8, 10, 11, //上面
+		12, 13, 14,  12, 14, 15, //下面
+		16, 17, 18,  16, 18, 19, //左側面
+		20, 21, 22,  20, 22, 23  //右側面
+		};
+		indexSize = (UINT)indices.size();
+		auto size = sizeof(uint32_t) * indices.size();
+		indexBuffer->Resize(size);
+		indexBuffer->BufferMapping(indices.data());
+	}
+
+	Polygon3D::SetFill(_fill);
+}
+
 
 void Box3D::Update()
 {
@@ -157,7 +198,16 @@ void Box3D::Draw()
 	if (useIndex) {
 		commandList->IASetIndexBuffer(&indexBuffer->View());
 
-		commandList->DrawIndexedInstanced(indexSize, 1, 0, 0, 0); //形に応じたインデックスの数分描画する
+		if (fillMode) {
+			commandList->DrawIndexedInstanced(indexSize, 1, 0, 0, 0); //形に応じたインデックスの数分描画する
+		}
+		else {
+			// 1面につき5インデックス
+			for (int i = 0; i < 6; ++i)
+			{
+				commandList->DrawIndexedInstanced(5, 1, i * 5, 0, 0);
+			}
+		}
 	}
 	else {
 		commandList->DrawInstanced(polygonSize, 1, 0, 0); // 形に応じた頂点の数を描画する

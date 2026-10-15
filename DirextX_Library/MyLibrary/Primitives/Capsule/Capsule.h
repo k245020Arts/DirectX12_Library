@@ -40,12 +40,17 @@ public:
 
 	void SetCapsuleParam(const CapsuleParam& _param);
 
+	void SetFill(bool _fill)override;
+
 private:
 
 	void Update()override;
 	void Draw()override;
 
 	void CreateCausulePosition(const int _stacks, const int _slices, const float _radius, const float _height, std::vector<uint32_t>& indices);
+
+	void CreateFillIndices(const int _stacks, const int _slices, std::vector<uint32_t>& indices);
+	void CreateWireFrameIndices(const int _stacks, const int _slices, std::vector<uint32_t>& indices);
 
 	CapsuleParam capsuleParam;
 };

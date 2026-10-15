@@ -18,9 +18,13 @@
 #include "../Primitives/Capsule/Capsule.h"
 #include "../Camera3D/Camera3D.h"
 #include "../Billboard/Billboard.h"
+#include "../Input/InputManager.h"
 
+
+#define ORIGINAL_MOUSE_POINTER
 //#define ON2D
 
+static const float CLICK_TIME = 0.2f;
 
 Scene::Scene()
 {
@@ -67,11 +71,11 @@ Scene::Scene()
 	texture2D->SetBlendMode(BlendState::ALPHA);
 	texture2D->SetAlpha(0.01f);*/
 
-	texture2D2 = new Texture2D();
-	texture2D2->Load("data/textest.png");
-	texture2D2->GetTransform().position = Vector3(200, 200, 0);
+	mousePointer = new Texture2D();
+	mousePointer->Load("data/textest.png");
+	mousePointer->GetTransform().position = Vector3(200, 200, 0);
 	//texture2D2->SetSize(256, 256);
-	texture2D2->SetRect(Vector4(0.0f, 0.0f, 128.0f, 128.0f));
+	mousePointer->SetRect(Vector4(0.0f, 0.0f, 128.0f, 128.0f));
 	//texture2D2->SetFlipX(false);
 	//texture2D2->SetFlipY(true);
 
@@ -82,21 +86,30 @@ Scene::Scene()
 	texture2D3->SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 #endif // ON2D
 
+	InputManager::GetInstance()->SetMouseDraw(false);
 	//L"data/Alicia/FBX/Alicia_solid_Unity.FBX"
 	/*model = new FBXModel(); 
 	model->Load("data/Alicia/FBX/Alicia_solid_Unity.FBX");*/
 
-	/*texture2D2 = new Texture2D();
-	texture2D2->Load("data/textest.png");
-	texture2D2->GetTransform().position = Vector3(200, 200, 0);*/
+#ifdef ORIGINAL_MOUSE_POINTER
+	clickTime = 0.0f;
+	mousePointer = new Texture2D();
+	mousePointer->GetTransform().scale = Vector3(0.4f, 0.4f, 0.4f);
+	mousePointer->Load("data/mousePointer.png");
+	mousePointer->GetTransform().position = Vector3(200, 200, 0);
+	mousePointer->SetRect(Vector4(0.0f, 0.0f, 96.2f, 120.3f));
 
+#endif
 	sphere3D = new Sphere3D();
 	sphere3D->GetTransform().position = Vector3(0.0f,0.0f,0.0f);
-	sphere3D->SetSphereParam(Sphere3D::SphereParam(50.0f, 60, 60));
+	sphere3D->SetSphereParam(Sphere3D::SphereParam(50.0f));
+	sphere3D->SetFill(true);
 
 	box3D = new Box3D();
 	box3D->GetTransform().position = Vector3(-100.0f, 0.0f, 0.0f);
 	box3D->SetLength(Vector3(200.0f, 200.0f, 50.0f));
+	box3D->SetFill(false);
+
 	line3D = new Line3D();
 	line3D->GetTransform().position = Vector3(0.0f, 0.0f, 0.0f);
 	line3D->SetStartAndEnd(Vector3(100, 100, 500),Vector3(200,200,-500));
@@ -105,11 +118,13 @@ Scene::Scene()
 
 	triangle3D->GetTransform().position = Vector3(150.0f, 0.0f, 0.0f);
 	triangle3D->SetLength(Vector3(120.0f, 200.0f, 150.0f));
+	triangle3D->SetFill(false);
 
 	cylinder = new Cylinder();
 
 	cylinder->GetTransform().position = Vector3(-170.0f, 0.0f, 150.0f);
 	cylinder->SetCylinderParam(Cylinder::CylinderParam(50.0f, 200.0f));
+	cylinder->SetFill(false);
 
 	capsule = new Capsule();
 
@@ -119,6 +134,7 @@ Scene::Scene()
 
 	capsule->SetAlpha(0.01f);
 	capsule->SetBlendMode(BlendState::NO_BLEND);
+	capsule->SetFill(true);
 
 	billboard = new Billboard();
 	billboard->Load("data/textest.png");
@@ -151,7 +167,7 @@ Scene::~Scene()
 	delete star2D;*/
 }
 
-#define CAMERA_TEST
+//#define CAMERA_TEST
 
 void Scene::Update()
 {
@@ -187,13 +203,19 @@ void Scene::Update()
 	//box3D->Update();
 	box3D->GetTransform().rotation.y += 0.01f;
 
+	box3D->GetTransform().position.z += InputManager::GetInstance()->GetMouseWheelDelta();
+
+
 	//sphere3D->Update();
 	sphere3D->GetTransform().rotation.x += 0.01f;
 	
 	//line3D->Update();
 
 	//triangle3D->Update();
-	triangle3D->GetTransform().rotation.y += 0.01f;
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::W)) {
+		triangle3D->GetTransform().rotation.y += 0.01f;
+	}
+	
 
 	//cylinder->Update();
 	cylinder->GetTransform().rotation.y += 0.01f;
@@ -229,7 +251,7 @@ void Scene::Update()
 	}
 
 	// ’Ž‹“_‚©‚ç‚Ì‹——£
-	constexpr float RADIUS = 500.0f;
+	constexpr float RADIUS = 100.0f;
 	constexpr float HEIGHT = 50.0f;
 
 	const Vector3 nowPos = { 0.0f, 150.0f, -200.0f };
@@ -244,8 +266,24 @@ void Scene::Update()
 	camera->SetPosition(finalPos);
 
 #endif // CAMERA_TEST
+#ifdef ORIGINAL_MOUSE_POINTER
 
+	Vector2 mousePos = InputManager::GetInstance()->GetMousePosition();
 
+	mousePointer->GetTransform().position.x = mousePos.x;
+	mousePointer->GetTransform().position.y = mousePos.y;
+
+	if (clickTime > 0.0f) {
+		clickTime -= DeltaTime::GetInstance()->GetDeltaTime();
+		mousePointer->SetRect(Vector4(0.0f, 120.3f, 96.2f, 120.3f));
+	}
+	else {
+		mousePointer->SetRect(Vector4(0.0f, 0.0f, 96.2f, 120.3f));
+		if (InputManager::GetInstance()->GetMouseInputDown(MouseCode::Left)){
+			clickTime = CLICK_TIME;
+		}
+	}
+#endif
 }
 
 void Scene::Draw()

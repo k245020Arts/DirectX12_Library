@@ -47,6 +47,7 @@ public:
 	};
 
 	void SetCylinderParam(const CylinderParam& _param);
+	void SetFill(bool _fill)override;
 
 private:
 
@@ -57,4 +58,6 @@ private:
 
 	void CreateVertexCylider(int _slices,float _radius,float _height, std::vector<uint32_t>& indices);
 
+	void CreateIndexFill(int _slices, std::vector<uint32_t>& indices);
+	void CreateIndexWireFrame(int _slices, std::vector<uint32_t>& indices);
 };

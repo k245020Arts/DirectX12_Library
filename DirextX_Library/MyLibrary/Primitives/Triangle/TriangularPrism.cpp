@@ -77,7 +77,7 @@ TriangularPrism::TriangularPrism()
 	drawType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
-	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
+	SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
 }
 
 TriangularPrism::~TriangularPrism()
@@ -92,7 +92,56 @@ void TriangularPrism::Update()
 
 void TriangularPrism::Draw()
 {
-	Polygon3D::Draw();
+	auto currentIndex = Engine::GetInstance()->CurrentBackBufferIndex(); // 現在のフレーム番号を取得する
+	auto commandList = Engine::GetInstance()->CommandList(); // コマンドリスト
+	auto vbView = vertexBuffer->GetView(); // 頂点バッファビュー
+
+	commandList->SetGraphicsRootSignature(rootSignature->Get()); // ルートシグネチャをセット
+	if (fillMode) {
+		commandList->SetPipelineState(pipelineState->GetPipelineState()); // パイプラインステートをセット
+	}
+	else {
+		commandList->SetPipelineState(wireFramePipelineState->GetPipelineState()); // パイプラインステートをセット
+	}
+
+	commandList->SetDescriptorHeaps(1, DescriptorHeap::GetInstance()->GetHeap().GetAddressOf());
+
+	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
+	commandList->SetGraphicsRootDescriptorTable(1, descriptorHandle->handleGPU);
+
+	if (fillMode) {
+		commandList->IASetPrimitiveTopology(drawType);//適切な形に表示をするようにする
+	}
+	else {
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);//ワイヤーフレームの時は線表示をする
+	}
+
+	commandList->IASetVertexBuffers(0, 1, &vbView); //頂点バッファをスロット0番を使って1個だけ設定する
+
+	if (useIndex) {
+		commandList->IASetIndexBuffer(&indexBuffer->View());
+
+		if (fillMode) {
+			commandList->DrawIndexedInstanced(indexSize, 1, 0, 0, 0); //形に応じたインデックスの数分描画する
+		}
+		else {
+
+			const UINT faceIndexCounts[] = { 4, 4, 4, 5 };
+
+			UINT startIndex = 0;
+
+			for (UINT count : faceIndexCounts)
+			{
+				commandList->DrawIndexedInstanced(count, 1, startIndex, 0, 0);
+
+				startIndex += count;
+			}
+		}
+		
+	}
+	else {
+		commandList->DrawInstanced(polygonSize, 1, 0, 0); // 形に応じた頂点の数を描画する
+	}
 }
 
 void TriangularPrism::SetLength(const Vector3& _length)
@@ -105,6 +154,44 @@ void TriangularPrism::SetLength(const Vector3& _length)
 
 	vertexBuffer->BufferMapping(vertices.data());
 }
+
+void TriangularPrism::SetFill(bool _fill)
+{
+	if (!_fill) {
+		std::vector<uint32_t> wireFrameIndices = {
+			// 前面
+			0,  2,  3,  0,
+			// 背面
+			4,  6,  7,  4,
+			// 上面
+			8, 10, 11,  8,
+			// 底面
+			12, 13, 14, 15, 12
+		};
+		indexSize = (UINT)wireFrameIndices.size();
+		auto size = sizeof(uint32_t) * wireFrameIndices.size();
+		indexBuffer->Resize(size);
+		indexBuffer->BufferMapping(wireFrameIndices.data());
+	}
+	else {
+		// インデックス設定
+		std::vector<uint32_t> indices = {
+			 0,  1,  2,  0,  2,  3, // 前面
+			 4,  5,  6,  4,  6,  7, // 背面
+			 8,  9, 10,  8, 10, 11, // 上面
+			12, 13, 14,  12, 14, 15, // 下面（底面）
+			16, 17, 18,  16, 18, 19, // 左傾斜面
+			20, 21, 22,  20, 22, 23  // 右傾斜面
+		};
+		indexSize = (UINT)indices.size();
+		auto size = sizeof(uint32_t) * indices.size();
+		indexBuffer->Resize(size);
+		indexBuffer->BufferMapping(indices.data());
+	}
+
+	Polygon3D::SetFill(_fill);
+}
+
 
 void TriangularPrism::SetVertices(const Vector3& _length)
 {

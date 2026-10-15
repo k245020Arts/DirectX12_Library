@@ -15,6 +15,8 @@ public:
 
 	void SetLength(const Vector3& _length);
 
+	void SetFill(bool _fill)override;
+
 private:
 
 	void Update()override;

@@ -1,10 +1,15 @@
 #include "Window.h"
 #include <assert.h>
 #include "../../ImGui/imgui.h"
+//マウス用
+#include <Windows.h>
+#include <Windowsx.h>
 
 //using namespace DirectX;
 
 //HRESULT D3D12CreateDevice(IUnknown* pAdapter, D3D_FEATURE_LEVEL MiniumuFeatureLevel, REFIID riid, void** ppDevice);
+
+#include "../Input/InputManager.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -13,15 +18,72 @@ LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
 		return true;
 
+	//ImGuiがキーボード入力を占有している場合は、ゲーム側の処理をスキップ
+	if (ImGui::GetCurrentContext() != nullptr){
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.WantCaptureKeyboard) {
+			// ただし、キーが離されたイベント(WM_KEYUP)だけは処理しておかないと、
+			// ImGuiからゲームに戻った時にキーが「押しっぱなし」と誤認されるのを防ぐため、最低限のケアをします。
+			if (msg == WM_KEYUP) {
+				InputManager::GetInstance()->SetCurrentKeyCode(static_cast<int>(wparam), false);
+			}
+			return DefWindowProc(hwnd, msg, wparam, lparam);
+		}
+	}
+
 	switch (msg)
 	{
+		//キーが押されたとき
+	case WM_KEYDOWN:
+		InputManager::GetInstance()->SetCurrentKeyCode(static_cast<int>(wparam), true);
+		break;
+
+		//キーが離されたとき
+	case WM_KEYUP:
+		InputManager::GetInstance()->SetCurrentKeyCode(static_cast<int>(wparam), false);
+		break;
+
 	case WM_DESTROY:
 		PostQuitMessage(0);
+		return 0;
+
+	case WM_MOUSEMOVE:
+
+		InputManager::GetInstance()->SetMousePosition(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+		return 0;
+
+	case WM_LBUTTONDOWN:
+		InputManager::GetInstance()->SetMouseButtonState(0, true);
+		return 0;
+
+	case WM_LBUTTONUP:
+		InputManager::GetInstance()->SetMouseButtonState(0, false);
+		return 0;
+
+	case WM_RBUTTONDOWN:
+		InputManager::GetInstance()->SetMouseButtonState(1, true);
+		return 0;
+
+	case WM_RBUTTONUP:
+		InputManager::GetInstance()->SetMouseButtonState(1, false);
+		return 0;
+
+	case WM_MBUTTONDOWN:
+		InputManager::GetInstance()->SetMouseButtonState(2, true);
+		return 0;
+
+	case WM_MBUTTONUP:
+		InputManager::GetInstance()->SetMouseButtonState(2, false);
+		return 0;
+
+	case WM_MOUSEWHEEL:
+		InputManager::GetInstance()->SetWheelDelta(GET_WHEEL_DELTA_WPARAM(wparam));
 		return 0;
 	}
 
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+
 
 int AlignmentedSize(size_t size, size_t alignment) 
 {

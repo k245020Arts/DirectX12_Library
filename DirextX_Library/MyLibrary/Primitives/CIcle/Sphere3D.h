@@ -47,12 +47,17 @@ public:
 
 	void SetSphereParam(const SphereParam& _param);
 
+	void SetFill(bool _fill)override;
+
 private:
 
 	void Update()override;
 	void Draw()override;
 
-	void CreateVertexSphere(float _radius,float _sliceCount,float _stackCount, std::vector<uint32_t>& indices);
+	void CreateVertexSphere(float _radius, uint32_t _sliceCount, uint32_t _stackCount, std::vector<uint32_t>& indices);
+
+	void CreateFillIndex(uint32_t _sliceCount, uint32_t _stackCount, std::vector<uint32_t>& indices);
+	void CreateGridIndices(uint32_t _sliceCount, uint32_t _stackCount, std::vector<uint32_t>& indices);
 
 	SphereParam param;
 };

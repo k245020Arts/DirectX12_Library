@@ -46,7 +46,7 @@ private:
 
 	Texture2D* texture2D;
 	Texture2D* texture2D1;
-	Texture2D* texture2D2;
+	Texture2D* mousePointer;
 	Texture2D* texture2D3;
 
 	float animationCount;
@@ -64,4 +64,6 @@ private:
 	Billboard* billboard;
 
 	float cameraAngle = 0.0f;
+
+	float clickTime;
 };

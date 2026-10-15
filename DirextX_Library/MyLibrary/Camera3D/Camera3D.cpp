@@ -2,7 +2,7 @@
 
 Camera3D::Camera3D()
 {
-	position = { 0.0f, 150.0f, -200.0f };
+	position = { 0.0f, 150.0f, -300.0f };
 	target = { 0.0f, 0.0f, 0.0f };
 	upVec = { 0.0f, 1.0f, 0.0f };
 

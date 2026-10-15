@@ -11,6 +11,7 @@
 #include "../../ImGui/imgui.h"
 #include "../../ImGui/imgui_impl_win32.h"
 #include "../../ImGui/imgui_impl_dx12.h"
+#include "../Input/InputManager.h"
 
 Application::Application()
 {
@@ -28,6 +29,7 @@ void Application::ApplicationInit(Window window)
 		imgui = std::make_unique<DirectX12Imgui>();
 	}
 	imgui->SetUpImGui(window.GetHwnd());
+	InputManager::GetInstance()->SetMouseHwnd(window.GetHwnd());
 }
 
 void Application::BeginUpdate()
@@ -45,7 +47,8 @@ void Application::BeginUpdate()
 void Application::ApplicationUpdate()
 {
 	Object2DManager::GetInstance()->Update(); //オブジェクト2Dの更新処理(スクリーン座標に置き換え等をしてる)
-	Object3DManager::GetInstance()->Update(); //オブジェクト3Dの更新処理(スクリーン座標に置き換え等をしてる)
+	Object3DManager::GetInstance()->Update(); //オブジェクト3Dの更新処理(カメラの設定ライトの設定等)
+	InputManager::GetInstance()->Update();
 	Engine::GetInstance()->BeginRender();	  //描画をする前の処理
 }
 
