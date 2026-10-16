@@ -84,6 +84,7 @@ bool Engine::Init(HWND _hwnd, const Size& _size)
 
 void Engine::BeginRender()
 {
+
     // 必ずフレーム開始時に現在のバックバッファを取得
     currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
 

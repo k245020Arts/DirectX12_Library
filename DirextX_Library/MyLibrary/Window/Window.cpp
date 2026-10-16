@@ -50,35 +50,35 @@ LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	case WM_MOUSEMOVE:
 
 		InputManager::GetInstance()->SetMousePosition(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
-		return 0;
+		break;
 
 	case WM_LBUTTONDOWN:
 		InputManager::GetInstance()->SetMouseButtonState(0, true);
-		return 0;
+		break;
 
 	case WM_LBUTTONUP:
 		InputManager::GetInstance()->SetMouseButtonState(0, false);
-		return 0;
+		break;
 
 	case WM_RBUTTONDOWN:
 		InputManager::GetInstance()->SetMouseButtonState(1, true);
-		return 0;
+		break;
 
 	case WM_RBUTTONUP:
 		InputManager::GetInstance()->SetMouseButtonState(1, false);
-		return 0;
+		break;
 
 	case WM_MBUTTONDOWN:
 		InputManager::GetInstance()->SetMouseButtonState(2, true);
-		return 0;
+		break;
 
 	case WM_MBUTTONUP:
 		InputManager::GetInstance()->SetMouseButtonState(2, false);
-		return 0;
+		break;
 
 	case WM_MOUSEWHEEL:
 		InputManager::GetInstance()->SetWheelDelta(GET_WHEEL_DELTA_WPARAM(wparam));
-		return 0;
+		break;
 	}
 
 	return DefWindowProc(hwnd, msg, wparam, lparam);

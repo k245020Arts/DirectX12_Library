@@ -147,45 +147,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ImGui\crude_json.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_canvas.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_draw.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_dx9.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_dx11.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_dx12.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_win32.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_ja_gryph_ranges.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_node_editor.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_node_editor_api.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_tables.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_widgets.cpp">
-      <Filter>Imgui</Filter>
-    </ClCompile>
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp">
       <Filter>MyLibrary\AssimpLoader</Filter>
     </ClCompile>
@@ -312,59 +273,38 @@
     <ClCompile Include="KLibrary\File\FileSystemUtils\FileSystemUtils.cpp">
       <Filter>KLibrary\File\FileSystemUtils</Filter>
     </ClCompile>
+    <ClCompile Include="ImGui\crude_json.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_canvas.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_demo.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_draw.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_impl_dx12.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_impl_win32.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_ja_gryph_ranges.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_tables.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_widgets.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ImGui\crude_json.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imconfig.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_bezier_math.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_canvas.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_extra_math.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_dx9.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_dx11.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_dx12.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_dxlib.hpp">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_win32.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_internal.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_node_editor.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_node_editor_internal.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imstb_rectpack.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imstb_textedit.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imstb_truetype.h">
-      <Filter>Imgui</Filter>
-    </ClInclude>
     <ClInclude Include="MyLibrary\assimp\AssimpLoader.h">
       <Filter>MyLibrary\AssimpLoader</Filter>
     </ClInclude>
@@ -518,6 +458,42 @@
     <ClInclude Include="KLibrary\StringUtils\StringUtils.h">
       <Filter>KLibrary\String</Filter>
     </ClInclude>
+    <ClInclude Include="ImGui\crude_json.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imconfig.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_bezier_math.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_canvas.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_extra_math.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_dx12.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_win32.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_internal.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_rectpack.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_textedit.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_truetype.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\2DBaseShader\Basic_VertexShader.hlsl">
@@ -550,9 +526,6 @@
       <Filter>Imgui</Filter>
     </None>
     <None Include="ImGui\imgui_extra_math.inl">
-      <Filter>Imgui</Filter>
-    </None>
-    <None Include="ImGui\imgui_node_editor_internal.inl">
       <Filter>Imgui</Filter>
     </None>
   </ItemGroup>

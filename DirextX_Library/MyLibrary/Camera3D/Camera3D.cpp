@@ -19,7 +19,7 @@ Camera3D::~Camera3D()
 
 void Camera3D::Update()
 {
-	ImGui::Begin("カメラ座標");
+	ImGui::Begin(u8"カメラ座標");
 
 	ImGui::DragFloat3("camPos", &position.x, 1.0f, 0.0f, 10000.0f);
 	ImGui::DragFloat3("camTarget", &target.x, 1.0f, 0.0f, 10000.0f);

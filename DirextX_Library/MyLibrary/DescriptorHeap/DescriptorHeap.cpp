@@ -101,29 +101,70 @@ DescriptorHandle* DescriptorHeap::Register(TextureLoader* texture, const std::ws
 
 DescriptorHandle* DescriptorHeap::Allocate()
 {
-	auto count = m_pHandles.size();
+	// 空きスロットがあれば再利用
+	if (!m_FreeIndices.empty())
+	{
+		UINT index = m_FreeIndices.back();
+		m_FreeIndices.pop_back();
 
-	if (HANDLE_MAX <= count)
+		m_Used[index] = true;
+		return m_pHandles[index];
+	}
+
+	// 新規スロットの確保
+	const size_t index = m_pHandles.size();
+
+	if (index >= HANDLE_MAX)
 	{
 		return nullptr;
 	}
 
-	DescriptorHandle* pHandle = new DescriptorHandle();
+	auto* handle = new DescriptorHandle();
 
-	auto handleCPU =
-		m_pHeap->GetCPUDescriptorHandleForHeapStart();
+	handle->handleCPU = m_pHeap->GetCPUDescriptorHandleForHeapStart();
 
-	handleCPU.ptr += m_IncrementSize * count;
+	handle->handleCPU.ptr += m_IncrementSize * index;
 
-	auto handleGPU =
-		m_pHeap->GetGPUDescriptorHandleForHeapStart();
+	handle->handleGPU = m_pHeap->GetGPUDescriptorHandleForHeapStart();
 
-	handleGPU.ptr += m_IncrementSize * count;
+	handle->handleGPU.ptr += m_IncrementSize * index;
 
-	pHandle->handleCPU = handleCPU;
-	pHandle->handleGPU = handleGPU;
+	m_pHandles.push_back(handle);
+	m_Used.push_back(true);
 
-	m_pHandles.push_back(pHandle);
+	return handle;
+}
 
-	return pHandle;
+void DescriptorHeap::Free(D3D12_CPU_DESCRIPTOR_HANDLE cpu,D3D12_GPU_DESCRIPTOR_HANDLE gpu)
+{
+	const auto cpuStart = m_pHeap->GetCPUDescriptorHandleForHeapStart();
+
+	const auto gpuStart = m_pHeap->GetGPUDescriptorHandleForHeapStart();
+
+	if (cpu.ptr < cpuStart.ptr ||
+		gpu.ptr < gpuStart.ptr)
+	{
+		return;
+	}
+
+	const SIZE_T cpuOffset = cpu.ptr - cpuStart.ptr;
+	const SIZE_T gpuOffset = gpu.ptr - gpuStart.ptr;
+
+	// スロットの境界と CPU/GPU ハンドルの対応を確認
+	if (cpuOffset % m_IncrementSize != 0 ||
+		gpuOffset % m_IncrementSize != 0 ||
+		cpuOffset != gpuOffset)
+	{
+		return;
+	}
+
+	const UINT index = static_cast<UINT>(cpuOffset / m_IncrementSize);
+
+	if (index >= m_Used.size() || !m_Used[index])
+	{
+		return;
+	}
+
+	m_Used[index] = false;
+	m_FreeIndices.push_back(index);
 }

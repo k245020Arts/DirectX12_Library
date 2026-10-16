@@ -21,11 +21,19 @@ public:
 	DescriptorHandle* Register(TextureLoader* texture, const std::wstring& _path); // テクスチャーをディスクリプタヒープに登録し、ハンドルを返す
 
 	DescriptorHandle* Allocate();
+
+	void Free(D3D12_CPU_DESCRIPTOR_HANDLE cpu, D3D12_GPU_DESCRIPTOR_HANDLE gpu);
+
 private:
+
 	bool m_IsValid = false; // 生成に成功したかどうか
 	UINT m_IncrementSize = 0;
 	ComPtr<ID3D12DescriptorHeap> m_pHeap = nullptr; // ディスクリプタヒープ本体
 	std::vector<DescriptorHandle*> m_pHandles; // 登録されているハンドル
+
+	// 追加：空きスロットの管理
+	std::vector<UINT> m_FreeIndices;
+	std::vector<bool> m_Used;
 
 	friend class SingletonBase<DescriptorHeap>;
 };

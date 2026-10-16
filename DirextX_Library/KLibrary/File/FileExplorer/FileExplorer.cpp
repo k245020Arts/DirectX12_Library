@@ -26,7 +26,7 @@ int FileExplorer::directoryAndFileNum	= 0;
 std::list<std::string> FileExplorer::allEntryNameList = {};
 FileExplorer::CreateEntryImGuiWindowData FileExplorer::createDirectoryImGuiWindowData	= FileExplorer::CreateEntryImGuiWindowData();
 FileExplorer::CreateFileImGuiWindowData FileExplorer::createFileImGuiWindowData			= FileExplorer::CreateFileImGuiWindowData();
-bool FileExplorer::isDrawEntrySize		= true;
+bool FileExplorer::isDrawEntrySize		= false;
 
 void FileExplorer::Init()
 {

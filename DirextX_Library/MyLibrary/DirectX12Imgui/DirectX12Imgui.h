@@ -26,4 +26,6 @@ private:
 	void DebugRenderer();
 
 	friend class Application;
+
+	void SetUpStyle();
 };
