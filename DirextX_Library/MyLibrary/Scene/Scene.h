@@ -66,4 +66,9 @@ private:
 	float cameraAngle = 0.0f;
 
 	float clickTime;
+
+	void MoveCamera();
+
+	float cameraYaw;
+	float cameraPitch;
 };

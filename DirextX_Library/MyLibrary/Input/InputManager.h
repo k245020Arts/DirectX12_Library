@@ -19,6 +19,7 @@ public:
 
 	void SetMousePosition(int x, int y) { mouseInput->SetMousePosition(x, y); }
 	Vector2 GetMousePosition() { return Vector2((float)mouseInput->GetMouseX(), (float)mouseInput->GetMouseY()); }
+	Vector2 GetMouseDeltaPosition() { return Vector2((float)mouseInput->GetDeltaMouseX(), (float)mouseInput->GetDeltaMouseY()); }
 	
 	void SetWheelDelta(int _wheel) { mouseInput->SetWheelDelta(_wheel); };
 	int GetMouseWheelDelta() { return mouseInput->GetWheelDelta(); };

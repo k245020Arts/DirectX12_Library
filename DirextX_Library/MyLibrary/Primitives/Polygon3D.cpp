@@ -195,9 +195,9 @@ void Polygon3D::VertexMapping(const Camera3D* _camera)
 	Vector3 position = transform.position;
 
 	// ワールド行列の計算
-	DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z)
-		* DirectX::XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z)
-		* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+	Matrix world = Matrix::Scale(scale)
+		* Matrix::Rotation(rotation)
+		* Matrix::Translation(position);
 
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{

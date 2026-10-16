@@ -19,6 +19,7 @@
 #include "../Camera3D/Camera3D.h"
 #include "../Billboard/Billboard.h"
 #include "../Input/InputManager.h"
+#include <algorithm>
 
 
 #define ORIGINAL_MOUSE_POINTER
@@ -140,7 +141,7 @@ Scene::Scene()
 	billboard->Load("data/textest.png");
 	billboard->GetTransform().position = Vector3(170.0f, 50.0f, 250.0f);
 	billboard->SetRectUV(Vector4(0.0f,0.0f,0.5f,0.5f));
-	//billboard->SetBillBoardType(true);
+	billboard->SetBillBoardType(false);
 }
 
 Scene::~Scene()
@@ -203,8 +204,9 @@ void Scene::Update()
 	//box3D->Update();
 	box3D->GetTransform().rotation.y += 0.01f;
 
-	box3D->GetTransform().position.z += InputManager::GetInstance()->GetMouseWheelDelta();
-
+	//box3D->GetTransform().position.z += InputManager::GetInstance()->GetMouseWheelDelta();
+	
+	MoveCamera();
 
 	//sphere3D->Update();
 	sphere3D->GetTransform().rotation.x += 0.01f;
@@ -297,4 +299,104 @@ void Scene::Draw()
 	//cylinder->Draw();
 
 	//capsule->Draw();
+}
+
+void Scene::MoveCamera()
+{
+	auto* camera = Camera3D::GetInstance();
+	auto* input = InputManager::GetInstance();
+
+	Vector3 camPos = camera->GetPosition();
+	Vector3 target = camera->GetTarget();
+
+	// カメラから注視点までの距離
+	Vector3 toTarget = target - camPos;
+	float distance = toTarget.Size();
+
+	// 距離が0だと方向を計算できないため補正
+	distance = (std::max)(distance, 0.1f);
+
+	// マウスホイールでズーム
+	float wheel = static_cast<float>(input->GetMouseWheelDelta());
+
+	// WM_MOUSEWHEEL の値が120単位の場合
+	wheel /= 60.0f;
+
+	const float zoomSpeed = 10.0f;
+
+	if (wheel != 0.0f)
+	{
+		Vector3 forward = toTarget.Normalize();
+
+		// 注視点に向かって移動
+		camPos += forward * (wheel * zoomSpeed);
+
+		// 注視点を通り越さないように距離を制限
+		Vector3 remaining = target - camPos;
+		float newDistance = remaining.Size();
+
+		if (newDistance < 0.1f)
+		{
+			camPos = target - forward * 0.1f;
+		}
+
+		distance = (target - camPos).Size();
+	}
+
+	// 右ボタン：注視点を中心に回転
+	if (input->GetMouseInput(MouseCode::Right))
+	{
+		Vector2 mouseDelta =
+			input->GetMouseDeltaPosition();
+
+		const float rotateSpeed = 0.01f;
+
+		cameraYaw += mouseDelta.x * rotateSpeed;
+		cameraPitch -= mouseDelta.y * rotateSpeed;
+
+		// 真上・真下での反転を防ぐ
+		constexpr float LIMIT =
+			DirectX::XM_PIDIV2 - 0.01f;
+
+		cameraPitch = std::clamp(
+			cameraPitch, -LIMIT, LIMIT
+		);
+	}
+
+	// 最新のYaw・Pitchから前方向を再計算
+	Vector3 forward;
+	forward.x = std::sin(cameraYaw) * std::cos(cameraPitch);
+	forward.y = std::sin(cameraPitch);
+	forward.z = std::cos(cameraYaw) * std::cos(cameraPitch);
+
+	forward = forward.Normalize();
+
+	// 中ボタン：カメラと注視点を一緒に平行移動
+	if (input->GetMouseInput(MouseCode::Middle))
+	{
+		Vector2 mouseDelta = input->GetMouseDeltaPosition();
+
+		// カメラの右方向
+		Vector3 right( std::cos(cameraYaw),0.0f,-std::sin(cameraYaw));
+
+		// カメラの上方向
+		Vector3 up(-std::sin(cameraYaw) * std::sin(cameraPitch),std::cos(cameraPitch),-std::cos(cameraYaw) * std::sin(cameraPitch));
+
+		const float panSpeed = distance * 0.002f;
+
+		Vector3 pan =right * (-mouseDelta.x * panSpeed) + up * (mouseDelta.y * panSpeed);
+
+		camPos += pan;
+		target += pan;
+	}
+
+	// 注視点を中心にカメラ位置を再計算
+	// 回転中は注視点までの距離を維持する
+	if (input->GetMouseInput(MouseCode::Right))
+	{
+		camPos = target - forward * distance;
+	}
+
+	camera->SetPosition(camPos);
+	camera->SetTarget(target);
 }

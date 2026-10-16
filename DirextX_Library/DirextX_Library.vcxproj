@@ -226,6 +226,9 @@
     <ClInclude Include="MyLibrary\DirectX12Imgui\DirectX12Imgui.h" />
     <ClInclude Include="MyLibrary\Engine\Engine.h" />
     <ClInclude Include="MyLibrary\FBXModel\FBXModel.h" />
+    <ClInclude Include="MyLibrary\Helper\Helper.h" />
+    <ClInclude Include="MyLibrary\Helper\Matrix\MatrixHelper.h" />
+    <ClInclude Include="MyLibrary\Helper\Vector\VectorHelper.h" />
     <ClInclude Include="MyLibrary\IndexBuffer\IndexBuffer.h" />
     <ClInclude Include="MyLibrary\Input\InputManager.h" />
     <ClInclude Include="MyLibrary\Input\Key\KeyCode.h" />

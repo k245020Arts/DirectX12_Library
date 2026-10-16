@@ -45,8 +45,8 @@ private:
     Vector3 target{ 0.0f, 0.0f, 0.0f };
     Vector3 upVec{ 0.0f, 1.0f, 0.0f };
 
-    DirectX::XMMATRIX viewMatrix{};
-    DirectX::XMMATRIX projectionMatrix{};
+    Matrix viewMatrix{};
+    Matrix projectionMatrix{};
 
     float fovAngle = 0.0f;
     NearFar nearFar ={};

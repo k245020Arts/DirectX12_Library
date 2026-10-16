@@ -121,6 +121,15 @@
     <Filter Include="MyLibrary\Input\Mouse">
       <UniqueIdentifier>{1b2b3ddb-2337-4615-9681-f59591781fc0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MyLibrary\Heaper">
+      <UniqueIdentifier>{8cd929b0-3c21-45a3-9cc4-1385e5f4ab08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLibrary\Heaper\Vector">
+      <UniqueIdentifier>{993141a0-d590-4846-aca4-75002e381a24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLibrary\Heaper\Matrix">
+      <UniqueIdentifier>{eaf73a1d-7e1e-4144-9980-286225bf427f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImGui\crude_json.cpp">
@@ -469,6 +478,15 @@
     </ClInclude>
     <ClInclude Include="MyLibrary\Input\Mouse\MouseCode.h">
       <Filter>MyLibrary\Input\Mouse</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Helper\Vector\VectorHelper.h">
+      <Filter>MyLibrary\Heaper\Vector</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Helper\Helper.h">
+      <Filter>MyLibrary\Heaper</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Helper\Matrix\MatrixHelper.h">
+      <Filter>MyLibrary\Heaper\Matrix</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

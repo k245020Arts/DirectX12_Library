@@ -1,4 +1,5 @@
 #include "Camera3D.h"
+#include "../DirectX12Imgui/DirectX12Imgui.h"
 
 Camera3D::Camera3D()
 {
@@ -18,6 +19,12 @@ Camera3D::~Camera3D()
 
 void Camera3D::Update()
 {
+	ImGui::Begin("ÉJÉÅÉâç¿ïW");
+
+	ImGui::DragFloat3("camPos", &position.x, 1.0f, 0.0f, 10000.0f);
+	ImGui::DragFloat3("camTarget", &target.x, 1.0f, 0.0f, 10000.0f);
+
+	ImGui::End();
 	//target.x += 0.1f;
 	const auto eyePos = DirectX::XMVectorSet(position.x, position.y, position.z, 1.0f);
 	const auto targetPos = DirectX::XMVectorSet(target.x, target.y, target.z, 1.0f);

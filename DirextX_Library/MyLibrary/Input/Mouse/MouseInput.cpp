@@ -1,4 +1,5 @@
 #include "MouseInput.h"
+#include "../../ShaderStruct/ShaderStruct.h"
 
 MouseInput::MouseInput()
 {
@@ -25,7 +26,14 @@ void MouseInput::UpdateInputState()
     {
         ScreenToClient(hwnd, &pos);
 
-        mouse.x = pos.x;
-        mouse.y = pos.y;
+        mouse.pos.x = (float)pos.x;
+        mouse.pos.y = (float)pos.y;
     }
+
+    const Vector2 current = mouse.pos;
+
+    mouse.deltaPos = current - previewMousePos;
+
+    previewMousePos = current;
+
 }

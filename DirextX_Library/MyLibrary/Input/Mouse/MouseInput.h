@@ -1,6 +1,7 @@
 #pragma once
 #include "MouseCode.h"
 #include <Windows.h>
+#include "../../Helper/Vector/VectorHelper.h"
 
 /// <summary>
 /// マウス入力を管理するクラス。
@@ -21,10 +22,11 @@ private:
         bool current[3] = { false }; // 現在のフレーム
         bool prev[3] = { false };    // 1フレーム前
 
-        int x = 0;                   // マウス座標X
-        int y = 0;                   // マウス座標Y
+        Vector2 pos = Vector2();
 
         int wheelDelta = 0;          // ホイール回転量
+
+        Vector2 deltaPos = Vector2();
     };
 
     MouseState mouse;
@@ -48,8 +50,12 @@ private:
     }
 
     // 座標取得
-    int GetMouseX() const { return mouse.x; }
-    int GetMouseY() const { return mouse.y; }
+    float GetMouseX() const { return mouse.pos.x; }
+    float GetMouseY() const { return mouse.pos.y; }
+
+    // 座標取得
+    float GetDeltaMouseX() const { return mouse.deltaPos.x; }
+    float GetDeltaMouseY() const { return mouse.deltaPos.y; }
 
     // ホイール回転量取得
     int GetWheelDelta() const { return mouse.wheelDelta; }
@@ -65,8 +71,8 @@ private:
 
     void SetMousePosition(int x, int y)
     {
-        mouse.x = x;
-        mouse.y = y;
+        mouse.pos.x = (float)x;
+        mouse.pos.y = (float)y;
     }
 
     void SetWheelDelta(int delta)
@@ -84,4 +90,8 @@ private:
     friend class InputManager;
 
     HWND hwnd;
+
+    Vector2 previewMousePos;
+
+    bool isFirstMove;
 };

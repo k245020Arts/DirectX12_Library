@@ -3,6 +3,7 @@
 #include <vector>
 #include <DirectXMath.h>
 #include "../../DirectX12_Library/d3dx12.h"
+#include "../Helper/Helper.h"
 
 struct Vertex
 {
@@ -27,10 +28,6 @@ struct alignas(256) MatrixTransform
 
     DirectX::XMFLOAT4 uvRect; //切り取り座標(本当は分けたほうが良いと思うが、容量的にはこっちの方が少なく管理できると考えたためとりあえずこっちに)
 };
-
-typedef DirectX::XMFLOAT4 Vector4;
-typedef DirectX::XMFLOAT3 Vector3;
-typedef DirectX::XMFLOAT2 Vector2;
 
 struct Transform
 {
