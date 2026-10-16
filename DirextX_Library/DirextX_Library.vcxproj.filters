@@ -130,6 +130,21 @@
     <Filter Include="MyLibrary\Heaper\Matrix">
       <UniqueIdentifier>{eaf73a1d-7e1e-4144-9980-286225bf427f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="KLibrary">
+      <UniqueIdentifier>{79887b94-0f30-4c7e-ba16-ad101b02de8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KLibrary\File">
+      <UniqueIdentifier>{e12f897e-ea5e-4fcf-9416-1026730a4450}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KLibrary\File\FileExplorer">
+      <UniqueIdentifier>{6fc88292-c7c2-47fd-ae30-ec14acae3508}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KLibrary\File\FileSystemUtils">
+      <UniqueIdentifier>{facb578c-827b-4d51-8c88-4b057bf43962}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KLibrary\String">
+      <UniqueIdentifier>{c1d001ff-6011-400b-82ec-b5a13476b32a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImGui\crude_json.cpp">
@@ -290,6 +305,12 @@
     </ClCompile>
     <ClCompile Include="MyLibrary\Input\Mouse\MouseInput.cpp">
       <Filter>MyLibrary\Input\Mouse</Filter>
+    </ClCompile>
+    <ClCompile Include="KLibrary\File\FileExplorer\FileExplorer.cpp">
+      <Filter>KLibrary\File\FileExplorer</Filter>
+    </ClCompile>
+    <ClCompile Include="KLibrary\File\FileSystemUtils\FileSystemUtils.cpp">
+      <Filter>KLibrary\File\FileSystemUtils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -487,6 +508,15 @@
     </ClInclude>
     <ClInclude Include="MyLibrary\Helper\Matrix\MatrixHelper.h">
       <Filter>MyLibrary\Heaper\Matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="KLibrary\File\FileExplorer\FileExplorer.h">
+      <Filter>KLibrary\File\FileExplorer</Filter>
+    </ClInclude>
+    <ClInclude Include="KLibrary\File\FileSystemUtils\FileSystemUtils.h">
+      <Filter>KLibrary\File\FileSystemUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="KLibrary\StringUtils\StringUtils.h">
+      <Filter>KLibrary\String</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

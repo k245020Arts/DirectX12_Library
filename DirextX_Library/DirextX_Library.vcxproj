@@ -157,6 +157,8 @@
     <ClCompile Include="ImGui\imgui_node_editor_api.cpp" />
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="KLibrary\File\FileExplorer\FileExplorer.cpp" />
+    <ClCompile Include="KLibrary\File\FileSystemUtils\FileSystemUtils.cpp" />
     <ClCompile Include="MyLibrary\Application\Application.cpp" />
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp" />
     <ClCompile Include="MyLibrary\Billboard\Billboard.cpp" />
@@ -216,6 +218,9 @@
     <ClInclude Include="ImGui\imstb_rectpack.h" />
     <ClInclude Include="ImGui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imstb_truetype.h" />
+    <ClInclude Include="KLibrary\File\FileExplorer\FileExplorer.h" />
+    <ClInclude Include="KLibrary\File\FileSystemUtils\FileSystemUtils.h" />
+    <ClInclude Include="KLibrary\StringUtils\StringUtils.h" />
     <ClInclude Include="MyLibrary\Application\Application.h" />
     <ClInclude Include="MyLibrary\assimp\AssimpLoader.h" />
     <ClInclude Include="MyLibrary\Billboard\Billboard.h" />

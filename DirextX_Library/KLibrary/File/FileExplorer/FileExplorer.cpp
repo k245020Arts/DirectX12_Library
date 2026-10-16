@@ -685,7 +685,7 @@ bool FileExplorer::CreateClassFiles(std::string _entryPath, std::string _classNa
 	hInString += "    ";
 	hInString += "~" + _className + "();\n";
 	hInString += "private:\n";
-	hInString += "}\n";
+	hInString += "};\n";
 
 	// .hファイルの作成
 	bool isCreateFile = FileSystemUtils::CreateEntryFile(_entryPath + "/" + _className + ".h", hInString);	// ファイルを作成したかどうか

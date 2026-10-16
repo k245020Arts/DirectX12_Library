@@ -12,6 +12,7 @@
 #include "../../ImGui/imgui_impl_win32.h"
 #include "../../ImGui/imgui_impl_dx12.h"
 #include "../Input/InputManager.h"
+#include "../../KLibrary/File/FileExplorer/FileExplorer.h"
 
 Application::Application()
 {
@@ -30,6 +31,8 @@ void Application::ApplicationInit(Window window)
 	}
 	imgui->SetUpImGui(window.GetHwnd());
 	InputManager::GetInstance()->SetMouseHwnd(window.GetHwnd());
+
+	FileExplorer::Init();
 }
 
 void Application::BeginUpdate()
@@ -42,6 +45,7 @@ void Application::BeginUpdate()
 	imgui->BeginRenderImGui();
 
 	imgui->DebugRenderer();
+	FileExplorer::Update();
 }
 
 void Application::ApplicationUpdate()
@@ -66,6 +70,8 @@ void Application::ApplicationDraw()
 
 void Application::ApplicationRelease()
 {
+	FileExplorer::Release();
+
 	if (imgui != nullptr) {
 		imgui->ReleaseImGui();
 	}

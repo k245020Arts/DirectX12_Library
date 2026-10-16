@@ -22,7 +22,7 @@
 #include <algorithm>
 
 
-#define ORIGINAL_MOUSE_POINTER
+//#define ORIGINAL_MOUSE_POINTER
 //#define ON2D
 
 static const float CLICK_TIME = 0.2f;
@@ -87,7 +87,7 @@ Scene::Scene()
 	texture2D3->SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 #endif // ON2D
 
-	InputManager::GetInstance()->SetMouseDraw(false);
+	
 	//L"data/Alicia/FBX/Alicia_solid_Unity.FBX"
 	/*model = new FBXModel(); 
 	model->Load("data/Alicia/FBX/Alicia_solid_Unity.FBX");*/
@@ -99,7 +99,7 @@ Scene::Scene()
 	mousePointer->Load("data/mousePointer.png");
 	mousePointer->GetTransform().position = Vector3(200, 200, 0);
 	mousePointer->SetRect(Vector4(0.0f, 0.0f, 96.2f, 120.3f));
-
+	InputManager::GetInstance()->SetMouseDraw(false);
 #endif
 	sphere3D = new Sphere3D();
 	sphere3D->GetTransform().position = Vector3(0.0f,0.0f,0.0f);
