@@ -8,6 +8,7 @@
 #include "../IndexBuffer/IndexBuffer.h"
 #include "../DescriptorHeap/DescriptorHeap.h"
 #include "../Texture/TextureLoader.h"
+#include "../Camera3D/Camera3D.h"
 
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -29,14 +30,19 @@ FBXModel::~FBXModel()
 
 bool FBXModel::Load(const std::string& _modelFilePath)
 {
+	return Load(_modelFilePath, false, false);
+}
+
+bool FBXModel::Load(const std::string& _modelFilePath, bool _uflip, bool _vflip)
+{
 	std::wstring widePath = GetWideString(_modelFilePath);
 	const wchar_t* c = widePath.c_str();
 	ImportSettings importSetting = // これ自体は自作の読み込み設定構造体
 	{
 		c,
 		meshes,
-		false,
-		true // アリシアのモデルは、テクスチャのUVのVだけ反転してるっぽい？ので読み込み時にUV座標を逆転させる
+		_uflip,
+		_vflip // アリシアのモデルは、テクスチャのUVのVだけ反転してるっぽい？ので読み込み時にUV座標を逆転させる
 	};
 
 	AssimpLoader loader;
@@ -55,12 +61,17 @@ bool FBXModel::Load(const std::string& _modelFilePath)
 
 bool FBXModel::Load(const wchar_t* _modelFilePath)
 {
+	return Load(_modelFilePath, false, false);
+}
+
+bool FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip)
+{
 	ImportSettings importSetting = // これ自体は自作の読み込み設定構造体
 	{
 		_modelFilePath,
 		meshes,
-		false,
-		true // アリシアのモデルは、テクスチャのUVのVだけ反転してるっぽい？ので読み込み時にUV座標を逆転させる
+		_uflip,
+		_vflip // アリシアのモデルは、テクスチャのUVのVだけ反転してるっぽい？ので読み込み時にUV座標を逆転させる
 	};
 
 	AssimpLoader loader;
@@ -71,7 +82,7 @@ bool FBXModel::Load(const wchar_t* _modelFilePath)
 
 	constBuffer.resize(FRAME_BUFFER_COUNT);
 
-	
+
 	Init();
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
@@ -80,7 +91,7 @@ bool FBXModel::Load(const wchar_t* _modelFilePath)
 
 void FBXModel::Update()
 {
-	VertexMapping();
+	
 }
 
 void FBXModel::Draw()
@@ -104,39 +115,10 @@ void FBXModel::Draw()
 		commandList->IASetIndexBuffer(&ibView);
 
 		commandList->SetDescriptorHeaps(1, DescriptorHeap::GetInstance()->GetHeap().GetAddressOf());
+
 		commandList->SetGraphicsRootDescriptorTable(1, materialHandles[i]->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
 
 		commandList->DrawIndexedInstanced((UINT)meshes[i].Indices.size(), 1, 0, 0, 0); // インデックスの数分描画する
-	}
-}
-
-void FBXModel::VertexMapping()
-{
-	Vector3 scale = transform.scale;
-	Vector3 rotation = transform.rotation;
-	Vector3 position = transform.position;
-
-	// ワールド行列の計算
-	DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z)
-		* DirectX::XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z)
-		* DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-
-	DirectX::XMVECTOR eyePos = DirectX::XMVectorSet(0.0f, 120.0, 75.0, 0.0f);
-	DirectX::XMVECTOR targetPos = DirectX::XMVectorSet(0.0f, 120.0, 0.0, 0.0f);
-	DirectX::XMVECTOR upward = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	constexpr float fov = DirectX::XMConvertToRadians(60);
-	const auto aspect = static_cast<float>(Engine::GetInstance()->GetWindowSize().width) / static_cast<float>(Engine::GetInstance()->GetWindowSize().height); // アスペクト比
-
-	const DirectX::XMMATRIX view = DirectX::XMMatrixLookAtRH(eyePos, targetPos, upward);
-	const DirectX::XMMATRIX proj = DirectX::XMMatrixPerspectiveFovRH(fov, aspect, 0.3f, 1000.0f);
-
-	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
-	{
-		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
-		ptr->World = world;
-		ptr->View = view;
-		ptr->Proj = proj;
-		ptr->uvRect = Vector4();
 	}
 }
 
@@ -202,7 +184,12 @@ void FBXModel::Init()
 
 	for (size_t i = 0; i < meshes.size(); i++)
 	{
-		auto texPath = ReplaceExtension(meshes[i].DiffuseMap, "tga");
+		auto texPath = meshes[i].DiffuseMap;
+		if (!meshes[i].DiffuseMap.empty()) {
+			if (GetExtension(meshes[i].DiffuseMap) == TexExtension::PSD) {
+				texPath = ReplaceExtension(meshes[i].DiffuseMap, "tga"); //psdの場合はtgaとして扱う
+			}
+		}
 		TextureLoader::GetInstance()->Load(texPath);
 		auto mainTex = TextureLoader::GetInstance()->Get(texPath);
 		auto handle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), texPath);
@@ -233,5 +220,26 @@ void FBXModel::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wst
 	if (!pipelineState->IsSuccess())
 	{
 		OutputDebugStringW(L"パイプラインステートの生成に失敗\n");
+	}
+}
+
+void FBXModel::VertexMapping(const Camera3D* _camera)
+{
+	Vector3 scale = transform.scale;
+	Vector3 rotation = transform.rotation;
+	Vector3 position = transform.position;
+
+	// ワールド行列の計算
+	Matrix world = Matrix::Scale(scale)
+		* Matrix::Rotation(rotation)
+		* Matrix::Translation(position);
+
+	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
+	{
+		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
+		ptr->World = world;
+		ptr->View = _camera->GetViewMatrix();
+		ptr->Proj = _camera->GetProjectionMatrix();
+		ptr->uvRect = Vector4();
 	}
 }

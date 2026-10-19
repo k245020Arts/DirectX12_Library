@@ -145,6 +145,9 @@
     <Filter Include="KLibrary\String">
       <UniqueIdentifier>{c1d001ff-6011-400b-82ec-b5a13476b32a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MyLibrary\Extension">
+      <UniqueIdentifier>{8a74eee3-8a68-4e3a-a8cd-2f6a4018a472}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp">
@@ -302,6 +305,9 @@
     </ClCompile>
     <ClCompile Include="ImGui\imgui_widgets.cpp">
       <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\Extension\Extension.cpp">
+      <Filter>MyLibrary\Extension</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -493,6 +499,9 @@
     </ClInclude>
     <ClInclude Include="ImGui\imstb_truetype.h">
       <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Extension\Extension.h">
+      <Filter>MyLibrary\Extension</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

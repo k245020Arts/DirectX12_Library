@@ -4,17 +4,6 @@
 #include <algorithm>
 #include "../Engine/Engine.h"
 
-// Šg’£q‚ğ•Ô‚·
-std::wstring FileExtension(const std::wstring& path)
-{
-	auto idx = path.rfind(L'.');
-
-	assert(idx != std::wstring::npos);
-
-	auto result = path.substr(idx + 1);
-	return result;
-}
-
 TextureLoader::TextureLoader()
 {
 }
@@ -52,13 +41,29 @@ bool TextureLoader::Load(const std::wstring& _path)
 	auto png = GetWideString(pngString);
 	auto tga = GetWideString(tgaString);
 
-	if (ext == png) // png‚Ì‚ÍWICFile‚ğg‚¤
+	switch (GetExtension(_path))
 	{
+	case TexExtension::NO:
+		//return false;
+		break;
+	case TexExtension::PNG:
+	case TexExtension::JPG:
 		hr = DirectX::LoadFromWICFile(_path.c_str(), DirectX::WIC_FLAGS_NONE, &metadata, scratchImg);
-	}
-	else if (ext == tga) // tga‚Ì‚ÍTGAFile‚ğg‚¤
-	{
+		break;
+	case TexExtension::TGA:
 		hr = DirectX::LoadFromTGAFile(_path.c_str(), &metadata, scratchImg);
+		break;
+	case TexExtension::PSD:
+		hr = DirectX::LoadFromTGAFile(_path.c_str(), &metadata, scratchImg); //ˆê’UPSD‚Ìê‡‚Ítga‚Æ‚µ‚Äˆµ‚¤
+		break;
+	default:
+		//return false;
+		break;
+	}
+
+	if (hr == S_FALSE) {
+		ColorTexture(_path, Vector4(1.0f, 0.0f, 1.0f, 1.0f));
+		return false;
 	}
 
 	if (FAILED(hr))

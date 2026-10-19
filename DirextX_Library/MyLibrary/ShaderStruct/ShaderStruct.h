@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include "../../DirectX12_Library/d3dx12.h"
 #include "../Helper/Helper.h"
+#include "../Extension/Extension.h"
 
 struct Vertex
 {
@@ -72,22 +73,4 @@ enum class BlendState
     SUB,
     MUL,
 };
-
-// std::string(マルチバイト文字列)からstd::wstring(ワイド文字列)を得る。
-inline std::wstring GetWideString(const std::string& str)
-{
-    auto num1 = MultiByteToWideChar(CP_ACP,MB_PRECOMPOSED | MB_ERR_INVALID_CHARS, str.c_str(),-1,nullptr, 0 );
-
-    std::wstring wstr;
-    wstr.resize(num1);
-
-    auto num2 = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED | MB_ERR_INVALID_CHARS,str.c_str(), -1,wstr.data(), num1);
-
-    assert(num1 == num2);
-
-    // MultiByteToWideChar が含めた終端 '\0' を削除
-    wstr.pop_back();
-
-    return wstr;
-}
 

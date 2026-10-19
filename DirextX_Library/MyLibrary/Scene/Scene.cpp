@@ -24,6 +24,7 @@
 
 //#define ORIGINAL_MOUSE_POINTER
 //#define ON2D
+//#define ON3D
 
 static const float CLICK_TIME = 0.2f;
 
@@ -89,8 +90,8 @@ Scene::Scene()
 
 	
 	//L"data/Alicia/FBX/Alicia_solid_Unity.FBX"
-	/*model = new FBXModel(); 
-	model->Load("data/Alicia/FBX/Alicia_solid_Unity.FBX");*/
+	model = new FBXModel(); 
+	model->Load(L"data/Dragon 2.5_fbx.fbx",false,true);
 
 #ifdef ORIGINAL_MOUSE_POINTER
 	clickTime = 0.0f;
@@ -101,8 +102,10 @@ Scene::Scene()
 	mousePointer->SetRect(Vector4(0.0f, 0.0f, 96.2f, 120.3f));
 	InputManager::GetInstance()->SetMouseDraw(false);
 #endif
+
+#ifdef ON3D
 	sphere3D = new Sphere3D();
-	sphere3D->GetTransform().position = Vector3(0.0f,0.0f,0.0f);
+	sphere3D->GetTransform().position = Vector3(0.0f, 0.0f, 0.0f);
 	sphere3D->SetSphereParam(Sphere3D::SphereParam(50.0f));
 	sphere3D->SetFill(true);
 
@@ -113,7 +116,7 @@ Scene::Scene()
 
 	line3D = new Line3D();
 	line3D->GetTransform().position = Vector3(0.0f, 0.0f, 0.0f);
-	line3D->SetStartAndEnd(Vector3(100, 100, 500),Vector3(200,200,-500));
+	line3D->SetStartAndEnd(Vector3(100, 100, 500), Vector3(200, 200, -500));
 
 	triangle3D = new Triangle3D();
 
@@ -131,7 +134,7 @@ Scene::Scene()
 
 	capsule->GetTransform().position = Vector3(170.0f, 0.0f, 150.0f);
 	capsule->SetCapsuleParam(Capsule::CapsuleParam(20, 10, 20, 100));
-	capsule->SetColor(Vector4(1.0f,0.0f,0.0f,1.0f));
+	capsule->SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 
 	capsule->SetAlpha(0.01f);
 	capsule->SetBlendMode(BlendState::NO_BLEND);
@@ -140,8 +143,11 @@ Scene::Scene()
 	billboard = new Billboard();
 	billboard->Load("data/textest.png");
 	billboard->GetTransform().position = Vector3(170.0f, 50.0f, 250.0f);
-	billboard->SetRectUV(Vector4(0.0f,0.0f,0.5f,0.5f));
+	billboard->SetRectUV(Vector4(0.0f, 0.0f, 0.5f, 0.5f));
 	billboard->SetBillBoardType(false);
+#endif // ON3D
+
+	
 }
 
 Scene::~Scene()
@@ -198,15 +204,17 @@ void Scene::Update()
 	texture2D->GetTransform().rotation.z += 0.01f;*/
 #endif //  ON2D
 
-	/*model->GetTransform().rotation.y += 0.005f;
-	model->Update();*/
+	model->GetTransform().rotation.y += 0.005f;
+	//model->Update();
 
 	//box3D->Update();
-	box3D->GetTransform().rotation.y += 0.01f;
+	
 
 	//box3D->GetTransform().position.z += InputManager::GetInstance()->GetMouseWheelDelta();
+#ifdef ON3D
+	box3D->GetTransform().rotation.y += 0.01f;
+
 	
-	MoveCamera();
 
 	//sphere3D->Update();
 	sphere3D->GetTransform().rotation.x += 0.01f;
@@ -230,7 +238,9 @@ void Scene::Update()
 	Vector3 nowpos = Camera3D::GetInstance()->GetPosition();
 	Vector3 finalPos = Vector3(nowpos.x + -5.0f, nowpos.y, nowpos.z - 1.0f);
 	Camera3D::GetInstance()->SetPosition(finalPos);*/
+#endif
 
+	MoveCamera();
 #ifdef CAMERA_TEST
 
 	auto* camera = Camera3D::GetInstance();

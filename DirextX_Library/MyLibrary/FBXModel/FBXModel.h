@@ -1,7 +1,7 @@
 #pragma once
 #include "../assimp/AssimpLoader.h"
 #include <memory>
-#include "../ShaderStruct/ShaderStruct.h"
+#include "../Object3D/Object3D.h"
 
 class VertexBuffer;
 class ConstBuffer;
@@ -11,15 +11,17 @@ class IndexBuffer;
 
 struct DescriptorHandle;
 
-class FBXModel
+class FBXModel : public Object3D
 {
 public:
 	FBXModel();
 	~FBXModel();
 
 	bool Load(const std::string& _modelFilePath);
+	bool Load(const std::string& _modelFilePath,bool _uflip,bool _vflip);
 
 	bool Load(const wchar_t* _modelFilePath);
+	bool Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip);
 
 	void Update();
 	void Draw();
@@ -28,19 +30,11 @@ public:
 
 private:
 
-	void VertexMapping();
-
 	void Init();
 
 	void SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint);
 
 	std::vector<Mesh> meshes;
-
-	Transform transform;
-
-	bool isDestory;
-
-	int drawOrder;
 
 	std::vector<std::unique_ptr<VertexBuffer>> vertexBuffer;
 	std::unique_ptr<RootSignature> rootSignature;
@@ -61,6 +55,6 @@ private:
 
 	std::vector<DescriptorHandle*> materialHandles; // テクスチャ用のハンドル一覧
 
-	
+	void VertexMapping(const Camera3D* _camera)override;
 
 };
