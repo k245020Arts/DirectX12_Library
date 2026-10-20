@@ -53,11 +53,13 @@ private:
 	int count;
 
 	FBXModel* model;
+	FBXModel* model1;
+	FBXModel* model2;
 
 	Box3D* box3D;
 	Sphere3D* sphere3D;
 	Line3D* line3D;
-	Triangle3D* triangle3D;
+	TriangularPrism* triangle3D;
 	Cylinder* cylinder;
 
 	Capsule* capsule;

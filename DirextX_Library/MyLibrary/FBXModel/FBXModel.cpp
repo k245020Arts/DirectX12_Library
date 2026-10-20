@@ -108,7 +108,8 @@ void FBXModel::Draw()
 
 		commandList->SetGraphicsRootSignature(rootSignature->Get());
 		commandList->SetPipelineState(pipelineState->GetPipelineState());
-		commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress());
+		commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &vbView);
@@ -124,6 +125,7 @@ void FBXModel::Draw()
 
 void FBXModel::Init()
 {
+	lightConstBuffer.resize(FRAME_BUFFER_COUNT);
 	vertexBuffer.reserve(meshes.size());
 
 	for (size_t i = 0; i < meshes.size(); i++)
@@ -172,12 +174,20 @@ void FBXModel::Init()
 		{
 			OutputDebugStringW(L"変換行列用定数バッファの生成に失敗\n");
 		}
-
+		lightConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(LightBufferData));
+		if (!lightConstBuffer[i]->IsValid())
+		{
+			OutputDebugStringW(L"ライト用定数バッファの生成に失敗\n");
+		}
 		// 変換行列の登録
 		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
 		ptr->World = DirectX::XMMatrixIdentity();
 		ptr->View = DirectX::XMMatrixLookAtRH(eyePos, targetPos, upward);
 		ptr->Proj = DirectX::XMMatrixPerspectiveFovRH(fov, aspect, 0.3f, 1000.0f);
+
+		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
+		LightBufferData l = Light::GetInstance()->GetLightBufferData();
+		*light = l;
 	}
 
 	materialHandles.clear();
@@ -197,7 +207,7 @@ void FBXModel::Init()
 	}
 
 	rootSignature = std::make_unique<RootSignature>();
-	rootSignature->SetTextureRootSampler();
+	rootSignature->SetModelRootSignature();
 	if (!rootSignature->IsSuccess())
 	{
 		OutputDebugStringW(L"ルートシグネチャの生成に失敗\n");
@@ -241,5 +251,9 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 		ptr->View = _camera->GetViewMatrix();
 		ptr->Proj = _camera->GetProjectionMatrix();
 		ptr->uvRect = Vector4();
+
+		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
+		LightBufferData l = Light::GetInstance()->GetLightBufferData();
+		*light = l;
 	}
 }

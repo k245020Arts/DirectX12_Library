@@ -4,6 +4,7 @@
 #include <memory>
 #include "../Texture/TextureLoader.h"
 #include "../DescriptorHeap/DescriptorHeap.h"
+#include "../light/Light.h"
 
 class VertexBuffer;
 class ConstBuffer;
@@ -50,6 +51,7 @@ protected:
 	std::unique_ptr<IndexBuffer> indexBuffer = nullptr;
 
 	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;
+	std::vector<std::shared_ptr<ConstBuffer>> lightConstBuffer;
 
 	bool useIndex = true;
 

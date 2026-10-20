@@ -88,10 +88,24 @@ Scene::Scene()
 	texture2D3->SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 #endif // ON2D
 
-	
 	//L"data/Alicia/FBX/Alicia_solid_Unity.FBX"
 	model = new FBXModel(); 
 	model->Load(L"data/Dragon 2.5_fbx.fbx",false,true);
+
+	model1 = new FBXModel();
+	model1->Load(L"data/Dragon 2.5_fbx.fbx", false, true);
+
+	model1->GetTransform().position.x += 150.0f;
+
+	model2 = new FBXModel();
+	model2->Load(L"data/Dragon 2.5_fbx.fbx", false, true);
+
+	model2->GetTransform().position.x -= 150.0f;
+
+	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Vector3(1.0f, 0.0f, 0.0f)));
+
+
+	
 
 #ifdef ORIGINAL_MOUSE_POINTER
 	clickTime = 0.0f;
@@ -112,23 +126,23 @@ Scene::Scene()
 	box3D = new Box3D();
 	box3D->GetTransform().position = Vector3(-100.0f, 0.0f, 0.0f);
 	box3D->SetLength(Vector3(200.0f, 200.0f, 50.0f));
-	box3D->SetFill(false);
+	box3D->SetFill(true);
 
 	line3D = new Line3D();
 	line3D->GetTransform().position = Vector3(0.0f, 0.0f, 0.0f);
 	line3D->SetStartAndEnd(Vector3(100, 100, 500), Vector3(200, 200, -500));
 
-	triangle3D = new Triangle3D();
+	triangle3D = new TriangularPrism();
 
 	triangle3D->GetTransform().position = Vector3(150.0f, 0.0f, 0.0f);
 	triangle3D->SetLength(Vector3(120.0f, 200.0f, 150.0f));
-	triangle3D->SetFill(false);
+	triangle3D->SetFill(true);
 
 	cylinder = new Cylinder();
 
 	cylinder->GetTransform().position = Vector3(-170.0f, 0.0f, 150.0f);
 	cylinder->SetCylinderParam(Cylinder::CylinderParam(50.0f, 200.0f));
-	cylinder->SetFill(false);
+	cylinder->SetFill(true);
 
 	capsule = new Capsule();
 
@@ -204,7 +218,9 @@ void Scene::Update()
 	texture2D->GetTransform().rotation.z += 0.01f;*/
 #endif //  ON2D
 
-	model->GetTransform().rotation.y += 0.005f;
+	model->GetTransform().rotation.y += 0.007f;
+	model1->GetTransform().rotation.y += 0.005f;
+	model2->GetTransform().rotation.y += 0.003f;
 	//model->Update();
 
 	//box3D->Update();
@@ -241,6 +257,24 @@ void Scene::Update()
 #endif
 
 	MoveCamera();
+
+	/*bool rightPut = static_cast<float>(InputManager::GetInstance()->GetMouseInput(MouseCode::Right));
+
+	float put = 0.0f;
+	if (rightPut)
+	{
+		put += 0.05f;
+	}
+
+	bool leftPut = static_cast<float>(InputManager::GetInstance()->GetMouseInput(MouseCode::Left));
+
+	if (leftPut)
+	{
+		put -= 0.05f;
+	}
+
+	Light::GetInstance()->SetColor(Light::GetInstance()->GetLightData().color + Vector3(put));*/
+
 #ifdef CAMERA_TEST
 
 	auto* camera = Camera3D::GetInstance();

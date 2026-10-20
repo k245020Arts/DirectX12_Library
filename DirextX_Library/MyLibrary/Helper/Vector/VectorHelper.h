@@ -2,9 +2,9 @@
 #include <DirectXMath.h>
 #include <cmath>
 
-using VECTOR2 = DirectX::XMFLOAT2;
-using VECTOR3 = DirectX::XMFLOAT3;
-using VECTOR4 = DirectX::XMFLOAT4;
+using VEC2 = DirectX::XMFLOAT2;
+using VEC3 = DirectX::XMFLOAT3;
+using VEC4 = DirectX::XMFLOAT4;
 
 inline constexpr float DegToRad = DirectX::XM_PI / 180.0f;
 
@@ -13,21 +13,21 @@ inline constexpr float RadToDeg = 180.0f / DirectX::XM_PI;
 class VectorHelper
 {
 public:
-    class Vector3 : public VECTOR3
+    class Vector3 : public VEC3
     {
     public:
-        Vector3() : VECTOR3(0.0f, 0.0f, 0.0f) {}
+        Vector3() : VEC3(0.0f, 0.0f, 0.0f) {}
 
         Vector3(float x, float y, float z)
-            : VECTOR3(x, y, z) {
+            : VEC3(x, y, z) {
         }
 
         explicit Vector3(float value)
-            : VECTOR3(value, value, value) {
+            : VEC3(value, value, value) {
         }
 
-        Vector3(const VECTOR3& v)
-            : VECTOR3(v.x, v.y, v.z) {
+        Vector3(const VEC3& v)
+            : VEC3(v.x, v.y, v.z) {
         }
 
         // 加算
@@ -165,7 +165,7 @@ public:
     inline static const Vector3 VOne = Vector3(1.0f);
 
     // ベクトルの加算
-    static Vector3 VAdd(const VECTOR3& a, const VECTOR3& b)
+    static Vector3 VAdd(const VEC3& a, const VEC3& b)
     {
         return Vector3(
             a.x + b.x,
@@ -175,7 +175,7 @@ public:
     }
 
     // ベクトルの減算
-    static Vector3 VSub(const VECTOR3& a, const VECTOR3& b)
+    static Vector3 VSub(const VEC3& a, const VEC3& b)
     {
         return Vector3(
             a.x - b.x,
@@ -185,7 +185,7 @@ public:
     }
 
     // スカラー倍
-    static Vector3 VScale(const VECTOR3& v, float scale)
+    static Vector3 VScale(const VEC3& v, float scale)
     {
         return Vector3(
             v.x * scale,
@@ -195,13 +195,13 @@ public:
     }
 
     // 内積
-    static float VDot(const VECTOR3& a, const VECTOR3& b)
+    static float VDot(const VEC3& a, const VEC3& b)
     {
         return a.x * b.x + a.y * b.y + a.z * b.z;
     }
 
     // 外積
-    static Vector3 VCross(const VECTOR3& a, const VECTOR3& b)
+    static Vector3 VCross(const VEC3& a, const VEC3& b)
     {
         return Vector3(
             a.y * b.z - a.z * b.y,
@@ -396,23 +396,23 @@ public:
         }
     };
 
-    class Vector4 : public VECTOR4
+    class Vector4 : public VEC4
     {
     public:
         Vector4()
-            : VECTOR4(0.0f, 0.0f, 0.0f, 0.0f) {
+            : VEC4(0.0f, 0.0f, 0.0f, 0.0f) {
         }
 
         explicit Vector4(float value)
-            : VECTOR4(value, value, value, value) {
+            : VEC4(value, value, value, value) {
         }
 
         Vector4(float x, float y, float z, float w)
-            : VECTOR4(x, y, z, w) {
+            : VEC4(x, y, z, w) {
         }
 
-        Vector4(const VECTOR4& v)
-            : VECTOR4(v.x, v.y, v.z, v.w) {
+        Vector4(const VEC4& v)
+            : VEC4(v.x, v.y, v.z, v.w) {
         }
 
         // 加算
@@ -546,8 +546,8 @@ public:
     };
 
     static Vector4 V4Add(
-        const VECTOR4& a,
-        const VECTOR4& b)
+        const VEC4& a,
+        const VEC4& b)
     {
         return Vector4(
             a.x + b.x,
@@ -557,8 +557,8 @@ public:
     }
 
     static Vector4 V4Sub(
-        const VECTOR4& a,
-        const VECTOR4& b)
+        const VEC4& a,
+        const VEC4& b)
     {
         return Vector4(
             a.x - b.x,
@@ -568,7 +568,7 @@ public:
     }
 
     static Vector4 V4Scale(
-        const VECTOR4& v,
+        const VEC4& v,
         float scale)
     {
         return Vector4(
@@ -579,8 +579,8 @@ public:
     }
 
     static float V4Dot(
-        const VECTOR4& a,
-        const VECTOR4& b)
+        const VEC4& a,
+        const VEC4& b)
     {
         return a.x * b.x + a.y * b.y +
             a.z * b.z + a.w * b.w;

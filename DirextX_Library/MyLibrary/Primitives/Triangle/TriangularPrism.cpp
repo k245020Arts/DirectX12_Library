@@ -62,6 +62,61 @@ TriangularPrism::TriangularPrism()
 		vertices[i + 3].uv = DirectX::XMFLOAT2(0.0f, 1.0f);
 	}
 
+	// 法線を計算する関数
+	auto CalculateNormal = [](const Vector3& p0,const Vector3& p1,const Vector3& p2) 
+		-> Vector3
+		{
+			Vector3 v1 = p1 - p0;
+			Vector3 v2 = p2 - p0;
+
+			Vector3 normal = VectorHelper::VCross(v1, v2);
+
+			return normal.Normalize();
+		};
+
+	// 前面（Z軸マイナス方向）
+	Vector3 frontNormal = CalculateNormal(vertices[0].position,vertices[2].position,vertices[3].position);
+
+	for (int i = 0; i < 4; ++i)
+	{
+		vertices[i].normal = frontNormal;
+	}
+
+	// 背面（Z軸プラス方向）
+	Vector3 backNormal = CalculateNormal(vertices[4].position,vertices[6].position,vertices[7].position);
+
+	for (int i = 4; i < 8; ++i)
+	{
+		vertices[i].normal = backNormal;
+	}
+
+	// 上面（今回は三角柱の上端の稜線なので面積なし）
+	// vertices[8]～vertices[11] は描画対象にしない
+
+	// 下面（Y軸マイナス方向）
+	Vector3 bottomNormal = CalculateNormal(vertices[12].position,vertices[13].position,vertices[14].position);
+
+	for (int i = 12; i < 16; ++i)
+	{
+		vertices[i].normal = bottomNormal;
+	}
+
+	// 左傾斜面
+	Vector3 leftNormal = CalculateNormal(vertices[16].position,vertices[18].position,vertices[19].position);
+
+	for (int i = 16; i < 20; ++i)
+	{
+		vertices[i].normal = leftNormal;
+	}
+
+	// 右傾斜面
+	Vector3 rightNormal = CalculateNormal(vertices[20].position,vertices[22].position,vertices[23].position);
+
+	for (int i = 20; i < 24; ++i)
+	{
+		vertices[i].normal = rightNormal;
+	}
+
 
 	// インデックス設定
 	std::vector<uint32_t> indices = {
@@ -108,6 +163,7 @@ void TriangularPrism::Draw()
 
 	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 	commandList->SetGraphicsRootDescriptorTable(1, descriptorHandle->handleGPU);
+	commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 
 	if (fillMode) {
 		commandList->IASetPrimitiveTopology(drawType);//適切な形に表示をするようにする

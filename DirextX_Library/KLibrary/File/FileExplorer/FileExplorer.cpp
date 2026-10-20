@@ -4,7 +4,7 @@
 #include <Windows.h>
 #include <string>
 #include <cwchar>
-
+#include "../../../MyLibrary/VisualStudioAdd/VisualStudioAdd.h"
 
 // newした際にメモリリークしたかをおうためのマクロ
 
@@ -36,7 +36,7 @@ void FileExplorer::Init()
 
 	allEntryNameList.clear();
 	allEntryNameList = std::move(FileSystemUtils::GetRecursiveDirectoryAndFileNameList(FileExplorerInfo::START_READ_FILEPATH, true));
-
+	VisualStudioProjectEditor::ProjectFilePath(L"DirextX_Library.vcxproj");
 	// エントリデータの初期化
 	InitEntryData();
 }
@@ -632,7 +632,11 @@ bool FileExplorer::CreateFileWindowDraw()
 				else if (createFileImGuiWindowData.fileType == CLASS_FILE_TYPE::CLASS)
 				{
 					// Classファイルの作成
+#ifdef VISUAL_STUDIO_ADD
+					isCreateFile = VisualStudioProjectEditor::CreateClassFiles(createFileImGuiWindowData.filePath, createFileImGuiWindowData.fileName);
+#else
 					isCreateFile = CreateClassFiles(createFileImGuiWindowData.filePath, createFileImGuiWindowData.fileName);
+#endif // VISUAL_STUDIO_ADD
 				}
 				else if (createFileImGuiWindowData.fileType == CLASS_FILE_TYPE::CPP || createFileImGuiWindowData.fileType == CLASS_FILE_TYPE::H)
 				{

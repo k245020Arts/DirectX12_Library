@@ -191,7 +191,14 @@ void Sphere3D::CreateVertexSphere(float _radius, uint32_t _sliceCount, uint32_t 
 			float z = radius * sinPhi * cosTheta;
 			vertices[vIndex].position = DirectX::XMFLOAT3(x, y, z);
 
-			// 位置座標 (-50.0 ~ +50.0) を 0.0 ~ 1.0 の範囲に正規化して、綺麗なグラデーションを作ります
+			// 法線（Normal）の計算
+			float nx = x / radius;
+			float ny = y / radius;
+			float nz = z / radius;
+
+			vertices[vIndex].normal = Vector3(nx, ny, nz);
+
+			// 位置座標を正規化して、綺麗なグラデーションを作る
 			float r = (x / radius) * 0.5f + 0.5f;
 			float g = (y / radius) * 0.5f + 0.5f;
 			float b = (z / radius) * 0.5f + 0.5f;

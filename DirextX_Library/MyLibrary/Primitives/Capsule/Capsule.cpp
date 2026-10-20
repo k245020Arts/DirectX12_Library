@@ -229,6 +229,19 @@ void Capsule::CreateCausulePosition(const int _stacks, const int _slices, const 
 			vertices[vIndex + 2].position = p2;
 			vertices[vIndex + 3].position = p3;
 
+			Vector3 n0(sinf(phi1) * cosf(theta1),cosf(phi1),sinf(phi1) * sinf(theta1));
+
+			Vector3 n1(sinf(phi1) * cosf(theta2),cosf(phi1),sinf(phi1) * sinf(theta2));
+
+			Vector3 n2(sinf(phi2) * cosf(theta2),cosf(phi2),sinf(phi2) * sinf(theta2));
+
+			Vector3 n3(sinf(phi2) * cosf(theta1),cosf(phi2),sinf(phi2) * sinf(theta1));
+
+			vertices[vIndex].normal = n0;
+			vertices[vIndex + 1].normal = n1;
+			vertices[vIndex + 2].normal = n2;
+			vertices[vIndex + 3].normal = n3;
+
 			for (int j = 0; j < 4; ++j) {
 				vertices[vIndex + j].color = baseColor;
 			}
@@ -246,6 +259,16 @@ void Capsule::CreateCausulePosition(const int _stacks, const int _slices, const 
 		vertices[vIndex + 1].position = DirectX::XMFLOAT3(RADIUS * cosf(theta2), HALF_CYL_HEIGHT, RADIUS * sinf(theta2)); // 右上
 		vertices[vIndex + 2].position = DirectX::XMFLOAT3(RADIUS * cosf(theta2), -HALF_CYL_HEIGHT, RADIUS * sinf(theta2)); // 右下
 		vertices[vIndex + 3].position = DirectX::XMFLOAT3(RADIUS * cosf(theta1), -HALF_CYL_HEIGHT, RADIUS * sinf(theta1)); // 左下
+
+		// 円柱側面の法線
+		Vector3 normal1(cosf(theta1),0.0f,sinf(theta1));
+
+		Vector3 normal2(cosf(theta2),0.0f,sinf(theta2));
+
+		vertices[vIndex].normal = normal1; // 左上
+		vertices[vIndex + 1].normal = normal2; // 右上
+		vertices[vIndex + 2].normal = normal2; // 右下
+		vertices[vIndex + 3].normal = normal1; // 左下
 
 		for (int j = 0; j < 4; ++j) {
 			vertices[vIndex + j].color = baseColor;
@@ -271,6 +294,20 @@ void Capsule::CreateCausulePosition(const int _stacks, const int _slices, const 
 			vertices[vIndex + 1].position = p1;
 			vertices[vIndex + 2].position = p2;
 			vertices[vIndex + 3].position = p3;
+
+			// 下半球の法線
+			Vector3 n0(sinf(phi1) * cosf(theta1),cosf(phi1),sinf(phi1) * sinf(theta1));
+
+			Vector3 n1(sinf(phi1) * cosf(theta2),cosf(phi1),sinf(phi1) * sinf(theta2));
+
+			Vector3 n2(sinf(phi2) * cosf(theta2),cosf(phi2),sinf(phi2) * sinf(theta2));
+
+			Vector3 n3(sinf(phi2) * cosf(theta1),cosf(phi2),sinf(phi2) * sinf(theta1));
+
+			vertices[vIndex].normal = n0;
+			vertices[vIndex + 1].normal = n1;
+			vertices[vIndex + 2].normal = n2;
+			vertices[vIndex + 3].normal = n3;
 
 			for (int j = 0; j < 4; ++j) {
 				vertices[vIndex + j].color = baseColor;

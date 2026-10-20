@@ -203,6 +203,16 @@ void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, st
 			vertices[vIndex + j].color = baseColor;
 		}
 
+		// 上面の法線（Y軸プラス方向）
+		const Vector3 topNormal(0.0f, 1.0f, 0.0f);
+
+		for (int j = 0; j < 4; ++j)
+		{
+			vertices[vIndex + j].normal = topNormal;
+			vertices[vIndex + j].color = baseColor;
+		}
+
+
 		vIndex += 4;
 	}
 
@@ -220,6 +230,16 @@ void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, st
 		for (int j = 0; j < 4; ++j) {
 			vertices[vIndex + j].color = baseColor;
 		}
+
+		// 下面の法線（Y軸マイナス方向）
+		const DirectX::XMFLOAT3 bottomNormal(0.0f, -1.0f, 0.0f);
+
+		for (int j = 0; j < 4; ++j)
+		{
+			vertices[vIndex + j].normal = bottomNormal;
+			vertices[vIndex + j].color = baseColor;
+		}
+
 		vIndex += 4;
 	}
 
@@ -236,6 +256,14 @@ void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, st
 		vertices[vIndex + 2].position = DirectX::XMFLOAT3(RADIUS * c2, -HALF_HEIGHT, RADIUS * s2); // 右下
 		vertices[vIndex + 3].position = DirectX::XMFLOAT3(RADIUS * c1, -HALF_HEIGHT, RADIUS * s1); // 左下
 
+		DirectX::XMFLOAT3 normal1(c1, 0.0f, s1);
+		DirectX::XMFLOAT3 normal2(c2, 0.0f, s2);
+
+		vertices[vIndex].normal = normal1;
+		vertices[vIndex + 1].normal = normal2;
+		vertices[vIndex + 2].normal = normal2;
+		vertices[vIndex + 3].normal = normal1;
+
 		for (int j = 0; j < 4; ++j) {
 			vertices[vIndex + j].color = baseColor;
 		}
@@ -251,6 +279,9 @@ void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, st
 		vertices[baseV + 2].uv = DirectX::XMFLOAT2(1.0f, 1.0f);
 		vertices[baseV + 3].uv = DirectX::XMFLOAT2(0.0f, 1.0f);
 	}
+
+	
+	
 
 	if (fillMode) {
 		CreateIndexFill(SLICES, indices);

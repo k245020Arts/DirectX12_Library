@@ -86,6 +86,42 @@ Box3D::Box3D()
 	vertices[22].uv = DirectX::XMFLOAT2(1.0f, 1.0f); // 奥下
 	vertices[23].uv = DirectX::XMFLOAT2(0.0f, 1.0f); // 手前下
 
+	// 前面（Z軸マイナス方向）
+	vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
+	vertices[1].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
+	vertices[2].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
+	vertices[3].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
+
+	// 背面（Z軸プラス方向）
+	vertices[4].normal = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
+	vertices[5].normal = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
+	vertices[6].normal = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
+	vertices[7].normal = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
+
+	// 上面（Y軸プラス方向）
+	vertices[8].normal = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
+	vertices[9].normal = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
+	vertices[10].normal = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
+	vertices[11].normal = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
+
+	// 下面（Y軸マイナス方向）
+	vertices[12].normal = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
+	vertices[13].normal = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
+	vertices[14].normal = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
+	vertices[15].normal = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
+
+	// 左側面（X軸マイナス方向）
+	vertices[16].normal = DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f);
+	vertices[17].normal = DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f);
+	vertices[18].normal = DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f);
+	vertices[19].normal = DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f);
+
+	// 右側面（X軸プラス方向）
+	vertices[20].normal = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
+	vertices[21].normal = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
+	vertices[22].normal = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
+	vertices[23].normal = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
+
 
 	// 各面に対して、提示された「0, 1, 2, 0, 2, 3」と同じ時計回りのパターン
 	std::vector<uint32_t> indices = {
@@ -185,6 +221,7 @@ void Box3D::Draw()
 
 	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 	commandList->SetGraphicsRootDescriptorTable(1, descriptorHandle->handleGPU);
+	commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 
 	if (fillMode) {
 		commandList->IASetPrimitiveTopology(drawType);//適切な形に表示をするようにする

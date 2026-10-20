@@ -39,6 +39,7 @@ void Polygon3D::Draw()
 
 	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 	commandList->SetGraphicsRootDescriptorTable(1, descriptorHandle->handleGPU);
+	commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 
 	if (fillMode) {
 		commandList->IASetPrimitiveTopology(drawType);//適切な形に表示をするようにする
@@ -62,6 +63,7 @@ void Polygon3D::Draw()
 
 void Polygon3D::Init(const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices)
 {
+	lightConstBuffer.resize(FRAME_BUFFER_COUNT);
 	fillMode = true;
 	auto vertexSize = sizeof(Vertex) * std::size(_vertices);
 	auto vertexStride = sizeof(Vertex);
@@ -93,10 +95,18 @@ void Polygon3D::Init(const std::vector<Vertex>& _vertices, const std::vector<uin
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
 		constBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
+		lightConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(LightBufferData));
 		if (!constBuffer[i]->IsValid())
 		{
 			OutputDebugStringW(L"変換行列用定数バッファの生成に失敗\n");
 		}
+		if (!lightConstBuffer[i]->IsValid())
+		{
+			OutputDebugStringW(L"ライト用定数バッファの生成に失敗\n");
+		}
+		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
+		LightBufferData l = Light::GetInstance()->GetLightBufferData();
+		*light = l;
 	}
 
 	DirectX::XMVECTOR eyePos = DirectX::XMVectorSet(0.0f, 120.0, -120.0f, 0.0f);
@@ -121,7 +131,7 @@ void Polygon3D::Init(const std::vector<Vertex>& _vertices, const std::vector<uin
 	}
 
 	rootSignature = std::make_unique<RootSignature>();
-	rootSignature->SetTextureRootSampler();
+	rootSignature->SetModelRootSignature();
 	if (!rootSignature->IsSuccess())
 	{
 		OutputDebugStringW(L"ルートシグネチャの生成に失敗\n");
@@ -206,6 +216,10 @@ void Polygon3D::VertexMapping(const Camera3D* _camera)
 		ptr->View = _camera->GetViewMatrix();
 		ptr->Proj = _camera->GetProjectionMatrix();
 		ptr->uvRect = Vector4();
+
+		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
+		LightBufferData l = Light::GetInstance()->GetLightBufferData();
+		*light = l;
 	}
 }
 

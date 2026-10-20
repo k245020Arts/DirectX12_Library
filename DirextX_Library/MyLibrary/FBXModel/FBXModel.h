@@ -2,6 +2,7 @@
 #include "../assimp/AssimpLoader.h"
 #include <memory>
 #include "../Object3D/Object3D.h"
+#include "../Light/Light.h"
 
 class VertexBuffer;
 class ConstBuffer;
@@ -43,6 +44,7 @@ private:
 	std::vector <std::unique_ptr<IndexBuffer>> indexBuffer;
 
 	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;
+	std::vector<std::shared_ptr<ConstBuffer>> lightConstBuffer;
 
 	bool useIndex;
 

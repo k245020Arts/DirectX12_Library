@@ -148,6 +148,12 @@
     <Filter Include="MyLibrary\Extension">
       <UniqueIdentifier>{8a74eee3-8a68-4e3a-a8cd-2f6a4018a472}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MyLibrary\Light">
+      <UniqueIdentifier>{fb05d2e4-329e-4f57-bbc4-7baad4532ff8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLibrary\VisualStudioAdd">
+      <UniqueIdentifier>{c6aed750-86ac-4bd6-92e2-f92aeb20f66d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp">
@@ -308,6 +314,15 @@
     </ClCompile>
     <ClCompile Include="MyLibrary\Extension\Extension.cpp">
       <Filter>MyLibrary\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\Light\Light.cpp">
+      <Filter>MyLibrary\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\VisualStudioAdd\VisualStudioAdd.cpp">
+      <Filter>MyLibrary\VisualStudioAdd</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\VisualStudioAdd\tinyxml2.cpp">
+      <Filter>MyLibrary\VisualStudioAdd</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -502,6 +517,15 @@
     </ClInclude>
     <ClInclude Include="MyLibrary\Extension\Extension.h">
       <Filter>MyLibrary\Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Light\Light.h">
+      <Filter>MyLibrary\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\VisualStudioAdd\VisualStudioAdd.h">
+      <Filter>MyLibrary\VisualStudioAdd</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\VisualStudioAdd\tinyxml2.h">
+      <Filter>MyLibrary\VisualStudioAdd</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

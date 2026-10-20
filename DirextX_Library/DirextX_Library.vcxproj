@@ -170,6 +170,7 @@
     <ClCompile Include="MyLibrary\Input\InputManager.cpp" />
     <ClCompile Include="MyLibrary\Input\Key\KeyInput.cpp" />
     <ClCompile Include="MyLibrary\Input\Mouse\MouseInput.cpp" />
+    <ClCompile Include="MyLibrary\Light\Light.cpp" />
     <ClCompile Include="MyLibrary\main.cpp" />
     <ClCompile Include="MyLibrary\Object2D\Object2DManager.cpp" />
     <ClCompile Include="MyLibrary\Object3D\Object3DManager.cpp" />
@@ -196,6 +197,8 @@
     <ClCompile Include="MyLibrary\Texture\TextureLoader.cpp" />
     <ClCompile Include="MyLibrary\Time\DeltaTime.cpp" />
     <ClCompile Include="MyLibrary\VertexBuffer\VertexBuffer.cpp" />
+    <ClCompile Include="MyLibrary\VisualStudioAdd\tinyxml2.cpp" />
+    <ClCompile Include="MyLibrary\VisualStudioAdd\VisualStudioAdd.cpp" />
     <ClCompile Include="MyLibrary\Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -234,6 +237,7 @@
     <ClInclude Include="MyLibrary\Input\Key\KeyInput.h" />
     <ClInclude Include="MyLibrary\Input\Mouse\MouseCode.h" />
     <ClInclude Include="MyLibrary\Input\Mouse\MouseInput.h" />
+    <ClInclude Include="MyLibrary\Light\Light.h" />
     <ClInclude Include="MyLibrary\Object2D\Object2D.h" />
     <ClInclude Include="MyLibrary\Object2D\Object2DManager.h" />
     <ClInclude Include="MyLibrary\Object3D\Object3D.h" />
@@ -262,6 +266,8 @@
     <ClInclude Include="MyLibrary\Texture\TextureLoader.h" />
     <ClInclude Include="MyLibrary\Time\DeltaTime.h" />
     <ClInclude Include="MyLibrary\VertexBuffer\VertexBuffer.h" />
+    <ClInclude Include="MyLibrary\VisualStudioAdd\tinyxml2.h" />
+    <ClInclude Include="MyLibrary\VisualStudioAdd\VisualStudioAdd.h" />
     <ClInclude Include="MyLibrary\Window\Window.h" />
   </ItemGroup>
   <ItemGroup>

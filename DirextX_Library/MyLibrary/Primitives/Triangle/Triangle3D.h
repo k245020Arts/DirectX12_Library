@@ -26,4 +26,6 @@ private:
 
 	void CreateVertexPositionTriangle(const Vector3& _length);
 
+	Vector3 CalculateNormal(const Vector3& p0, const Vector3& p1, const Vector3& p2);
+
 };

@@ -13,6 +13,7 @@ public:
 
 	void SetTextureRootSampler();
 	void SetNormalRootSignature();
+	void SetModelRootSignature();
 
 private:
 	bool success = false; // ルートシグネチャの生成に成功したかどうか

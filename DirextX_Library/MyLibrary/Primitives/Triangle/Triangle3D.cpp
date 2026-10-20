@@ -62,6 +62,61 @@ Triangle3D::Triangle3D()
 		vertices[i + 3].uv = DirectX::XMFLOAT2(0.0f, 1.0f);
 	}
 
+	// 前面
+	auto frontNormal = CalculateNormal(
+		vertices[0].position,
+		vertices[2].position,
+		vertices[3].position);
+
+	for (int i = 0; i < 4; ++i)
+	{
+		vertices[i].normal = frontNormal;
+	}
+
+	// 背面
+	auto backNormal = CalculateNormal(
+		vertices[4].position,
+		vertices[6].position,
+		vertices[7].position);
+
+	for (int i = 4; i < 8; ++i)
+	{
+		vertices[i].normal = backNormal;
+	}
+
+	// 下面
+	auto bottomNormal = CalculateNormal(
+		vertices[12].position,
+		vertices[13].position,
+		vertices[14].position);
+
+	for (int i = 12; i < 16; ++i)
+	{
+		vertices[i].normal = bottomNormal;
+	}
+
+	// 左側面
+	auto leftNormal = CalculateNormal(
+		vertices[16].position,
+		vertices[18].position,
+		vertices[19].position);
+
+	for (int i = 16; i < 20; ++i)
+	{
+		vertices[i].normal = leftNormal;
+	}
+
+	// 右側面
+	auto rightNormal = CalculateNormal(
+		vertices[20].position,
+		vertices[22].position,
+		vertices[23].position);
+
+	for (int i = 20; i < 24; ++i)
+	{
+		vertices[i].normal = rightNormal;
+	}
+
 
 	// インデックス設定
 	std::vector<uint32_t> indices = {
@@ -108,6 +163,7 @@ void Triangle3D::Draw()
 
 	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 	commandList->SetGraphicsRootDescriptorTable(1, descriptorHandle->handleGPU);
+	commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 
 	if (fillMode) {
 		commandList->IASetPrimitiveTopology(drawType);//適切な形に表示をするようにする
@@ -234,4 +290,16 @@ void Triangle3D::CreateVertexPositionTriangle(const Vector3& _length)
 	vertices[21].position = DirectX::XMFLOAT3(0.0f, y, 0.0f);
 	vertices[22].position = DirectX::XMFLOAT3(x, -y, z);
 	vertices[23].position = DirectX::XMFLOAT3(x, -y, -z);
+}
+
+Vector3 Triangle3D::CalculateNormal(const Vector3& p0,const Vector3& p1,const Vector3& p2)
+{
+	using namespace DirectX;
+
+	Vector3 a = p1 - p0;
+	Vector3 b = p2 - p0;
+
+	Vector3 normal = VectorHelper::VCross(a,b);
+
+	return normal;
 }
