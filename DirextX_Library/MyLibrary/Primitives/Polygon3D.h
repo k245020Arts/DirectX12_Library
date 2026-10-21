@@ -25,7 +25,8 @@ public:
 	/// <param name="_fill">ìhÇËÇ¬Ç‘Ç∑èÍçáÇÕtrue</param>
 	virtual void SetFill(bool _fill);
 
-	virtual void SetColor(const Vector4& _color);
+	virtual void SetColor(const Vector3& _color);
+	virtual void SetColor(const Rgb& _rgb);
 
 	void SetBlendMode(BlendState _blendState);
 
@@ -71,5 +72,5 @@ protected:
 	// SRV
 	DescriptorHandle* descriptorHandle = nullptr;
 
-	Vector4 baseColor = Vector4();
+	Vector3 baseColor = Vector3();
 };

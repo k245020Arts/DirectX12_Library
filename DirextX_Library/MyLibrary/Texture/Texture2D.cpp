@@ -142,12 +142,17 @@ void Texture2D::SetSize()
 	defalutSize = false;
 }
 
-void Texture2D::SetColor(const Vector4& _color)
+void Texture2D::SetColor(const Rgb& _color)
 {
-	vertices[0].color = _color;
-	vertices[1].color = _color;
-	vertices[2].color = _color;
-	vertices[3].color = _color;
+	SetColor(Color::RGBToVector3(_color));
+}
+
+void Texture2D::SetColor(const Vector3& _color)
+{
+	vertices[0].color = Vector4(_color.x, _color.y, _color.z, vertices[0].color.w);
+	vertices[1].color = Vector4(_color.x, _color.y, _color.z, vertices[1].color.w);
+	vertices[2].color = Vector4(_color.x, _color.y, _color.z, vertices[2].color.w);
+	vertices[3].color = Vector4(_color.x, _color.y, _color.z, vertices[3].color.w);
 
 	vertexBuffer->BufferMapping(vertices.data());
 }

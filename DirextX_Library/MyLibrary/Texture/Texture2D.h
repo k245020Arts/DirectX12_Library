@@ -78,7 +78,8 @@ public:
     /// F‚Ì•ÏX
     /// </summary>
     /// <param name="_rect"></param>
-    void SetColor(const Vector4& _color);
+    void SetColor(const Vector3& _color);
+    void SetColor(const Rgb& _color);
 
 private:
 

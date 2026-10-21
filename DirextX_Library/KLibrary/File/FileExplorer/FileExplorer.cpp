@@ -632,7 +632,7 @@ bool FileExplorer::CreateFileWindowDraw()
 				else if (createFileImGuiWindowData.fileType == CLASS_FILE_TYPE::CLASS)
 				{
 					// ClassÉtÉ@ÉCÉãÇÃçÏê¨
-#ifdef VISUAL_STUDIO_ADD
+#ifdef TEST
 					isCreateFile = VisualStudioProjectEditor::CreateClassFiles(createFileImGuiWindowData.filePath, createFileImGuiWindowData.fileName);
 #else
 					isCreateFile = CreateClassFiles(createFileImGuiWindowData.filePath, createFileImGuiWindowData.fileName);

@@ -12,7 +12,7 @@ Capsule::Capsule()
 
 	constBuffer.resize(FRAME_BUFFER_COUNT);
 
-	baseColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	baseColor = Vector3(1.0f, 1.0f, 1.0f);
 
 	const int SLICES = 24;      // 横方向（円周）の分割数
 	const int STACKS = 8;       // 縦方向（半球のステップ）の分割数
@@ -243,7 +243,7 @@ void Capsule::CreateCausulePosition(const int _stacks, const int _slices, const 
 			vertices[vIndex + 3].normal = n3;
 
 			for (int j = 0; j < 4; ++j) {
-				vertices[vIndex + j].color = baseColor;
+				vertices[vIndex + j].color = Vector4(baseColor.x, baseColor.y, baseColor.z, vertices[vIndex + j].color.w);
 			}
 
 			vIndex += 4;
@@ -271,7 +271,7 @@ void Capsule::CreateCausulePosition(const int _stacks, const int _slices, const 
 		vertices[vIndex + 3].normal = normal1; // 左下
 
 		for (int j = 0; j < 4; ++j) {
-			vertices[vIndex + j].color = baseColor;
+			vertices[vIndex + j].color = Vector4(baseColor.x, baseColor.y, baseColor.z, vertices[vIndex + j].color.w);
 		}
 		vIndex += 4;
 	}
@@ -310,7 +310,7 @@ void Capsule::CreateCausulePosition(const int _stacks, const int _slices, const 
 			vertices[vIndex + 3].normal = n3;
 
 			for (int j = 0; j < 4; ++j) {
-				vertices[vIndex + j].color = baseColor;
+				vertices[vIndex + j].color = Vector4(baseColor.x, baseColor.y, baseColor.z, vertices[vIndex + j].color.w);
 			}
 			vIndex += 4;
 		}

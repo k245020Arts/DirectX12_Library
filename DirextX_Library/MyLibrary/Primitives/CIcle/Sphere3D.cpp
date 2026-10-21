@@ -19,7 +19,7 @@ Sphere3D::Sphere3D()
 	const uint32_t stackCount = 16;   //緯度方向の分割数
 
 	param = SphereParam(radius, sliceCount, stackCount);
-	baseColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	baseColor = Vector3(1.0f, 1.0f, 1.0f);
 	//頂点数の計算とリサイズ
 	uint32_t vertexCount = (stackCount + 1) * (sliceCount + 1);
 	vertices.resize(vertexCount);
@@ -202,7 +202,7 @@ void Sphere3D::CreateVertexSphere(float _radius, uint32_t _sliceCount, uint32_t 
 			float r = (x / radius) * 0.5f + 0.5f;
 			float g = (y / radius) * 0.5f + 0.5f;
 			float b = (z / radius) * 0.5f + 0.5f;
-			vertices[vIndex].color = baseColor;
+			vertices[vIndex].color = Vector4(baseColor.x, baseColor.y, baseColor.z, vertices[vIndex].color.w);
 
 			// UV座標の計算
 			float u = static_cast<float>(j) / static_cast<float>(sliceCount);

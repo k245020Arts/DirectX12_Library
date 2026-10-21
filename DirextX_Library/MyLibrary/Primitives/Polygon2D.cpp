@@ -46,10 +46,16 @@ void Polygon2D::SetFill(bool _fill)
 	fillMode = _fill;
 }
 
-void Polygon2D::SetColor(const Vector4& _color)
+
+void Polygon2D::SetColor(const Rgb& _rgb)
+{
+	SetColor(Color::RGBToVector3(_rgb));
+}
+
+void Polygon2D::SetColor(const Vector3& _color)
 {
 	for (auto& vertex : vertices) {
-		vertex.color = _color;
+		vertex.color = Vector4(_color.x,_color.y,_color.z,vertex.color.w);
 	}
 	vertexBuffer->BufferMapping(vertices.data());
 }
@@ -174,6 +180,7 @@ void Polygon2D::Set2DMatrix()
 		ptr->uvRect = uvRect;
 	}
 }
+
 
 void Polygon2D::SetBlendMode(BlendState _blendState)
 {

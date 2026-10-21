@@ -12,7 +12,7 @@ Cylinder::Cylinder()
 
 	constBuffer.resize(FRAME_BUFFER_COUNT);
 
-	baseColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	baseColor = Vector3(1.0f, 1.0f, 1.0f);
 
 	const int SLICES = 24; // 円周の分割数 : 増やすほど滑らかな円柱
 	const float RADIUS = 50.0f;
@@ -200,7 +200,7 @@ void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, st
 		vertices[vIndex + 3].position = DirectX::XMFLOAT3(RADIUS * cosf(theta1), HALF_HEIGHT, RADIUS * sinf(theta1)); // 外周1
 
 		for (int j = 0; j < 4; ++j) {
-			vertices[vIndex + j].color = baseColor;
+			vertices[vIndex + j].color = Vector4(baseColor.x,baseColor.y,baseColor.z,vertices[vIndex + j].color.w);
 		}
 
 		// 上面の法線（Y軸プラス方向）
@@ -209,7 +209,7 @@ void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, st
 		for (int j = 0; j < 4; ++j)
 		{
 			vertices[vIndex + j].normal = topNormal;
-			vertices[vIndex + j].color = baseColor;
+			vertices[vIndex + j].color = Vector4(baseColor.x, baseColor.y, baseColor.z, vertices[vIndex + j].color.w);
 		}
 
 
@@ -228,7 +228,7 @@ void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, st
 		vertices[vIndex + 3].position = DirectX::XMFLOAT3(RADIUS * cosf(theta2), -HALF_HEIGHT, RADIUS * sinf(theta2)); // 外周2
 
 		for (int j = 0; j < 4; ++j) {
-			vertices[vIndex + j].color = baseColor;
+			vertices[vIndex + j].color = Vector4(baseColor.x, baseColor.y, baseColor.z, vertices[vIndex + j].color.w);
 		}
 
 		// 下面の法線（Y軸マイナス方向）
@@ -237,7 +237,7 @@ void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, st
 		for (int j = 0; j < 4; ++j)
 		{
 			vertices[vIndex + j].normal = bottomNormal;
-			vertices[vIndex + j].color = baseColor;
+			vertices[vIndex + j].color = Vector4(baseColor.x, baseColor.y, baseColor.z, vertices[vIndex + j].color.w);
 		}
 
 		vIndex += 4;
@@ -265,7 +265,7 @@ void Cylinder::CreateVertexCylider(int _slices, float _radius, float _height, st
 		vertices[vIndex + 3].normal = normal1;
 
 		for (int j = 0; j < 4; ++j) {
-			vertices[vIndex + j].color = baseColor;
+			vertices[vIndex + j].color = Vector4(baseColor.x, baseColor.y, baseColor.z, vertices[vIndex + j].color.w);
 		}
 		vIndex += 4;
 	}

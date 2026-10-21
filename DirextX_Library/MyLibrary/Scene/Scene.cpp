@@ -56,7 +56,7 @@ Scene::Scene()
 	star2D->GetTransform().position = Vector3(200, 100, 0);
 	star2D->SetFill(true);
 	cicleTest->SetBlendMode(BlendState::NO_BLEND);
-	line2D->SetColor(Vector4(1.0f, 0.0f, 1.0f, 1.0f));
+	line2D->SetColor(BLUE);
 
 	/*Star2D* star2D2 = new Star2D();
 	star2D->GetTransform().position = Vector3(350, 200, 0);
@@ -85,7 +85,7 @@ Scene::Scene()
 	texture2D3->Load("data/animation2.png");
 	texture2D3->GetTransform().position = Vector3(400, 400, 0);
 	texture2D3->SetRect(Vector4(0.0f, 0.0f, 240.0f, 240.0f));
-	texture2D3->SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+	texture2D3->SetColor(GOLD);
 #endif // ON2D
 
 	//L"data/Alicia/FBX/Alicia_solid_Unity.FBX"
@@ -103,9 +103,6 @@ Scene::Scene()
 	model2->GetTransform().position.x -= 150.0f;
 
 	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Vector3(1.0f, 0.0f, 0.0f)));
-
-
-	
 
 #ifdef ORIGINAL_MOUSE_POINTER
 	clickTime = 0.0f;
@@ -148,7 +145,7 @@ Scene::Scene()
 
 	capsule->GetTransform().position = Vector3(170.0f, 0.0f, 150.0f);
 	capsule->SetCapsuleParam(Capsule::CapsuleParam(20, 10, 20, 100));
-	capsule->SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+	capsule->SetColor(ORANGE);
 
 	capsule->SetAlpha(0.01f);
 	capsule->SetBlendMode(BlendState::NO_BLEND);

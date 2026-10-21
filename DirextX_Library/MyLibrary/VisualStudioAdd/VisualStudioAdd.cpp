@@ -12,6 +12,7 @@
 #include <system_error>
 #include <vector>
 #include "../../KLibrary/File/FileExplorer/FileExplorer.h"
+#include <algorithm>
 
 namespace fs = std::filesystem;
 
@@ -235,20 +236,6 @@ namespace
         group->InsertEndChild(item);
     }
 
-    // バックアップファイル名に時刻を付けて既存ファイルを避ける。
-    fs::path MakeBackupPath(const fs::path& original)
-    {
-        const auto now =
-            std::chrono::system_clock::now().time_since_epoch();
-
-        const auto ticks =
-            std::chrono::duration_cast<std::chrono::milliseconds>(now)
-            .count();
-
-        return fs::path(original.wstring() +
-            L"." + std::to_wstring(ticks) + L".bak");
-    }
-
     bool CopyBackup(
         const fs::path& original,
         const fs::path& backup)
@@ -302,11 +289,30 @@ namespace
 
         return true;
     }
+
+    // バックアップファイルの保存先とファイル名を生成する
+    fs::path MakeBackupPath(
+        const fs::path& backupDirectory,
+        const fs::path& original)
+    {
+        const auto now =
+            std::chrono::system_clock::now().time_since_epoch();
+
+        const auto ticks =
+            std::chrono::duration_cast<std::chrono::milliseconds>(now)
+            .count();
+
+        const std::wstring backupFileName =
+            original.filename().wstring() +
+            L"." + std::to_wstring(ticks) + L".bak";
+
+        return backupDirectory / backupFileName;
+    }
+
 }
 
 bool VisualStudioProjectEditor::AddClassToProject(const fs::path& projectPath,const fs::path& entryPath,const std::string& className)
 {
-    // 登録先を絶対パスに統一する。
     std::error_code ec;
     const fs::path project = fs::absolute(projectPath, ec);
     if (ec)
@@ -352,13 +358,29 @@ bool VisualStudioProjectEditor::AddClassToProject(const fs::path& projectPath,co
         return false;
     }
 
-    // 2つの XML をそれぞれバックアップする。
-    const fs::path projectBackup = MakeBackupPath(project);
-    const fs::path filtersBackup = MakeBackupPath(filtersPath);
+    // バックアップ用フォルダを取得
+    const fs::path backupDirectory =
+        project.parent_path() / L"ProjectBackups";
 
+    // フォルダがなければ作成する。
+    // すでに存在する場合は、そのまま使用する。
+    fs::create_directories(backupDirectory, ec);
+
+    if (ec)
+        return false;
+
+    // バックアップファイルのパスを生成
+    const fs::path projectBackup =
+        MakeBackupPath(backupDirectory, project);
+
+    const fs::path filtersBackup =
+        MakeBackupPath(backupDirectory, filtersPath);
+
+    // .vcxproj をバックアップ
     if (!CopyBackup(project, projectBackup))
         return false;
 
+    // .vcxproj.filters をバックアップ
     if (!CopyBackup(filtersPath, filtersBackup))
     {
         fs::remove(projectBackup, ec);
@@ -391,8 +413,17 @@ bool VisualStudioProjectEditor::AddClassToProject(const fs::path& projectPath,co
     AddProjectFile(
         projectDoc, projectRoot, "ClCompile", sourceInclude);
 
-    // フィルター名はクラス名にする。
-    const std::string filterName = className;
+    // プロジェクトフォルダからの相対パスをフィルター名にする
+    const fs::path relativeDirectory =
+        fs::relative(directory, project.parent_path(), ec);
+
+    if (ec)
+        return false;
+
+    // Visual Studio のフィルター階層にはバックスラッシュを使う
+    std::string filterName = relativeDirectory.string();
+
+    std::replace(filterName.begin(), filterName.end(), '/', '\\');
 
     if (!AddFilterIfNeeded(filtersDoc, filtersRoot, filterName))
         return false;
@@ -454,64 +485,42 @@ bool VisualStudioProjectEditor::AddClassToProject(const fs::path& projectPath,co
 
 bool VisualStudioProjectEditor::CreateClassFiles(std::string _entryPath,std::string _className)
 {
-    namespace fs = std::filesystem;
+    //_ .hファイルの作成 _//
 
-    const fs::path directory = fs::u8path(_entryPath);
-    const fs::path headerPath = directory / (_className + ".h");
-    const fs::path sourcePath = directory / (_className + ".cpp");
+    std::string hInString = "#pragma once\n";	// .hファイルに入力する文字列
+    hInString += "\n";
+    hInString += "class " + _className + "\n";
+    hInString += "{\n";
+    hInString += "public:\n";
+    hInString += "    ";
+    hInString += _className + "();\n";
+    hInString += "    ";
+    hInString += "~" + _className + "();\n";
+    hInString += "private:\n";
+    hInString += "};\n";
 
-    // 既存ファイルを上書きしない。
-    if (fs::exists(headerPath) || fs::exists(sourcePath))
-        return false;
+    // .hファイルの作成
+    bool isCreateFile = FileSystemUtils::CreateEntryFile(_entryPath + "/" + _className + ".h", hInString);	// ファイルを作成したかどうか
 
-    const std::string hInString =
-        "#pragma once\n"
-        "\n"
-        "class " + _className + "\n"
-        "{\n"
-        "public:\n"
-        "    " + _className + "();\n"
-        "    ~" + _className + "();\n"
-        "\n"
-        "private:\n"
-        "};\n";
+    //_ .cppファイルの作成 _//
 
-    const std::string cppInString =
-        "#include \"" + _className + ".h\"\n"
-        "\n"
-        + _className + "::" + _className + "()\n"
-        "{\n"
-        "}\n"
-        "\n"
-        + _className + "::~" + _className + "()\n"
-        "{\n"
-        "}\n";
+    std::string cppInString = "#include ";	// .cppファイルに入力する文字列
+    cppInString += "\"";
+    cppInString += _className;
+    cppInString += ".h";
+    cppInString += "\"";
 
-    // 1. ヘッダーを生成する。
-    if (!FileSystemUtils::CreateEntryFile(
-        headerPath.string(), hInString))
-    {
-        return false;
-    }
+    // .cppファイルの作成
+    isCreateFile &= (int)FileSystemUtils::CreateEntryFile(_entryPath + "/" + _className + ".cpp", cppInString);
 
-    // 2. cpp の生成に失敗したら、今回作ったヘッダーを削除する。
-    if (!FileSystemUtils::CreateEntryFile(
-        sourcePath.string(), cppInString))
-    {
-        std::error_code ec;
-        fs::remove(headerPath, ec);
-        return false;
-    }
+    // ディレクトリのパスを取得
+    fs::path directory = fs::u8path(_entryPath);
 
     // 3. 生成済みファイルを vcxproj と filters に登録する。
     if (!VisualStudioProjectEditor::AddClassToProject(
         projectFilePath, directory, _className))
     {
-        // XML の登録失敗時は、生成したファイルも削除する。
-        // XML 側のロールバックは AddClassToProject 側で行う。
         std::error_code ec;
-        fs::remove(headerPath, ec);
-        fs::remove(sourcePath, ec);
         return false;
     }
 

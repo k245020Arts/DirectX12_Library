@@ -19,15 +19,21 @@ Camera3D::~Camera3D()
 
 void Camera3D::Update()
 {
+	
 	ImGui::Begin(u8"カメラ座標");
 
 	ImGui::DragFloat3("camPos", &position.x, 1.0f, 0.0f, 10000.0f);
 	ImGui::DragFloat3("camTarget", &target.x, 1.0f, 0.0f, 10000.0f);
 
+	if (position == target)
+	{
+		position = VectorHelper::VOne; //カメラの座標と注視点両方が0になると落ちるためそれの対策
+	}
 	ImGui::End();
 	//target.x += 0.1f;
 	const auto eyePos = DirectX::XMVectorSet(position.x, position.y, position.z, 1.0f);
 	const auto targetPos = DirectX::XMVectorSet(target.x, target.y, target.z, 1.0f);
+
 	const auto up = DirectX::XMVectorSet(upVec.x, upVec.y, upVec.z, 0.0f);
 
 	const float fov = DirectX::XMConvertToRadians(fovAngle);

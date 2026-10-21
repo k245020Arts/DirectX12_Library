@@ -2,11 +2,13 @@
 #include <filesystem>
 #include <string>
 
-#define VISUAL_STUDIO_ADD
+#define TEST
 
 class VisualStudioProjectEditor
 {
 public:
+
+    VisualStudioProjectEditor() = delete;
     // クラスの .h / .cpp をプロジェクトに登録し、
     // Generated フィルターを作成する。
     static bool AddClassToProject(const std::filesystem::path& projectPath,const std::filesystem::path& entryPath,const std::string& className);

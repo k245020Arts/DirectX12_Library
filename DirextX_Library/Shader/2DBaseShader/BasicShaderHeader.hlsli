@@ -8,7 +8,7 @@ cbuffer Transform : register(b0)
 
 }
 
-#define MAX_LIGHT_COUNT 12
+#define MAX_LIGHT_COUNT 1200
 
 struct LightData
 {
