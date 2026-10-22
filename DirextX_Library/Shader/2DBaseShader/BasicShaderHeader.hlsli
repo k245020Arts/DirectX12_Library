@@ -8,7 +8,7 @@ cbuffer Transform : register(b0)
 
 }
 
-#define MAX_LIGHT_COUNT 1200
+#define MAX_LIGHT_COUNT 12
 
 struct LightData
 {
@@ -37,6 +37,16 @@ struct VSInput
     float2 uv : TEXCOORD; // UV
     float3 tangent : TANGENT; // 接空間
     float4 color : COLOR; // 頂点色
+};
+
+struct ModelVSInput
+{
+    float3 pos : POSITION; // 頂点座標
+    float4 normal : NORMAL; // 法線
+    float2 uv : TEXCOORD; // UV
+    float3 tangent : TANGENT; // 接空間
+    float4 color : COLOR; // 頂点色
+    uint4 boneno : BONENO; //ボーン番号
 };
 
 struct VSOutput

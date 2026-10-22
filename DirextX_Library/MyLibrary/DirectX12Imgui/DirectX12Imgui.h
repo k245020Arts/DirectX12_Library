@@ -4,6 +4,8 @@
 #include "../../ImGui/imgui_impl_dx12.h"
 #include "../DescriptorHeap/DescriptorHeap.h"
 
+#define IMGUI
+
 class DirectX12Imgui
 {
 public:

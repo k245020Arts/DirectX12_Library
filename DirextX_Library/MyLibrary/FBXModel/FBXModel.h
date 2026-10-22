@@ -3,18 +3,55 @@
 #include <memory>
 #include "../Object3D/Object3D.h"
 #include "../Light/Light.h"
+#include <unordered_map>
 
 class VertexBuffer;
 class ConstBuffer;
 class PipelineState;
 class RootSignature;
 class IndexBuffer;
+class Animator;
 
 struct DescriptorHandle;
+
+struct NodeData
+{
+	std::wstring name;
+
+	DirectX::XMFLOAT4X4 localTransform{};
+
+	int parentIndex = -1;
+	std::vector<uint32_t> children;
+};
+
+struct ModelData
+{
+	std::vector<Mesh> meshes;
+	std::vector<AnimationData> animations;
+
+	// スキニング用
+	std::vector<BoneInfo> bones;
+	std::unordered_map<std::wstring, uint32_t> boneMap;
+
+	// アニメーション用のノード階層
+	std::vector<NodeData> nodes;
+	int rootNodeIndex = -1;
+
+	// ルートノードの逆行列
+	Matrix globalInverseTransform;
+};
+
+static constexpr int BONE_MAX = 256;
+
+struct BoneBuffer
+{
+	DirectX::XMFLOAT4X4 bones[BONE_MAX] = {};
+};
 
 class FBXModel : public Object3D
 {
 public:
+
 	FBXModel();
 	~FBXModel();
 
@@ -35,7 +72,10 @@ private:
 
 	void SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint);
 
-	std::vector<Mesh> meshes;
+	
+	ModelData modelData;
+
+	std::unique_ptr<Animator> animator;
 
 	std::vector<std::unique_ptr<VertexBuffer>> vertexBuffer;
 	std::unique_ptr<RootSignature> rootSignature;
@@ -45,6 +85,7 @@ private:
 
 	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;
 	std::vector<std::shared_ptr<ConstBuffer>> lightConstBuffer;
+	std::vector<std::shared_ptr<ConstBuffer>> boneConstBuffer;
 
 	bool useIndex;
 

@@ -131,7 +131,7 @@ void Polygon3D::Init(const std::vector<Vertex>& _vertices, const std::vector<uin
 	}
 
 	rootSignature = std::make_unique<RootSignature>();
-	rootSignature->SetModelRootSignature();
+	rootSignature->Set3DRootSignature();
 	if (!rootSignature->IsSuccess())
 	{
 		OutputDebugStringW(L"ルートシグネチャの生成に失敗\n");

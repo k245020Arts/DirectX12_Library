@@ -32,7 +32,9 @@ void Application::ApplicationInit(Window window)
 	imgui->SetUpImGui(window.GetHwnd());
 	InputManager::GetInstance()->SetMouseHwnd(window.GetHwnd());
 
+#ifdef IMGUI
 	FileExplorer::Init();
+#endif // IMGUI
 }
 
 void Application::BeginUpdate()
@@ -45,7 +47,10 @@ void Application::BeginUpdate()
 	imgui->BeginRenderImGui();
 
 	imgui->DebugRenderer();
+#ifdef IMGUI
 	FileExplorer::Update();
+#endif // IMGUI
+
 }
 
 void Application::ApplicationUpdate()

@@ -3,7 +3,7 @@
 #include "../Time/DeltaTime.h"
 #include "../Engine/Engine.h"
 
-#define IMGUI
+
 
 DirectX12Imgui::DirectX12Imgui()
 {

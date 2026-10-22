@@ -186,7 +186,7 @@ void Cicle2D::Update()
 	//transform.position.y += 1.0f;
 	//transform.rotation.z += 0.01f;
 	Set2DMatrix();
-	FillConstShaderUpdate();
+	//FillConstShaderUpdate();
 }
 
 void Cicle2D::Draw()

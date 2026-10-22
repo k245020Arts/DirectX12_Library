@@ -25,6 +25,7 @@
 //#define ORIGINAL_MOUSE_POINTER
 //#define ON2D
 //#define ON3D
+#define MODEL
 
 static const float CLICK_TIME = 0.2f;
 
@@ -32,13 +33,13 @@ Scene::Scene()
 {
 #ifdef ON2D
 	test = new Triangle();
-	test->GetTransform().position = Vector3(200.0f, 0.0f, 0.0f);
+	test->GetTransform().position = Vector3(800.0f, 200.0f, 0.0f);
 
 	test2 = new Triangle();
 	test2->GetTransform().position = Vector3(0.0f, 0.0f, 0.0f);
 
 	boxTest = new Box2D();
-	boxTest->GetTransform().position = Vector3(400.0f, 0.0f, 0.0f);
+	boxTest->GetTransform().position = Vector3(400.0f, 200.0f, 0.0f);
 
 	cicleTest = new Cicle2D();
 	cicleTest->GetTransform().position = Vector3(600.0f, 200.0f, 0.0f);
@@ -73,13 +74,13 @@ Scene::Scene()
 	texture2D->SetBlendMode(BlendState::ALPHA);
 	texture2D->SetAlpha(0.01f);*/
 
-	mousePointer = new Texture2D();
-	mousePointer->Load("data/textest.png");
-	mousePointer->GetTransform().position = Vector3(200, 200, 0);
-	//texture2D2->SetSize(256, 256);
-	mousePointer->SetRect(Vector4(0.0f, 0.0f, 128.0f, 128.0f));
-	//texture2D2->SetFlipX(false);
-	//texture2D2->SetFlipY(true);
+	texture2D1 = new Texture2D();
+	texture2D1->Load("data/textest.png");
+	texture2D1->GetTransform().position = Vector3(1000, 200, 0);
+	//texture2D1->SetSize(256, 256);
+	//texture2D1->SetRect(Vector4(0.0f, 0.0f, 128.0f, 128.0f));
+	//texture2D1->SetFlipX(false);
+	//texture2D1->SetFlipY(true);
 
 	texture2D3 = new Texture2D();
 	texture2D3->Load("data/animation2.png");
@@ -88,9 +89,10 @@ Scene::Scene()
 	texture2D3->SetColor(GOLD);
 #endif // ON2D
 
+#ifdef MODEL
 	//L"data/Alicia/FBX/Alicia_solid_Unity.FBX"
-	model = new FBXModel(); 
-	model->Load(L"data/Dragon 2.5_fbx.fbx",false,true);
+	model = new FBXModel();
+	model->Load(L"data/motion.fbx", false, true);
 
 	model1 = new FBXModel();
 	model1->Load(L"data/Dragon 2.5_fbx.fbx", false, true);
@@ -103,6 +105,9 @@ Scene::Scene()
 	model2->GetTransform().position.x -= 150.0f;
 
 	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Vector3(1.0f, 0.0f, 0.0f)));
+#endif // MODEL
+
+	
 
 #ifdef ORIGINAL_MOUSE_POINTER
 	clickTime = 0.0f;
@@ -215,10 +220,14 @@ void Scene::Update()
 	texture2D->GetTransform().rotation.z += 0.01f;*/
 #endif //  ON2D
 
+#ifdef MODEL
 	model->GetTransform().rotation.y += 0.007f;
 	model1->GetTransform().rotation.y += 0.005f;
 	model2->GetTransform().rotation.y += 0.003f;
 	//model->Update();
+#endif // DEBUG
+
+	
 
 	//box3D->Update();
 	

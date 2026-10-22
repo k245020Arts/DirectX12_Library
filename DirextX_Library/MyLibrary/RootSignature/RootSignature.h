@@ -14,6 +14,7 @@ public:
 	void SetTextureRootSampler();
 	void SetNormalRootSignature();
 	void SetModelRootSignature();
+	void Set3DRootSignature();
 
 private:
 	bool success = false; // ルートシグネチャの生成に成功したかどうか

@@ -19,7 +19,7 @@ Camera3D::~Camera3D()
 
 void Camera3D::Update()
 {
-	
+#ifdef IMGUI
 	ImGui::Begin(u8"カメラ座標");
 
 	ImGui::DragFloat3("camPos", &position.x, 1.0f, 0.0f, 10000.0f);
@@ -30,6 +30,8 @@ void Camera3D::Update()
 		position = VectorHelper::VOne; //カメラの座標と注視点両方が0になると落ちるためそれの対策
 	}
 	ImGui::End();
+#endif // IMGUI
+	
 	//target.x += 0.1f;
 	const auto eyePos = DirectX::XMVectorSet(position.x, position.y, position.z, 1.0f);
 	const auto targetPos = DirectX::XMVectorSet(target.x, target.y, target.z, 1.0f);

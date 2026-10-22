@@ -324,8 +324,8 @@
         <ClCompile Include="MyLibrary\VisualStudioAdd\tinyxml2.cpp">
             <Filter>MyLibrary\VisualStudioAdd</Filter>
         </ClCompile>
-        <ClCompile Include="MyLibrary/Color/Color.cpp">
-            <Filter>MyLibrary\Color</Filter>
+        <ClCompile Include="MyLibrary/Animator/Animator.cpp">
+            <Filter>MyLibrary\Animator</Filter>
         </ClCompile>
     </ItemGroup>
     <ItemGroup>
@@ -533,6 +533,9 @@
         <ClInclude Include="MyLibrary/Color/Color.h">
             <Filter>MyLibrary\Color</Filter>
         </ClInclude>
+        <ClInclude Include="MyLibrary/Animator/Animator.h">
+            <Filter>MyLibrary\Animator</Filter>
+        </ClInclude>
     </ItemGroup>
     <ItemGroup>
         <FxCompile Include="Shader\2DBaseShader\Basic_VertexShader.hlsl">
@@ -571,6 +574,9 @@
     <ItemGroup Label="Filters">
         <Filter Include="MyLibrary\Color">
             <UniqueIdentifier>{90EE11E2-12B4-4807-BB28-EA964922FD36}</UniqueIdentifier>
+        </Filter>
+        <Filter Include="MyLibrary\Animator">
+            <UniqueIdentifier>{43F75CD1-67FD-484A-B7C8-B981AC5BBDA4}</UniqueIdentifier>
         </Filter>
     </ItemGroup>
 </Project>

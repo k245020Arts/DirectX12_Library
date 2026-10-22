@@ -35,9 +35,6 @@ Triangle::~Triangle()
 
 void Triangle::Update()
 {
-	transform.position.x += 1.0f;
-	transform.position.y += 1.0f;
-	transform.rotation.z += 0.01f;
 	Set2DMatrix();
 }
 

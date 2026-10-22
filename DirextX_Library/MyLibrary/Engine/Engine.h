@@ -87,5 +87,8 @@ private:
 
 	void WaitRender();
 
+	void EnableDRED();
+	void PrintDRED(ID3D12Device* device);
+
 	friend class SingletonBase<Engine>;
 };

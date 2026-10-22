@@ -198,6 +198,7 @@
     <ClCompile Include="MyLibrary\VisualStudioAdd\tinyxml2.cpp" />
     <ClCompile Include="MyLibrary\VisualStudioAdd\VisualStudioAdd.cpp" />
     <ClCompile Include="MyLibrary\Window\Window.cpp" />
+    <ClCompile Include="MyLibrary/Animator/Animator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\crude_json.h" />
@@ -268,6 +269,7 @@
     <ClInclude Include="MyLibrary\VisualStudioAdd\VisualStudioAdd.h" />
     <ClInclude Include="MyLibrary\Window\Window.h" />
     <ClInclude Include="MyLibrary/Color/Color.h" />
+    <ClInclude Include="MyLibrary/Animator/Animator.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\2DBaseShader\Basic_PixelShader.hlsl">
@@ -333,6 +335,22 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BasicVS_3D</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shader\FBXModelShader\FBXModelPixelShader.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BasicPS_FBX</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BasicPS_FBX</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shader\FBXModelShader\FBXModelVertexShader.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BasicVS_FBX</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BasicVS_FBX</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

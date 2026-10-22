@@ -76,10 +76,10 @@ void Box2D::SetFill(bool _fill)
 
 void Box2D::Update()
 {
-	transform.position.x += 1.0f;
-	transform.position.y += 1.0f;
+	//transform.position.x += 1.0f;
+	//transform.position.y += 1.0f;
+	////transform.rotation.z += 0.01f;
 	//transform.rotation.z += 0.01f;
-	transform.rotation.z += 0.01f;
 	Set2DMatrix();
 }
 

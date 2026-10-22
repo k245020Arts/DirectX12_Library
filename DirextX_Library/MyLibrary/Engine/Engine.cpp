@@ -22,6 +22,9 @@ bool Engine::Init(HWND _hwnd, const Size& _size)
 
     CreateDebugLayer();
 
+    // 1. DREDを有効化
+    EnableDRED();
+
     bool deviceCreate = CreateDevice();
 
     if (!deviceCreate) {
@@ -138,7 +141,16 @@ void Engine::EndRender()
     commandQueue->ExecuteCommandLists(1, ppCmdLists);
 
     // スワップチェーンを切り替え
-    swapChain->Present(1, 0);
+    HRESULT hr = swapChain->Present(1, 0);
+
+    if (FAILED(hr))
+    {
+        printf("Present failed: 0x%08X\n",
+            static_cast<unsigned int>(hr));
+
+        PrintDRED(pDevice.Get());
+        assert(false && "スワップチェーン時にエラー");
+    }
 
     // 描画完了を待つ
     WaitRender();
@@ -291,7 +303,7 @@ bool Engine::CreateCommandQueue()
 {
     D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = {};
 
-    cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_DISABLE_GPU_TIMEOUT; //タイムアウトなし
+    cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;//D3D12_COMMAND_QUEUE_FLAG_DISABLE_GPU_TIMEOUT; //タイムアウトなし
 
     cmdQueueDesc.NodeMask = 0; //アダプターを一つしか使用しないときは0
 
@@ -569,4 +581,102 @@ void Engine::WaitRender()
             return;
         }
     }
+}
+
+void Engine::EnableDRED()
+{
+    ComPtr<ID3D12DeviceRemovedExtendedDataSettings> dredSettings;
+
+    HRESULT hr = D3D12GetDebugInterface(
+        IID_PPV_ARGS(&dredSettings));
+
+    if (FAILED(hr))
+    {
+        OutputDebugStringA(
+            "DRED settings interface取得失敗\n");
+        return;
+    }
+
+    // GPUコマンドの進行状況を記録
+    dredSettings->SetAutoBreadcrumbsEnablement(
+        D3D12_DRED_ENABLEMENT_FORCED_ON);
+
+    // GPUメモリのページフォールト情報を記録
+    dredSettings->SetPageFaultEnablement(
+        D3D12_DRED_ENABLEMENT_FORCED_ON);
+}
+
+void Engine::PrintDRED(ID3D12Device* device)
+{
+    if (device == nullptr)
+    {
+        return;
+    }
+
+    ComPtr<ID3D12DeviceRemovedExtendedData> dred;
+
+    HRESULT hr = device->QueryInterface(
+        IID_PPV_ARGS(&dred));
+
+    if (FAILED(hr))
+    {
+        printf("DRED interface取得失敗: 0x%08X\n",
+            static_cast<unsigned int>(hr));
+        return;
+    }
+
+    // GPUコマンドの進行状況
+    D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT breadcrumbs{};
+
+    hr = dred->GetAutoBreadcrumbsOutput(&breadcrumbs);
+
+    if (SUCCEEDED(hr))
+    {
+        auto* node = breadcrumbs.pHeadAutoBreadcrumbNode;
+
+        while (node != nullptr)
+        {
+            printf("CommandList: %p\n",
+                static_cast<void*>(node->pCommandList));
+
+            printf("BreadcrumbCount: %u\n",
+                node->BreadcrumbCount);
+
+            if (node->pLastBreadcrumbValue != nullptr)
+            {
+                printf("LastBreadcrumbValue: %u\n",
+                    *node->pLastBreadcrumbValue);
+            }
+
+            if (node->pCommandHistory != nullptr)
+            {
+                for (UINT i = 0; i < node->BreadcrumbCount; ++i)
+                {
+                    printf("  [%u] Operation = %d%s\n",
+                        i,
+                        static_cast<int>(node->pCommandHistory[i]),
+                        (node->pLastBreadcrumbValue != nullptr &&
+                            i == *node->pLastBreadcrumbValue)
+                        ? " <-- 次に調べる操作"
+                        : "");
+                }
+            }
+
+            node = node->pNext;
+        }
+    }
+
+    // GPUメモリのページフォールト情報
+    D3D12_DRED_PAGE_FAULT_OUTPUT pageFault{};
+
+    hr = dred->GetPageFaultAllocationOutput(&pageFault);
+
+    if (SUCCEEDED(hr))
+    {
+        printf("PageFaultVA: 0x%llX\n",
+            static_cast<unsigned long long>(
+                pageFault.PageFaultVA));
+    }
+
+    
 }

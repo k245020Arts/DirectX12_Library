@@ -9,6 +9,8 @@
 #include "../DescriptorHeap/DescriptorHeap.h"
 #include "../Texture/TextureLoader.h"
 #include "../Camera3D/Camera3D.h"
+#include "../Animator/Animator.h"
+#include "../Time/DeltaTime.h"
 
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -40,16 +42,19 @@ bool FBXModel::Load(const std::string& _modelFilePath, bool _uflip, bool _vflip)
 	ImportSettings importSetting = // これ自体は自作の読み込み設定構造体
 	{
 		c,
-		meshes,
+		modelData.meshes,
+		modelData.animations,
 		_uflip,
-		_vflip // アリシアのモデルは、テクスチャのUVのVだけ反転してるっぽい？ので読み込み時にUV座標を逆転させる
+		_vflip
 	};
 
 	AssimpLoader loader;
-	if (!loader.Load(importSetting))
+	if (!loader.Load(importSetting,modelData))
 	{
 		return false;
 	}
+
+	animator = std::make_unique<Animator>(modelData);
 
 	constBuffer.resize(FRAME_BUFFER_COUNT);
 
@@ -69,29 +74,31 @@ bool FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip)
 	ImportSettings importSetting = // これ自体は自作の読み込み設定構造体
 	{
 		_modelFilePath,
-		meshes,
+		modelData.meshes,
+		modelData.animations,
 		_uflip,
-		_vflip // アリシアのモデルは、テクスチャのUVのVだけ反転してるっぽい？ので読み込み時にUV座標を逆転させる
+		_vflip
 	};
 
 	AssimpLoader loader;
-	if (!loader.Load(importSetting))
+	if (!loader.Load(importSetting, modelData))
 	{
 		return false;
 	}
 
 	constBuffer.resize(FRAME_BUFFER_COUNT);
-
+	animator = std::make_unique<Animator>(modelData);
 
 	Init();
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
+	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/FBXModelShader/FBXModelVertexShader.hlsl", "BasicVS_FBX", L"Shader/FBXModelShader/FBXModelPixelShader.hlsl", "BasicPS_FBX");
+	//SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
 	return true;
 }
 
 void FBXModel::Update()
 {
-	
+	animator->Update(DeltaTime::GetInstance()->GetDeltaTime());
 }
 
 void FBXModel::Draw()
@@ -100,7 +107,7 @@ void FBXModel::Draw()
 	auto commandList = Engine::GetInstance()->CommandList();
 
 	// メッシュの数だけインデックス分の描画を行う処理を回す
-	for (size_t i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < modelData.meshes.size(); i++)
 	{
 		auto vbView = vertexBuffer[i]->GetView(); // そのメッシュに対応する頂点バッファ
 		auto ibView = indexBuffer[i]->View(); // そのメッシュに対応する頂点バッファ
@@ -110,6 +117,7 @@ void FBXModel::Draw()
 		commandList->SetPipelineState(pipelineState->GetPipelineState());
 		commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 		commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootConstantBufferView(3, boneConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &vbView);
@@ -119,20 +127,21 @@ void FBXModel::Draw()
 
 		commandList->SetGraphicsRootDescriptorTable(1, materialHandles[i]->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
 
-		commandList->DrawIndexedInstanced((UINT)meshes[i].Indices.size(), 1, 0, 0, 0); // インデックスの数分描画する
+		commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 1, 0, 0, 0); // インデックスの数分描画する
 	}
 }
 
 void FBXModel::Init()
 {
 	lightConstBuffer.resize(FRAME_BUFFER_COUNT);
-	vertexBuffer.reserve(meshes.size());
+	boneConstBuffer.resize(FRAME_BUFFER_COUNT);
+	vertexBuffer.reserve(modelData.meshes.size());
 
-	for (size_t i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < modelData.meshes.size(); i++)
 	{
-		auto size = sizeof(Vertex) * meshes[i].Vertices.size();
-		auto stride = sizeof(Vertex);
-		auto vertices = meshes[i].Vertices.data();
+		auto size = sizeof(VertexSkinning3D) * modelData.meshes[i].Vertices.size();
+		auto stride = sizeof(VertexSkinning3D);
+		auto vertices = modelData.meshes[i].Vertices.data();
 		auto pVB = new VertexBuffer(size, stride, vertices);
 		if (!pVB->IsSuccess())
 		{
@@ -146,11 +155,11 @@ void FBXModel::Init()
 	polygonSize = (UINT)vertices.size();
 
 	// メッシュの数だけインデックスバッファを用意する
-	indexBuffer.reserve(meshes.size());
-	for (size_t i = 0; i < meshes.size(); i++)
+	indexBuffer.reserve(modelData.meshes.size());
+	for (size_t i = 0; i < modelData.meshes.size(); i++)
 	{
-		auto size = sizeof(uint32_t) * meshes[i].Indices.size();
-		auto indices = meshes[i].Indices.data();
+		auto size = sizeof(uint32_t) * modelData.meshes[i].Indices.size();
+		auto indices = modelData.meshes[i].Indices.data();
 		auto pIB = new IndexBuffer(size, indices);
 		if (!pIB->IsSuccess())
 		{
@@ -179,6 +188,12 @@ void FBXModel::Init()
 		{
 			OutputDebugStringW(L"ライト用定数バッファの生成に失敗\n");
 		}
+		boneConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(BoneBuffer));
+		if (!boneConstBuffer[i]->IsValid())
+		{
+			OutputDebugStringW(L"ボーン用バッファの生成に失敗\n");
+		}
+		
 		// 変換行列の登録
 		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
 		ptr->World = DirectX::XMMatrixIdentity();
@@ -188,16 +203,26 @@ void FBXModel::Init()
 		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
 		LightBufferData l = Light::GetInstance()->GetLightBufferData();
 		*light = l;
+
+		auto* bone = boneConstBuffer[i]->GetPtr<BoneBuffer>();
+		const auto& matrices = animator->GetBoneMatrices();
+
+		const size_t count = std::min(matrices.size(), static_cast<size_t>(BONE_MAX));
+
+		for (size_t j = 0; j < count; ++j)
+		{
+			DirectX::XMStoreFloat4x4(&bone->bones[j], matrices[j]);
+		}
 	}
 
 	materialHandles.clear();
 
-	for (size_t i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < modelData.meshes.size(); i++)
 	{
-		auto texPath = meshes[i].DiffuseMap;
-		if (!meshes[i].DiffuseMap.empty()) {
-			if (GetExtension(meshes[i].DiffuseMap) == TexExtension::PSD) {
-				texPath = ReplaceExtension(meshes[i].DiffuseMap, "tga"); //psdの場合はtgaとして扱う
+		auto texPath = modelData.meshes[i].DiffuseMap;
+		if (!modelData.meshes[i].DiffuseMap.empty()) {
+			if (GetExtension(modelData.meshes[i].DiffuseMap) == TexExtension::PSD) {
+				texPath = ReplaceExtension(modelData.meshes[i].DiffuseMap, "tga"); //psdの場合はtgaとして扱う
 			}
 		}
 		TextureLoader::GetInstance()->Load(texPath);
@@ -220,7 +245,7 @@ void FBXModel::Init()
 void FBXModel::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint)
 {
 	pipelineState = std::make_unique<PipelineState>(topology);
-	pipelineState->SetInputLayout(Vertex::InputLayout);
+	pipelineState->SetInputLayout(VertexSkinning3D::InputLayout);
 	pipelineState->SetRootSignature(rootSignature->Get());
 	pipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
 	pipelineState->SetVS(_VSfilePath, _VSentryPoint);
@@ -255,5 +280,15 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
 		LightBufferData l = Light::GetInstance()->GetLightBufferData();
 		*light = l;
+
+		auto* bone = boneConstBuffer[i]->GetPtr<BoneBuffer>();
+		const auto& matrices = animator->GetBoneMatrices();
+
+		const size_t count = std::min(matrices.size(),static_cast<size_t>(BONE_MAX));
+
+		for (size_t j = 0; j < count; ++j)
+		{
+			DirectX::XMStoreFloat4x4(&bone->bones[j],matrices[j]);
+		}
 	}
 }

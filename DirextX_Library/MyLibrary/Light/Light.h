@@ -29,7 +29,7 @@ struct LightData
     }
 };
 
-constexpr uint32_t MAX_LIGHT_COUNT = 1200u;
+constexpr uint32_t MAX_LIGHT_COUNT = 12u;
 
 struct LightBufferData
 {
