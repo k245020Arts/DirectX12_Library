@@ -44,7 +44,7 @@ struct ModelData
 	Matrix globalInverseTransform;
 };
 
-static constexpr int BONE_MAX = 256;
+static constexpr int BONE_MAX = 1024;
 
 struct BoneBuffer
 {

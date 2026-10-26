@@ -31,18 +31,6 @@ static const float CLICK_TIME = 0.2f;
 
 Scene::Scene()
 {
-	printf("Vector3: %zu\n", sizeof(Vector3));
-	printf("Vector2: %zu\n", sizeof(Vector2));
-	printf("Vector4: %zu\n", sizeof(Vector4));
-	printf("VertexSkinning3D: %zu\n", sizeof(VertexSkinning3D));
-
-	printf("position: %zu\n", offsetof(VertexSkinning3D, position));
-	printf("normal: %zu\n", offsetof(VertexSkinning3D, normal));
-	printf("uv: %zu\n", offsetof(VertexSkinning3D, uv));
-	printf("tangent: %zu\n", offsetof(VertexSkinning3D, tangent));
-	printf("color: %zu\n", offsetof(VertexSkinning3D, color));
-	printf("boneno: %zu\n", offsetof(VertexSkinning3D, boneno));
-	printf("weights: %zu\n", offsetof(VertexSkinning3D, weights));
 #ifdef ON2D
 	test = new Triangle();
 	test->GetTransform().position = Vector3(800.0f, 200.0f, 0.0f);

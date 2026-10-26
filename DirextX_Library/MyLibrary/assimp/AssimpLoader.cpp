@@ -65,7 +65,8 @@ bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
     flag |= aiProcess_GenSmoothNormals;
     flag |= aiProcess_GenUVCoords;
     flag |= aiProcess_RemoveRedundantMaterials;
-    //flag |= aiProcess_OptimizeMeshes;
+    flag |= aiProcess_OptimizeMeshes;
+    flag |= aiProcess_LimitBoneWeights;
 
     auto scene = importer.ReadFile(path, flag);
 
@@ -129,6 +130,7 @@ bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
     ApplyStaticMeshNodeTransforms(_model);
 
     scene = nullptr;
+
     return true;
 }
 
@@ -323,21 +325,22 @@ bool AssimpLoader::LoadBones(Mesh& dst, const aiMesh* src, ModelData& model)
         }
     }
 
-    // ウェイト正規化(既存のコードをそのまま残す)
+    // ウェイトを正規化
     for (auto& vertex : dst.Vertices)
     {
         float total = 0.0f;
-        for (float w : vertex.weights)
+
+        for (float weight : vertex.weights)
         {
-            total += w;
+            total += weight;
         }
 
         if (total > 0.0f)
         {
-            for (float& w : vertex.weights)
+            for (float& weight : vertex.weights)
             {
-                w /= total;
-            };
+                weight /= total;
+            }
         }
     }
     return true;

@@ -16,6 +16,11 @@ public:
         return boneMatrices;
     }
 
+    // 再生開始（animIndex は modelData.animations の番号）
+    void Play(int animIndex, bool loop = true);
+    void Stop() { playing = false; }
+    void SetSpeed(float s) { speed = s; }
+
 private:
     // ボーンの姿勢を更新する処理
     void UpdateBonePose();
@@ -33,6 +38,16 @@ private:
     void CalculateBoneMatrices();
 
 private:
+
+    int    currentAnimation = -1;
+    double currentTick = 0.0;
+    float  speed = 1.0f;
+    bool   loop = true;
+    bool   playing = false;
+
+    // [アニメ番号][チャンネル番号]->ノード番号
+    std::vector<std::vector<int>> channelNodeIndices;
+
     ModelData modelData;
 
     std::vector<Matrix> boneMatrices;

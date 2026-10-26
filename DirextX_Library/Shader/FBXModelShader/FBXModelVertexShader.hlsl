@@ -1,6 +1,6 @@
 #include "../2DBaseShader/BasicShaderHeader.hlsli"
 
-#define BONE_MAX 256
+#define BONE_MAX 1024
 
 cbuffer BoneBuffer : register(b2)
 {

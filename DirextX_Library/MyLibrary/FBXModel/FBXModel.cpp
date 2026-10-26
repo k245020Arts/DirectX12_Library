@@ -56,6 +56,8 @@ bool FBXModel::Load(const std::string& _modelFilePath, bool _uflip, bool _vflip)
 
 	animator = std::make_unique<Animator>(modelData);
 
+	animator->Play(0, true);
+
 	constBuffer.resize(FRAME_BUFFER_COUNT);
 
 	Init();
@@ -88,6 +90,8 @@ bool FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip)
 
 	constBuffer.resize(FRAME_BUFFER_COUNT);
 	animator = std::make_unique<Animator>(modelData);
+
+	animator->Play(0, true);
 
 	Init();
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
