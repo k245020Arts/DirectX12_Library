@@ -43,18 +43,18 @@ Sphere3D::Sphere3D()
 			float x = radius * sinPhi * sinTheta;
 			float y = radius * cosPhi;
 			float z = radius * sinPhi * cosTheta;
-			vertices[vIndex].position = DirectX::XMFLOAT3(x, y, z);
+			vertices[vIndex].position = Vector3(x, y, z);
 
 			// 位置座標 (-50.0 ~ +50.0) を 0.0 ~ 1.0 の範囲に正規化して、綺麗なグラデーションを作ります
 			float r = (x / radius) * 0.5f + 0.5f;
 			float g = (y / radius) * 0.5f + 0.5f;
 			float b = (z / radius) * 0.5f + 0.5f;
-			vertices[vIndex].color = DirectX::XMFLOAT4(r, g, b, 1.0f);
+			vertices[vIndex].color = Vector4(r, g, b, 1.0f);
 
 			// UV座標の計算
 			float u = static_cast<float>(j) / static_cast<float>(sliceCount);
 			float v = static_cast<float>(i) / static_cast<float>(stackCount);
-			vertices[vIndex].uv = DirectX::XMFLOAT2(u, v);
+			vertices[vIndex].uv = Vector2(u, v);
 
 			vIndex++;
 		}
@@ -189,7 +189,7 @@ void Sphere3D::CreateVertexSphere(float _radius, uint32_t _sliceCount, uint32_t 
 			float x = radius * sinPhi * sinTheta;
 			float y = radius * cosPhi;
 			float z = radius * sinPhi * cosTheta;
-			vertices[vIndex].position = DirectX::XMFLOAT3(x, y, z);
+			vertices[vIndex].position = Vector3(x, y, z);
 
 			// 法線（Normal）の計算
 			float nx = x / radius;
@@ -207,7 +207,7 @@ void Sphere3D::CreateVertexSphere(float _radius, uint32_t _sliceCount, uint32_t 
 			// UV座標の計算
 			float u = static_cast<float>(j) / static_cast<float>(sliceCount);
 			float v = static_cast<float>(i) / static_cast<float>(stackCount);
-			vertices[vIndex].uv = DirectX::XMFLOAT2(u, v);
+			vertices[vIndex].uv = Vector2(u, v);
 
 			vIndex++;
 		}

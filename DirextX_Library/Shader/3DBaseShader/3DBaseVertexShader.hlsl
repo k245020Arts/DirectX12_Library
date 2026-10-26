@@ -9,11 +9,11 @@ VSOutput BasicVS_3D(VSInput input)
     float4 viewPos = mul(View, worldPos);
     float4 projPos = mul(Proj, viewPos);
 
-    input.normal.w = 0.0;
+    float4 normal = float4(input.normal.xyz, 0.0);
     
     output.svpos = projPos;
     output.color = input.color;
     output.uv = input.uv; // ‚±‚±‚ª•ÏX“_B“ü—Í‚©‚çuv‚ğ“n‚·
-    output.normal = mul(World,input.normal);
+    output.normal = mul(World, normal);
     return output;
 }

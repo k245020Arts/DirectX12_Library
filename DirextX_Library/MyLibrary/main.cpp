@@ -47,7 +47,7 @@ int WINAPI WinMain(HINSTANCE,HINSTANCE,LPSTR,int)
 	return true;
 }
 
-//#define UseConsole
+#define UseConsole
 
 typedef Size ScreenSize;
 

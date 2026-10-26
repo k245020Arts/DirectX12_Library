@@ -22,6 +22,9 @@ struct NodeData
 
 	int parentIndex = -1;
 	std::vector<uint32_t> children;
+
+	// このノードに所属するメッシュのインデックス
+	std::vector<uint32_t> meshIndices;
 };
 
 struct ModelData

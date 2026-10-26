@@ -18,48 +18,48 @@ TriangularPrism::TriangularPrism()
 	SetVertices(length);
 
 	//前面
-	vertices[0].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 上（頂点0と1を同じ位置に）
-	vertices[1].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 上
-	vertices[2].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // 右下
-	vertices[3].color = DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f); // 左下
+	vertices[0].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 上（頂点0と1を同じ位置に）
+	vertices[1].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 上
+	vertices[2].color = Vector4(0.0f, 0.0f, 1.0f, 1.0f); // 右下
+	vertices[3].color = Vector4(1.0f, 1.0f, 0.0f, 1.0f); // 左下
 
 	
-	vertices[4].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 上（裏から見て右上）
-	vertices[5].color = DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f); // 上（裏から見て左上）
-	vertices[6].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 左下
-	vertices[7].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // 右下
+	vertices[4].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 上（裏から見て右上）
+	vertices[5].color = Vector4(1.0f, 1.0f, 0.0f, 1.0f); // 上（裏から見て左上）
+	vertices[6].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 左下
+	vertices[7].color = Vector4(0.0f, 0.0f, 1.0f, 1.0f); // 右下
 
 	
-	vertices[8].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f); // 奥
-	vertices[9].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // 奥
-	vertices[10].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 手前
-	vertices[11].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 手前
+	vertices[8].color = Vector4(1.0f, 0.0f, 1.0f, 1.0f); // 奥
+	vertices[9].color = Vector4(0.0f, 0.0f, 1.0f, 1.0f); // 奥
+	vertices[10].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 手前
+	vertices[11].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 手前
 
 	
-	vertices[12].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 左手前
-	vertices[13].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 右手前
-	vertices[14].color = DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f); // 右奥
-	vertices[15].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f); // 左奥
+	vertices[12].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 左手前
+	vertices[13].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 右手前
+	vertices[14].color = Vector4(1.0f, 1.0f, 0.0f, 1.0f); // 右奥
+	vertices[15].color = Vector4(1.0f, 0.0f, 1.0f, 1.0f); // 左奥
 
 	
-	vertices[16].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f); // 奥上（頂点）
-	vertices[17].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 手前上（頂点）
-	vertices[18].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // 手前下
-	vertices[19].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 奥下
+	vertices[16].color = Vector4(1.0f, 0.0f, 1.0f, 1.0f); // 奥上（頂点）
+	vertices[17].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 手前上（頂点）
+	vertices[18].color = Vector4(0.0f, 0.0f, 1.0f, 1.0f); // 手前下
+	vertices[19].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 奥下
 
 	
-	vertices[20].color = DirectX::XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f); // 手前上（頂点）
-	vertices[21].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 奥上（頂点）
-	vertices[22].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 奥下
-	vertices[23].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // 手前下
+	vertices[20].color = Vector4(0.0f, 1.0f, 1.0f, 1.0f); // 手前上（頂点）
+	vertices[21].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 奥上（頂点）
+	vertices[22].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 奥下
+	vertices[23].color = Vector4(0.0f, 0.0f, 1.0f, 1.0f); // 手前下
 
 
 	//UV座標の設定
 	for (int i = 0; i < 24; i += 4) {
-		vertices[i].uv = DirectX::XMFLOAT2(0.0f, 0.0f);
-		vertices[i + 1].uv = DirectX::XMFLOAT2(1.0f, 0.0f);
-		vertices[i + 2].uv = DirectX::XMFLOAT2(1.0f, 1.0f);
-		vertices[i + 3].uv = DirectX::XMFLOAT2(0.0f, 1.0f);
+		vertices[i].uv = Vector2(0.0f, 0.0f);
+		vertices[i + 1].uv = Vector2(1.0f, 0.0f);
+		vertices[i + 2].uv = Vector2(1.0f, 1.0f);
+		vertices[i + 3].uv = Vector2(0.0f, 1.0f);
 	}
 
 	// 法線を計算する関数

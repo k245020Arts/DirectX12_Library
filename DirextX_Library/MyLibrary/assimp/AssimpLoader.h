@@ -38,4 +38,5 @@ private:
     bool LoadAnimations(const aiScene* scene,std::vector<AnimationData>& animations);
     bool LoadBones(Mesh& dst, const aiMesh* src, ModelData& model);
     int LoadNodeHierarchy(const aiNode* src, int parentIndex, ModelData& model);
+    void ApplyStaticMeshNodeTransforms(ModelData& model);
 };

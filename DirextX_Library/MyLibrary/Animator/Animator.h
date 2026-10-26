@@ -36,5 +36,12 @@ private:
     ModelData modelData;
 
     std::vector<Matrix> boneMatrices;
+
+    // 各ノードのグローバル変換行列
+    std::vector<Matrix> globalTransforms;
+
+    std::vector<DirectX::XMFLOAT4X4> originalLocalTransforms;
+
+    void CalculateGlobalTransformsRecursive(int nodeIndex,const Matrix& parentTransform);
 };
 

@@ -106,10 +106,10 @@ Capsule::Capsule()
 		int baseV = f * 4;
 
 		// UV座標のパターン適用
-		vertices[baseV].uv = DirectX::XMFLOAT2(0.0f, 0.0f);
-		vertices[baseV + 1].uv = DirectX::XMFLOAT2(1.0f, 0.0f);
-		vertices[baseV + 2].uv = DirectX::XMFLOAT2(1.0f, 1.0f);
-		vertices[baseV + 3].uv = DirectX::XMFLOAT2(0.0f, 1.0f);
+		vertices[baseV].uv = Vector2(0.0f, 0.0f);
+		vertices[baseV + 1].uv = Vector2(1.0f, 0.0f);
+		vertices[baseV + 2].uv = Vector2(1.0f, 1.0f);
+		vertices[baseV + 3].uv = Vector2(0.0f, 1.0f);
 
 		indices.push_back(baseV + 0);
 		indices.push_back(baseV + 1);
@@ -321,10 +321,10 @@ void Capsule::CreateCausulePosition(const int _stacks, const int _slices, const 
 		int baseV = f * 4;
 
 		// UV座標のパターン適用
-		vertices[baseV].uv = DirectX::XMFLOAT2(0.0f, 0.0f);
-		vertices[baseV + 1].uv = DirectX::XMFLOAT2(1.0f, 0.0f);
-		vertices[baseV + 2].uv = DirectX::XMFLOAT2(1.0f, 1.0f);
-		vertices[baseV + 3].uv = DirectX::XMFLOAT2(0.0f, 1.0f);
+		vertices[baseV].uv = Vector2(0.0f, 0.0f);
+		vertices[baseV + 1].uv = Vector2(1.0f, 0.0f);
+		vertices[baseV + 2].uv = Vector2(1.0f, 1.0f);
+		vertices[baseV + 3].uv = Vector2(0.0f, 1.0f);
 	}
 
 	if (fillMode) {

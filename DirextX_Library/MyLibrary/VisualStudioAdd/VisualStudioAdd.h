@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <string>
 
-#define TEST
+//#define TEST
 
 class VisualStudioProjectEditor
 {

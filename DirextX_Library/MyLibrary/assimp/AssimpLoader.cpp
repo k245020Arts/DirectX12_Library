@@ -40,6 +40,13 @@ bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
         assert(false && "ファイルネームがないです");
         return false;
     }
+    _model.meshes.clear();
+    _model.animations.clear();
+    _model.bones.clear();
+    _model.boneMap.clear();
+    _model.nodes.clear();
+    _model.rootNodeIndex = -1;
+    _model.globalInverseTransform = Matrix::Identity();
     auto& meshes = setting.meshes;
     auto& animations = setting.animations;
 
@@ -58,7 +65,7 @@ bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
     flag |= aiProcess_GenSmoothNormals;
     flag |= aiProcess_GenUVCoords;
     flag |= aiProcess_RemoveRedundantMaterials;
-    flag |= aiProcess_OptimizeMeshes;
+    //flag |= aiProcess_OptimizeMeshes;
 
     auto scene = importer.ReadFile(path, flag);
 
@@ -87,13 +94,40 @@ bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
     //アニメーション読み込み
     animations.clear();
 
+    DirectX::XMFLOAT4X4 rootTransform = ConvertMatrix(scene->mRootNode->mTransformation);
+    Matrix rootMatrix = DirectX::XMLoadFloat4x4(&rootTransform);;
+
+    // ルートノードの逆行列を保存
+    _model.globalInverseTransform = rootMatrix.Inverse();
+
     _model.rootNodeIndex =  LoadNodeHierarchy(scene->mRootNode, -1, _model);
+
+    // ボーン名 → ノード番号。メッシュを持たないノードを優先する
+    std::unordered_map<std::wstring, int> nodeByName;
+    for (size_t n = 0; n < _model.nodes.size(); ++n) {
+        if (_model.nodes[n].meshIndices.empty()) {
+            nodeByName.emplace(_model.nodes[n].name, static_cast<int>(n));
+        }
+    }
+ 
+    for (size_t n = 0; n < _model.nodes.size(); ++n)
+    {
+        nodeByName.emplace(_model.nodes[n].name, static_cast<int>(n)); // 既にあれば上書きされない
+    }
+
+    for (auto& bone : _model.bones)
+    {
+        auto it = nodeByName.find(bone.name);
+        bone.nodeIndex = (it != nodeByName.end()) ? it->second : -1;
+    }
 
     if (scene->mNumAnimations > 0)
     {
         LoadAnimations(scene, animations);
     }
     
+    ApplyStaticMeshNodeTransforms(_model);
+
     scene = nullptr;
     return true;
 }
@@ -264,91 +298,199 @@ bool AssimpLoader::LoadAnimations(const aiScene* scene, std::vector<AnimationDat
     return true;
 }
 
-bool AssimpLoader::LoadBones(Mesh& dst,const aiMesh* src,ModelData& model)
+bool AssimpLoader::LoadBones(Mesh& dst, const aiMesh* src, ModelData& model)
 {
     for (uint32_t i = 0; i < src->mNumBones; ++i)
     {
         const aiBone* srcBone = src->mBones[i];
-        const std::wstring name = GetWideString(srcBone->mName.C_Str());
+        dst.hasBones = true;
 
-        uint32_t boneId = 0;
+        // メッシュごとに別スロットを作る(共有しない)
+        const uint32_t boneId = static_cast<uint32_t>(model.bones.size());
 
-        auto it = model.boneMap.find(name);
+        BoneInfo info{};
+        info.id = static_cast<int>(boneId);
+        info.name = GetWideString(srcBone->mName.C_Str());
+        info.offsetMatrix = ConvertMatrix(srcBone->mOffsetMatrix);
+        model.bones.push_back(info);
 
-        if (it == model.boneMap.end())
-        {
-            boneId = static_cast<uint32_t>(model.bones.size());
-
-            model.boneMap.emplace(name, boneId);
-
-            BoneInfo info{};
-            info.id = static_cast<int>(boneId);
-            info.offsetMatrix = ConvertMatrix(srcBone->mOffsetMatrix);
-
-            model.bones.push_back(info);
-        }
-        else
-        {
-            boneId = it->second;
-        }
-
-        // このメッシュの頂点にウェイトを登録
         for (uint32_t j = 0; j < srcBone->mNumWeights; ++j)
         {
-            const aiVertexWeight& weight = srcBone->mWeights[j];
-
-            if (weight.mVertexId >= dst.Vertices.size())
-            {
+            const aiVertexWeight& w = srcBone->mWeights[j];
+            if (w.mVertexId >= dst.Vertices.size())
                 continue;
-            }
-
-            dst.Vertices[weight.mVertexId].AddBoneData(boneId,weight.mWeight);
+            dst.Vertices[w.mVertexId].AddBoneData(boneId, w.mWeight);
         }
     }
 
-    // ウェイトを正規化
+    // ウェイト正規化(既存のコードをそのまま残す)
     for (auto& vertex : dst.Vertices)
     {
         float total = 0.0f;
-
-        for (float weight : vertex.weights)
+        for (float w : vertex.weights)
         {
-            total += weight;
+            total += w;
         }
 
         if (total > 0.0f)
         {
-            for (float& weight : vertex.weights)
+            for (float& w : vertex.weights)
             {
-                weight /= total;
-            }
+                w /= total;
+            };
         }
     }
-
     return true;
 }
 
 int AssimpLoader::LoadNodeHierarchy(const aiNode* src,int parentIndex,ModelData& model)
 {
-    // 現在のノードを登録する
     const int currentIndex = static_cast<int>(model.nodes.size());
 
     NodeData node{};
     node.name = GetWideString(src->mName.C_Str());
     node.parentIndex = parentIndex;
-
-    // ローカル変換行列もここで保存する
     node.localTransform = ConvertMatrix(src->mTransformation);
+
+    // ノードが持つメッシュのインデックスを保存
+    for (unsigned int i = 0; i < src->mNumMeshes; ++i)
+    {
+        node.meshIndices.emplace_back(src->mMeshes[i]);
+    }
 
     model.nodes.emplace_back(std::move(node));
 
-    // 重要：子ノードを1つに限定せず、すべて処理する
     for (unsigned int i = 0; i < src->mNumChildren; ++i)
     {
         const int childIndex = LoadNodeHierarchy(src->mChildren[i],currentIndex,model);
 
-        model.nodes[currentIndex].children.emplace_back(childIndex);
+        model.nodes[currentIndex].children.emplace_back(static_cast<uint32_t>(childIndex));
     }
 
     return currentIndex;
+}
+
+void AssimpLoader::ApplyStaticMeshNodeTransforms(ModelData& model)
+{
+    if (model.rootNodeIndex < 0 ||
+        model.rootNodeIndex >=
+        static_cast<int>(model.nodes.size()))
+    {
+        return;
+    }
+
+    const size_t meshCount = model.meshes.size();
+
+    // 各メッシュが所属するノードを記録する
+    std::vector<int> meshNodeIndices(meshCount, -1);
+
+    for (size_t nodeIndex = 0;
+        nodeIndex < model.nodes.size();
+        ++nodeIndex)
+    {
+        const NodeData& node = model.nodes[nodeIndex];
+
+        for (uint32_t meshIndex : node.meshIndices)
+        {
+            if (meshIndex < meshCount)
+            {
+                meshNodeIndices[meshIndex] =
+                    static_cast<int>(nodeIndex);
+            }
+        }
+    }
+
+    // ノードのグローバル変換を計算する
+    std::vector<DirectX::XMMATRIX> globalTransforms(
+        model.nodes.size(),
+        DirectX::XMMatrixIdentity());
+
+    auto calculateGlobal =
+        [&](auto&& self,
+            int nodeIndex,
+            DirectX::FXMMATRIX parentTransform) -> void
+        {
+            const NodeData& node = model.nodes[nodeIndex];
+
+            const DirectX::XMMATRIX local =
+                DirectX::XMLoadFloat4x4(&node.localTransform);
+
+            // 行ベクトル方式：ローカル * 親
+            globalTransforms[nodeIndex] = local * parentTransform;
+
+            for (uint32_t childIndex : node.children)
+            {
+                if (childIndex < model.nodes.size())
+                {
+                    self(
+                        self,
+                        static_cast<int>(childIndex),
+                        globalTransforms[nodeIndex]);
+                }
+            }
+        };
+
+    calculateGlobal(
+        calculateGlobal,
+        model.rootNodeIndex,
+        DirectX::XMMatrixIdentity());
+
+    // ボーンを持たないメッシュだけ、ノード変換を頂点に焼き込む
+    for (size_t meshIndex = 0;
+        meshIndex < meshCount;
+        ++meshIndex)
+    {
+        Mesh& mesh = model.meshes[meshIndex];
+
+        if (mesh.hasBones)
+            continue;
+
+        const int nodeIndex = meshNodeIndices[meshIndex];
+
+        if (nodeIndex < 0)
+            continue;
+
+        const DirectX::XMMATRIX nodeWorld =
+            globalTransforms[nodeIndex];
+
+        // 法線用の逆転置行列
+        const DirectX::XMMATRIX normalMatrix =
+            DirectX::XMMatrixTranspose(
+                DirectX::XMMatrixInverse(nullptr, nodeWorld));
+
+        for (auto& vertex : mesh.Vertices)
+        {
+            // position / normal / tangent は実際のメンバー名に合わせる
+            DirectX::XMVECTOR position =
+                DirectX::XMLoadFloat3(&vertex.position);
+
+            position = DirectX::XMVector3TransformCoord(
+                position, nodeWorld);
+
+            DirectX::XMStoreFloat3(
+                &vertex.position, position);
+
+            DirectX::XMVECTOR normal =
+                DirectX::XMLoadFloat3(&vertex.normal);
+
+            normal = DirectX::XMVector3TransformNormal(
+                normal, normalMatrix);
+
+            normal = DirectX::XMVector3Normalize(normal);
+
+            DirectX::XMStoreFloat3(
+                &vertex.normal, normal);
+
+            DirectX::XMVECTOR tangent =
+                DirectX::XMLoadFloat3(&vertex.tangent);
+
+            tangent = DirectX::XMVector3TransformNormal(
+                tangent, nodeWorld);
+
+            tangent = DirectX::XMVector3Normalize(tangent);
+
+            DirectX::XMStoreFloat3(
+                &vertex.tangent, tangent);
+        }
+    }
 }

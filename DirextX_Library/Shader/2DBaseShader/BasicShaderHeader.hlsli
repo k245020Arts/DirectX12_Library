@@ -42,11 +42,12 @@ struct VSInput
 struct ModelVSInput
 {
     float3 pos : POSITION; // 頂点座標
-    float4 normal : NORMAL; // 法線
+    float3 normal : NORMAL; // 法線
     float2 uv : TEXCOORD; // UV
     float3 tangent : TANGENT; // 接空間
     float4 color : COLOR; // 頂点色
     uint4 boneno : BONENO; //ボーン番号
+    float4 weights : WEIGHT; //ボーン番号
 };
 
 struct VSOutput

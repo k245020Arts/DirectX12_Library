@@ -8,11 +8,11 @@
 
 struct Vertex
 {
-    DirectX::XMFLOAT3 position; // 位置座標
-    DirectX::XMFLOAT3 normal; // 法線
-    DirectX::XMFLOAT2 uv; // uv座標
-    DirectX::XMFLOAT3 tangent; // 接空間
-    DirectX::XMFLOAT4 color; // 頂点色
+    Vector3 position; // 位置座標
+    Vector3 normal; // 法線
+    Vector2 uv; // uv座標
+    Vector3 tangent; // 接空間
+    Vector4 color; // 頂点色
 
    static const D3D12_INPUT_LAYOUT_DESC InputLayout;
 
@@ -76,7 +76,9 @@ struct AnimationData {
 
 //ボーンのオフセット情報（メッシュ空間からボーン空間への変換行列）
 struct BoneInfo {
-    int id; // シェーダーに送るインデックス
+    int id;
+    std::wstring name;
+    int nodeIndex = -1;
     DirectX::XMFLOAT4X4 offsetMatrix;
 };
 
@@ -93,11 +95,11 @@ struct VertexSkinning3D {
     float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
     // ウェイトを安全に追加するためのヘルパー
-    void AddBoneData(uint32_t boneId, float weight) {
+    void AddBoneData(uint32_t boneId, float _weight) {
         for (int i = 0; i < 4; ++i) {
             if (weights[i] == 0.0f) {
                 boneno[i] = boneId;
-                weights[i] = weight;
+                weights[i] = _weight;
                 return;
             }
         }
@@ -106,7 +108,7 @@ struct VertexSkinning3D {
     static const D3D12_INPUT_LAYOUT_DESC InputLayout;
 
 private:
-    static const int InputElementCount = 6;
+    static const int InputElementCount = 7;
     static const D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];
 };
 
@@ -115,6 +117,8 @@ struct Mesh
     std::vector<VertexSkinning3D> Vertices; // 頂点データの配列
     std::vector<uint32_t> Indices; // インデックスの配列
     std::wstring DiffuseMap; // テクスチャのファイルパス
+
+    bool hasBones = false;
 };
 
 enum class BlendState

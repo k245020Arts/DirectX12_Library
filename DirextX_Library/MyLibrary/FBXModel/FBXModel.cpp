@@ -60,7 +60,7 @@ bool FBXModel::Load(const std::string& _modelFilePath, bool _uflip, bool _vflip)
 
 	Init();
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
+	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/FBXModelShader/FBXModelVertexShader.hlsl", "BasicVS_FBX", L"Shader/FBXModelShader/FBXModelPixelShader.hlsl", "BasicPS_FBX");
 	return true;
 }
 

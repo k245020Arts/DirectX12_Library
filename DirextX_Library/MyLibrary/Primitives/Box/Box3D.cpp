@@ -18,109 +18,109 @@ Box3D::Box3D()
 
 	CreateVertexPosition();
 	
-	vertices[0].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 左上
-	vertices[1].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 右上
-	vertices[2].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // 右下
-	vertices[3].color = DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f); // 左下
+	vertices[0].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 左上
+	vertices[1].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 右上
+	vertices[2].color = Vector4(0.0f, 0.0f, 1.0f, 1.0f); // 右下
+	vertices[3].color = Vector4(1.0f, 1.0f, 0.0f, 1.0f); // 左下
 
-	vertices[4].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 右上 (裏から見て)
-	vertices[5].color = DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f); // 左上
-	vertices[6].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 左下
-	vertices[7].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // 右下
-
-	
-	vertices[8].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f); // 左奥
-	vertices[9].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // 右奥
-	vertices[10].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 右手前
-	vertices[11].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 左手前
+	vertices[4].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 右上 (裏から見て)
+	vertices[5].color = Vector4(1.0f, 1.0f, 0.0f, 1.0f); // 左上
+	vertices[6].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 左下
+	vertices[7].color = Vector4(0.0f, 0.0f, 1.0f, 1.0f); // 右下
 
 	
-	vertices[12].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 左手前
-	vertices[13].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 右手前
-	vertices[14].color = DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f); // 右奥
-	vertices[15].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f); // 左奥
+	vertices[8].color = Vector4(1.0f, 0.0f, 1.0f, 1.0f); // 左奥
+	vertices[9].color = Vector4(0.0f, 0.0f, 1.0f, 1.0f); // 右奥
+	vertices[10].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 右手前
+	vertices[11].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 左手前
 
 	
-	vertices[16].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f); // 奥上
-	vertices[17].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 手前上
-	vertices[18].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // 手前下
-	vertices[19].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 奥下
+	vertices[12].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 左手前
+	vertices[13].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 右手前
+	vertices[14].color = Vector4(1.0f, 1.0f, 0.0f, 1.0f); // 右奥
+	vertices[15].color = Vector4(1.0f, 0.0f, 1.0f, 1.0f); // 左奥
 
 	
-	vertices[20].color = DirectX::XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f); // 手前上
-	vertices[21].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f); // 奥上
-	vertices[22].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f); // 奥下
-	vertices[23].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f); // 手前下
-	
-	vertices[0].uv = DirectX::XMFLOAT2(0.0f, 0.0f); // 右上 (裏から見て左上)
-	vertices[1].uv = DirectX::XMFLOAT2(1.0f, 0.0f); // 左上 (裏から見て右上)
-	vertices[2].uv = DirectX::XMFLOAT2(1.0f, 1.0f); // 左下 (裏から見て右下)
-	vertices[3].uv = DirectX::XMFLOAT2(0.0f, 1.0f); // 右下 (裏から見て左下)
-
-	vertices[4].uv = DirectX::XMFLOAT2(0.0f, 0.0f); // 右上 (裏から見て左上)
-	vertices[5].uv = DirectX::XMFLOAT2(1.0f, 0.0f); // 左上 (裏から見て右上)
-	vertices[6].uv = DirectX::XMFLOAT2(1.0f, 1.0f); // 左下 (裏から見て右下)
-	vertices[7].uv = DirectX::XMFLOAT2(0.0f, 1.0f); // 右下 (裏から見て左下)
+	vertices[16].color = Vector4(1.0f, 0.0f, 1.0f, 1.0f); // 奥上
+	vertices[17].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 手前上
+	vertices[18].color = Vector4(0.0f, 0.0f, 1.0f, 1.0f); // 手前下
+	vertices[19].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 奥下
 
 	
-	vertices[8].uv = DirectX::XMFLOAT2(0.0f, 0.0f); // 左奥
-	vertices[9].uv = DirectX::XMFLOAT2(1.0f, 0.0f); // 右奥
-	vertices[10].uv = DirectX::XMFLOAT2(1.0f, 1.0f); // 右手前
-	vertices[11].uv = DirectX::XMFLOAT2(0.0f, 1.0f); // 左手前
+	vertices[20].color = Vector4(0.0f, 1.0f, 1.0f, 1.0f); // 手前上
+	vertices[21].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 奥上
+	vertices[22].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f); // 奥下
+	vertices[23].color = Vector4(0.0f, 0.0f, 1.0f, 1.0f); // 手前下
+	
+	vertices[0].uv = Vector2(0.0f, 0.0f); // 右上 (裏から見て左上)
+	vertices[1].uv = Vector2(1.0f, 0.0f); // 左上 (裏から見て右上)
+	vertices[2].uv = Vector2(1.0f, 1.0f); // 左下 (裏から見て右下)
+	vertices[3].uv = Vector2(0.0f, 1.0f); // 右下 (裏から見て左下)
+
+	vertices[4].uv = Vector2(0.0f, 0.0f); // 右上 (裏から見て左上)
+	vertices[5].uv = Vector2(1.0f, 0.0f); // 左上 (裏から見て右上)
+	vertices[6].uv = Vector2(1.0f, 1.0f); // 左下 (裏から見て右下)
+	vertices[7].uv = Vector2(0.0f, 1.0f); // 右下 (裏から見て左下)
 
 	
-	vertices[12].uv = DirectX::XMFLOAT2(0.0f, 0.0f); // 左手前
-	vertices[13].uv = DirectX::XMFLOAT2(1.0f, 0.0f); // 右手前
-	vertices[14].uv = DirectX::XMFLOAT2(1.0f, 1.0f); // 右奥
-	vertices[15].uv = DirectX::XMFLOAT2(0.0f, 1.0f); // 左奥
+	vertices[8].uv = Vector2(0.0f, 0.0f); // 左奥
+	vertices[9].uv = Vector2(1.0f, 0.0f); // 右奥
+	vertices[10].uv = Vector2(1.0f, 1.0f); // 右手前
+	vertices[11].uv = Vector2(0.0f, 1.0f); // 左手前
 
 	
-	vertices[16].uv = DirectX::XMFLOAT2(0.0f, 0.0f); // 奥上
-	vertices[17].uv = DirectX::XMFLOAT2(1.0f, 0.0f); // 手前上
-	vertices[18].uv = DirectX::XMFLOAT2(1.0f, 1.0f); // 手前下
-	vertices[19].uv = DirectX::XMFLOAT2(0.0f, 1.0f); // 奥下
+	vertices[12].uv = Vector2(0.0f, 0.0f); // 左手前
+	vertices[13].uv = Vector2(1.0f, 0.0f); // 右手前
+	vertices[14].uv = Vector2(1.0f, 1.0f); // 右奥
+	vertices[15].uv = Vector2(0.0f, 1.0f); // 左奥
 
 	
-	vertices[20].uv = DirectX::XMFLOAT2(0.0f, 0.0f); // 手前上
-	vertices[21].uv = DirectX::XMFLOAT2(1.0f, 0.0f); // 奥上
-	vertices[22].uv = DirectX::XMFLOAT2(1.0f, 1.0f); // 奥下
-	vertices[23].uv = DirectX::XMFLOAT2(0.0f, 1.0f); // 手前下
+	vertices[16].uv = Vector2(0.0f, 0.0f); // 奥上
+	vertices[17].uv = Vector2(1.0f, 0.0f); // 手前上
+	vertices[18].uv = Vector2(1.0f, 1.0f); // 手前下
+	vertices[19].uv = Vector2(0.0f, 1.0f); // 奥下
+
+	
+	vertices[20].uv = Vector2(0.0f, 0.0f); // 手前上
+	vertices[21].uv = Vector2(1.0f, 0.0f); // 奥上
+	vertices[22].uv = Vector2(1.0f, 1.0f); // 奥下
+	vertices[23].uv = Vector2(0.0f, 1.0f); // 手前下
 
 	// 前面（Z軸マイナス方向）
-	vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
-	vertices[1].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
-	vertices[2].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
-	vertices[3].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
+	vertices[0].normal = Vector3(0.0f, 0.0f, -1.0f);
+	vertices[1].normal = Vector3(0.0f, 0.0f, -1.0f);
+	vertices[2].normal = Vector3(0.0f, 0.0f, -1.0f);
+	vertices[3].normal = Vector3(0.0f, 0.0f, -1.0f);
 
 	// 背面（Z軸プラス方向）
-	vertices[4].normal = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
-	vertices[5].normal = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
-	vertices[6].normal = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
-	vertices[7].normal = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
+	vertices[4].normal = Vector3(0.0f, 0.0f, 1.0f);
+	vertices[5].normal = Vector3(0.0f, 0.0f, 1.0f);
+	vertices[6].normal = Vector3(0.0f, 0.0f, 1.0f);
+	vertices[7].normal = Vector3(0.0f, 0.0f, 1.0f);
 
 	// 上面（Y軸プラス方向）
-	vertices[8].normal = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
-	vertices[9].normal = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
-	vertices[10].normal = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
-	vertices[11].normal = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
+	vertices[8].normal = Vector3(0.0f, 1.0f, 0.0f);
+	vertices[9].normal = Vector3(0.0f, 1.0f, 0.0f);
+	vertices[10].normal = Vector3(0.0f, 1.0f, 0.0f);
+	vertices[11].normal = Vector3(0.0f, 1.0f, 0.0f);
 
 	// 下面（Y軸マイナス方向）
-	vertices[12].normal = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
-	vertices[13].normal = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
-	vertices[14].normal = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
-	vertices[15].normal = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
+	vertices[12].normal = Vector3(0.0f, -1.0f, 0.0f);
+	vertices[13].normal = Vector3(0.0f, -1.0f, 0.0f);
+	vertices[14].normal = Vector3(0.0f, -1.0f, 0.0f);
+	vertices[15].normal = Vector3(0.0f, -1.0f, 0.0f);
 
 	// 左側面（X軸マイナス方向）
-	vertices[16].normal = DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f);
-	vertices[17].normal = DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f);
-	vertices[18].normal = DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f);
-	vertices[19].normal = DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f);
+	vertices[16].normal = Vector3(-1.0f, 0.0f, 0.0f);
+	vertices[17].normal = Vector3(-1.0f, 0.0f, 0.0f);
+	vertices[18].normal = Vector3(-1.0f, 0.0f, 0.0f);
+	vertices[19].normal = Vector3(-1.0f, 0.0f, 0.0f);
 
 	// 右側面（X軸プラス方向）
-	vertices[20].normal = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
-	vertices[21].normal = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
-	vertices[22].normal = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
-	vertices[23].normal = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
+	vertices[20].normal = Vector3(1.0f, 0.0f, 0.0f);
+	vertices[21].normal = Vector3(1.0f, 0.0f, 0.0f);
+	vertices[22].normal = Vector3(1.0f, 0.0f, 0.0f);
+	vertices[23].normal = Vector3(1.0f, 0.0f, 0.0f);
 
 
 	// 各面に対して、提示された「0, 1, 2, 0, 2, 3」と同じ時計回りのパターン
