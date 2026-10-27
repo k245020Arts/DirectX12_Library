@@ -189,48 +189,29 @@ public:
         }
 
         // 左手座標系のビュー行列
-        static Matrix LookAtLH(
-            const VectorHelper::Vector3& eye,
-            const VectorHelper::Vector3& target,
-            const VectorHelper::Vector3& up)
+        static Matrix LookAtLH(const VectorHelper::Vector3& eye,const VectorHelper::Vector3& target,const VectorHelper::Vector3& up)
         {
             using namespace DirectX;
 
-            XMVECTOR e = XMVectorSet(
-                eye.x, eye.y, eye.z, 1.0f
-            );
+            XMVECTOR e = XMVectorSet(eye.x, eye.y, eye.z, 1.0f);
 
-            XMVECTOR t = XMVectorSet(
-                target.x, target.y, target.z, 1.0f
-            );
+            XMVECTOR t = XMVectorSet(target.x, target.y, target.z, 1.0f);
 
-            XMVECTOR u = XMVectorSet(
-                up.x, up.y, up.z, 0.0f
-            );
+            XMVECTOR u = XMVectorSet( up.x, up.y, up.z, 0.0f);
 
             return Matrix(XMMatrixLookAtLH(e, t, u));
         }
 
         // 左手座標系の透視投影
-        static Matrix PerspectiveFovLH(
-            float fovY,
-            float aspectRatio,
-            float nearZ,
-            float farZ)
+        static Matrix PerspectiveFovLH(float fovY,float aspectRatio,float nearZ,float farZ)
         {
-            return Matrix(
-                DirectX::XMMatrixPerspectiveFovLH(
-                    fovY,
-                    aspectRatio,
-                    nearZ,
-                    farZ
+            return Matrix(DirectX::XMMatrixPerspectiveFovLH(fovY,aspectRatio,nearZ,farZ
                 )
             );
         }
 
         // 位置ベクトルを変換（平行移動の影響あり）
-        VectorHelper::Vector3 TransformPoint(
-            const VectorHelper::Vector3& point) const
+        VectorHelper::Vector3 TransformPoint(const VectorHelper::Vector3& point) const
         {
             DirectX::XMVECTOR v = DirectX::XMVectorSet(
                 point.x, point.y, point.z, 1.0f

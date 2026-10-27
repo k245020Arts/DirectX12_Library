@@ -22,7 +22,7 @@ std::wstring ReplaceExtension(const std::wstring& origin, const char* ext)
 
 FBXModel::FBXModel()
 {
-
+	animator = nullptr;
 }
 
 FBXModel::~FBXModel()
@@ -32,38 +32,12 @@ FBXModel::~FBXModel()
 
 bool FBXModel::Load(const std::string& _modelFilePath)
 {
-	return Load(_modelFilePath, false, false);
+	return Load(GetWideString(_modelFilePath).c_str(), false, false);
 }
 
 bool FBXModel::Load(const std::string& _modelFilePath, bool _uflip, bool _vflip)
 {
-	std::wstring widePath = GetWideString(_modelFilePath);
-	const wchar_t* c = widePath.c_str();
-	ImportSettings importSetting = // これ自体は自作の読み込み設定構造体
-	{
-		c,
-		modelData.meshes,
-		modelData.animations,
-		_uflip,
-		_vflip
-	};
-
-	AssimpLoader loader;
-	if (!loader.Load(importSetting,modelData))
-	{
-		return false;
-	}
-
-	animator = std::make_unique<Animator>(modelData);
-
-	animator->Play(0, true);
-
-	constBuffer.resize(FRAME_BUFFER_COUNT);
-
-	Init();
-	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/FBXModelShader/FBXModelVertexShader.hlsl", "BasicVS_FBX", L"Shader/FBXModelShader/FBXModelPixelShader.hlsl", "BasicPS_FBX");
-	return true;
+	return Load(GetWideString(_modelFilePath).c_str(), _uflip, _vflip);
 }
 
 bool FBXModel::Load(const wchar_t* _modelFilePath)
@@ -76,8 +50,6 @@ bool FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip)
 	ImportSettings importSetting = // これ自体は自作の読み込み設定構造体
 	{
 		_modelFilePath,
-		modelData.meshes,
-		modelData.animations,
 		_uflip,
 		_vflip
 	};
@@ -89,9 +61,12 @@ bool FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip)
 	}
 
 	constBuffer.resize(FRAME_BUFFER_COUNT);
-	animator = std::make_unique<Animator>(modelData);
-
-	animator->Play(0, true);
+	if (animator == nullptr) {
+		animator = std::make_unique<Animator>(modelData);
+	}
+	else {
+		animator->AddAnimation(modelData);
+	}
 
 	Init();
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -100,9 +75,36 @@ bool FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip)
 	return true;
 }
 
+bool FBXModel::LoadAnimation(const std::string& _modelFilePath)
+{
+	return LoadAnimation(GetWideString(_modelFilePath));
+}
+
+bool FBXModel::LoadAnimation(const std::wstring& _modelFilePath)
+{
+	AssimpLoader loader;
+
+	if (!loader.LoadAnimation(_modelFilePath, modelData)) {
+		return false;
+	}
+
+	if (animator == nullptr) {
+		animator = std::make_unique<Animator>(modelData);
+	}
+	else {
+		animator->AddAnimation(modelData);
+	}
+
+	return false;
+}
+
 void FBXModel::Update()
 {
-	animator->Update(DeltaTime::GetInstance()->GetDeltaTime());
+	animator->Update(DeltaTime::GetInstance()->GetDeltaTimeMulTimeScale());
+
+	/*Matrix matrix = Matrix::Rotation(transform.rotation);
+
+	transform.position += matrix.TransformDirection(Vector3(0.0f, 0.0f, 2.0f));*/
 }
 
 void FBXModel::Draw()
@@ -133,6 +135,31 @@ void FBXModel::Draw()
 
 		commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 1, 0, 0, 0); // インデックスの数分描画する
 	}
+}
+
+void FBXModel::PlayAnimation(int animIndex, bool loop)
+{
+	animator->Play(animIndex, loop);
+}
+
+void FBXModel::StopAnimation()
+{
+	animator->Stop();
+}
+
+void FBXModel::SetAnimationSpeed(float s)
+{
+	animator->SetSpeed(s);
+}
+
+bool FBXModel::GetAnimationPlaying()
+{
+	return animator->GetPlaying();
+}
+
+int FBXModel::GetAnimationIndex()
+{
+	return animator->GetAnimationIndex();
 }
 
 void FBXModel::Init()

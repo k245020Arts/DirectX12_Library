@@ -41,7 +41,7 @@ VSOutput BasicVS_FBX(ModelVSInput input)
     output.svpos = projPos;
     output.color = input.color;
     output.uv = input.uv; // ‚±‚±‚ª•ÏX“_B“ü—Í‚©‚çuv‚ğ“n‚·
-    float3 n = normalize(mul(World, skinNormal).xyz);
+    float3 n = normalize(mul((float4x3) World, skinNormal).xyz);
     output.normal = float4(n, 0.0f);
     
     return output;

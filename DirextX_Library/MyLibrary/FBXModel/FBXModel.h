@@ -64,10 +64,20 @@ public:
 	bool Load(const wchar_t* _modelFilePath);
 	bool Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip);
 
+	bool LoadAnimation(const std::string& _animFilePath);
+	bool LoadAnimation(const std::wstring& _animFilePath);
+
 	void Update();
 	void Draw();
 
 	Transform& GetTransform() { return transform; }
+
+	void PlayAnimation(int animIndex, bool loop = true);
+	void StopAnimation();
+	void SetAnimationSpeed(float s);
+
+	int GetAnimationIndex();
+	bool GetAnimationPlaying();
 
 private:
 

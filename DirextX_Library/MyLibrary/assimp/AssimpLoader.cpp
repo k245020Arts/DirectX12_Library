@@ -34,6 +34,50 @@ static DirectX::XMFLOAT4X4 ConvertMatrix(const aiMatrix4x4& a)
     return DirectX::XMFLOAT4X4(a.a1, a.b1, a.c1, a.d1, a.a2, a.b2, a.c2, a.d2, a.a3, a.b3, a.c3, a.d3, a.a4, a.b4, a.c4, a.d4);
 }
 
+static std::wstring ResolveTexturePath(const std::wstring& modelFile, const std::string& texPathUtf8)
+{
+    const fs::path modelPath(modelFile);
+    const fs::path dir = modelPath.parent_path();
+    const fs::path stem = modelPath.stem();
+
+    // "/" と "\" のどちらの区切りでもファイル名だけ取り出す
+    const size_t pos = texPathUtf8.find_last_of("/\\");
+    const std::string fileName = (pos == std::string::npos) ? texPathUtf8 : texPathUtf8.substr(pos + 1);
+    const fs::path fn(GetWideString(fileName));
+
+    std::wstring rel = GetWideString(texPathUtf8);
+    std::replace(rel.begin(), rel.end(), L'\\', L'/');
+
+    //Step1 : 想定しているフォルダ構造で検索をする
+    const fs::path candidates[] =
+    {
+        dir / fn,                                       // FBXと同じフォルダ
+        dir / fs::path(rel),                            // FBXに書かれた相対パスそのまま
+        dir / (stem.wstring() + L".fbm") / fn,          // <FBX名>.fbm フォルダ
+        dir / L"textures" / fn,
+        dir / L"Textures" / fn,
+    };
+
+    for (const auto& c : candidates)
+    {
+        std::error_code ec;
+        if (fs::exists(c, ec))
+            return c.wstring(); //検索項目の中にあればそのファイルパスを読み込む
+    }
+
+    //Step2 : FBXのフォルダ以下をファイル名で再帰検索
+    std::error_code ec;
+    for (fs::recursive_directory_iterator it(dir, fs::directory_options::skip_permission_denied, ec), end;it != end; it.increment(ec))
+    {
+        if (ec) 
+            break; //エラーが出たらブレイク
+        if (it->is_regular_file(ec) && it->path().filename() == fn)
+            return it->path().wstring(); //見つかれば
+    }
+
+    return L"404_NotFound_Texture_Path"; //最後まで探して見つからなければテクスチャが見つからない
+}
+
 bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
 {
     if (setting.filename == nullptr) {
@@ -47,8 +91,8 @@ bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
     _model.nodes.clear();
     _model.rootNodeIndex = -1;
     _model.globalInverseTransform = Matrix::Identity();
-    auto& meshes = setting.meshes;
-    auto& animations = setting.animations;
+    auto& meshes = _model.meshes;
+    auto& animations = _model.animations;
 
     auto inverseU = setting.inverseU;
     auto inverseV = setting.inverseV;
@@ -134,6 +178,37 @@ bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
     return true;
 }
 
+bool AssimpLoader::LoadAnimation(const std::string& _filePath, ModelData& _model)
+{
+    return LoadAnimation(GetWideString(_filePath),_model);
+}
+
+bool AssimpLoader::LoadAnimation(const std::wstring& _filePath, ModelData& _model)
+{
+    Assimp::Importer importer;
+
+    // キャラ側の設定と同じにする（キャラ側で何も設定していないなら、ここも不要）
+    // importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+
+    auto path = ToUTF8(_filePath);
+
+    const aiScene* scene = importer.ReadFile(path, 0);   // フラグは0
+
+    if (scene == nullptr)
+    {
+        OutputDebugStringA(importer.GetErrorString());
+        return false;
+    }
+
+    if (scene->mNumAnimations == 0)
+    {
+        OutputDebugStringA("このファイルにはアニメーションがありません\n");
+        return false;
+    }
+
+    return LoadAnimations(scene, _model.animations);
+}
+
 void AssimpLoader::LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool inverseV)
 {
     aiVector3D zero3D(0.0f, 0.0f, 0.0f);
@@ -186,11 +261,25 @@ void AssimpLoader::LoadTexture(const wchar_t* filename, Mesh& dst, const aiMater
     aiString path;
     if (src->Get(AI_MATKEY_TEXTURE_DIFFUSE(0), path) == AI_SUCCESS)
     {
-        auto dir = GetDirectoryPath(filename);
-        auto file = std::string(path.C_Str());
-        dst.DiffuseMap = dir + GetWideString(file);
+        const std::string p = path.C_Str();
+
+        // 埋め込みテクスチャ("*0" など)は未対応
+        if (!p.empty() && p[0] == '*')
+        {
+            OutputDebugStringA("[Texture] 埋め込みテクスチャ(未対応)\n");
+            dst.DiffuseMap.clear();
+            return;
+        }
+
+        dst.DiffuseMap = ResolveTexturePath(filename, p);
+
+        if (dst.DiffuseMap.empty())
+            OutputDebugStringA(("[Texture] 見つかりません: " + p + "\n").c_str());
+        else
+            OutputDebugStringW((L"[Texture] 読み込み: " + dst.DiffuseMap + L"\n").c_str());
     }
-    else {
+    else
+    {
         dst.DiffuseMap.clear();
     }
 }
@@ -201,8 +290,6 @@ bool AssimpLoader::LoadAnimations(const aiScene* scene, std::vector<AnimationDat
     {
         return false;
     }
-
-    animations.clear();
 
     if (scene->mNumAnimations == 0)
     {
@@ -215,12 +302,15 @@ bool AssimpLoader::LoadAnimations(const aiScene* scene, std::vector<AnimationDat
         return false;
     }
 
-    animations.reserve(scene->mNumAnimations);
+    //呼び出し側が「新しく入ったもの」を特定できるようにする
+    const size_t firstIndex = animations.size();
+
+    animations.reserve(animations.size() + scene->mNumAnimations);
 
     // ファイル内の全アニメーションを読み込む
     for (uint32_t i = 0; i < scene->mNumAnimations; ++i)
     {
-        const aiAnimation* srcAnimation =scene->mAnimations[i];
+        const aiAnimation* srcAnimation = scene->mAnimations[i];
 
         AnimationData dstAnimation{};
 
@@ -375,9 +465,7 @@ int AssimpLoader::LoadNodeHierarchy(const aiNode* src,int parentIndex,ModelData&
 
 void AssimpLoader::ApplyStaticMeshNodeTransforms(ModelData& model)
 {
-    if (model.rootNodeIndex < 0 ||
-        model.rootNodeIndex >=
-        static_cast<int>(model.nodes.size()))
+    if (model.rootNodeIndex < 0 || model.rootNodeIndex >= static_cast<int>(model.nodes.size()))
     {
         return;
     }
@@ -387,36 +475,27 @@ void AssimpLoader::ApplyStaticMeshNodeTransforms(ModelData& model)
     // 各メッシュが所属するノードを記録する
     std::vector<int> meshNodeIndices(meshCount, -1);
 
-    for (size_t nodeIndex = 0;
-        nodeIndex < model.nodes.size();
-        ++nodeIndex)
+    for (size_t nodeIndex = 0; nodeIndex < model.nodes.size(); ++nodeIndex)
     {
         const NodeData& node = model.nodes[nodeIndex];
 
         for (uint32_t meshIndex : node.meshIndices)
         {
-            if (meshIndex < meshCount)
-            {
-                meshNodeIndices[meshIndex] =
-                    static_cast<int>(nodeIndex);
-            }
+            if (meshIndex >= meshCount)
+                continue;
+
+            meshNodeIndices[meshIndex] = static_cast<int>(nodeIndex);
         }
     }
 
     // ノードのグローバル変換を計算する
-    std::vector<DirectX::XMMATRIX> globalTransforms(
-        model.nodes.size(),
-        DirectX::XMMatrixIdentity());
+    std::vector<DirectX::XMMATRIX> globalTransforms(model.nodes.size(),DirectX::XMMatrixIdentity());
 
-    auto calculateGlobal =
-        [&](auto&& self,
-            int nodeIndex,
-            DirectX::FXMMATRIX parentTransform) -> void
-        {
-            const NodeData& node = model.nodes[nodeIndex];
+    auto calculateGlobal =[&](auto&& self,int nodeIndex,DirectX::FXMMATRIX parentTransform) -> void
+    {
+         const NodeData& node = model.nodes[nodeIndex];
 
-            const DirectX::XMMATRIX local =
-                DirectX::XMLoadFloat4x4(&node.localTransform);
+         const DirectX::XMMATRIX local = DirectX::XMLoadFloat4x4(&node.localTransform);
 
             // 行ベクトル方式：ローカル * 親
             globalTransforms[nodeIndex] = local * parentTransform;
@@ -425,23 +504,15 @@ void AssimpLoader::ApplyStaticMeshNodeTransforms(ModelData& model)
             {
                 if (childIndex < model.nodes.size())
                 {
-                    self(
-                        self,
-                        static_cast<int>(childIndex),
-                        globalTransforms[nodeIndex]);
+                    self(self,static_cast<int>(childIndex),globalTransforms[nodeIndex]);
                 }
             }
-        };
+     };
 
-    calculateGlobal(
-        calculateGlobal,
-        model.rootNodeIndex,
-        DirectX::XMMatrixIdentity());
+    calculateGlobal(calculateGlobal,model.rootNodeIndex,DirectX::XMMatrixIdentity());
 
     // ボーンを持たないメッシュだけ、ノード変換を頂点に焼き込む
-    for (size_t meshIndex = 0;
-        meshIndex < meshCount;
-        ++meshIndex)
+    for (size_t meshIndex = 0;meshIndex < meshCount;++meshIndex)
     {
         Mesh& mesh = model.meshes[meshIndex];
 
@@ -457,43 +528,32 @@ void AssimpLoader::ApplyStaticMeshNodeTransforms(ModelData& model)
             globalTransforms[nodeIndex];
 
         // 法線用の逆転置行列
-        const DirectX::XMMATRIX normalMatrix =
-            DirectX::XMMatrixTranspose(
-                DirectX::XMMatrixInverse(nullptr, nodeWorld));
+        const DirectX::XMMATRIX normalMatrix =DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, nodeWorld));
 
         for (auto& vertex : mesh.Vertices)
         {
             // position / normal / tangent は実際のメンバー名に合わせる
-            DirectX::XMVECTOR position =
-                DirectX::XMLoadFloat3(&vertex.position);
+            DirectX::XMVECTOR position = DirectX::XMLoadFloat3(&vertex.position);
 
-            position = DirectX::XMVector3TransformCoord(
-                position, nodeWorld);
+            position = DirectX::XMVector3TransformCoord(position, nodeWorld);
 
-            DirectX::XMStoreFloat3(
-                &vertex.position, position);
+            DirectX::XMStoreFloat3(&vertex.position, position);
 
-            DirectX::XMVECTOR normal =
-                DirectX::XMLoadFloat3(&vertex.normal);
+            DirectX::XMVECTOR normal = DirectX::XMLoadFloat3(&vertex.normal);
 
-            normal = DirectX::XMVector3TransformNormal(
-                normal, normalMatrix);
+            normal = DirectX::XMVector3TransformNormal(normal, normalMatrix);
 
             normal = DirectX::XMVector3Normalize(normal);
 
-            DirectX::XMStoreFloat3(
-                &vertex.normal, normal);
+            DirectX::XMStoreFloat3(&vertex.normal, normal);
 
-            DirectX::XMVECTOR tangent =
-                DirectX::XMLoadFloat3(&vertex.tangent);
+            DirectX::XMVECTOR tangent = DirectX::XMLoadFloat3(&vertex.tangent);
 
-            tangent = DirectX::XMVector3TransformNormal(
-                tangent, nodeWorld);
+            tangent = DirectX::XMVector3TransformNormal(tangent, nodeWorld);
 
             tangent = DirectX::XMVector3Normalize(tangent);
 
-            DirectX::XMStoreFloat3(
-                &vertex.tangent, tangent);
+            DirectX::XMStoreFloat3(&vertex.tangent, tangent);
         }
     }
 }

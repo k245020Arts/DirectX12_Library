@@ -1,4 +1,4 @@
-#include "Animator.h"
+ï»¿#include "Animator.h"
 
 #include <algorithm>
 #include <cmath>
@@ -6,31 +6,43 @@
 
 namespace
 {
-    // t ‚ğ‹²‚Ş‹æŠÔ‚Ì¶‘¤‚ÌƒL[”Ô†‚ğ•Ô‚·ikeys.size() >= 2 ‚ª‘O’ñj
+    //tã®å€¤ã®ç›´å‰ã®ã‚­ãƒ¼ç•ªå·ã‚’è¿”ã™
+    // (0,2,4,6,8,10)ã¨ãªã‚‰ã‚“ã§ã¦ã€tãŒ3ã ã£ãŸã‚‰2ãŒå…¥ã£ã¦ã„ã‚‹ã‚­ãƒ¼ã®ç•ªå·ã€ã¤ã¾ã‚Š1ã‚’è¿”ã™
+    // (ã‚­ãƒ¼ã®ã‚µã‚¤ã‚ºãŒ2ä»¥ä¸Šå‰æ)
     template<typename T>
     size_t FindKey(const std::vector<std::pair<double, T>>& keys, double t)
     {
         auto it = std::upper_bound(keys.begin(), keys.end(), t,
             [](double v, const std::pair<double, T>& k) { return v < k.first; });
 
-        if (it == keys.begin()) return 0;
+        if (it == keys.begin()) 
+            return 0;
 
         size_t i = static_cast<size_t>(it - keys.begin()) - 1;
         return std::min(i, keys.size() - 2);
     }
 
+    /// <summary>
+    /// 2ã¤ã®ã‚­ãƒ¼ã®é–“ã§ã€ç¾åœ¨æ™‚åˆ»ãŒã©ã“ã¾ã§é€²ã‚“ã ã‹ã‚’ 0.0ã€œ1.0 ã§è¿”ã™
+    /// (0.0 = å·¦ã‚­ãƒ¼ã®ä½ç½®ã€1.0 = å³ã‚­ãƒ¼ã®ä½ç½®)
+    /// </summary>
+    /// <param name="t0">å·¦å´ã®ã‚­ãƒ¼ã®æ™‚åˆ»</param>
+    /// <param name="t1">å³å´ã®ã‚­ãƒ¼ã®æ™‚åˆ»</param>
+    /// <param name="t">ç¾åœ¨ã®å†ç”Ÿæ™‚åˆ»</param>
+    /// <returns>è£œé–“ä¿‚æ•°ã€‚ç¯„å›²å¤–ã¯ 0ã€œ1 ã«ä¸¸ã‚ã‚‹</returns>
     float Factor(double t0, double t1, double t)
     {
         const double d = t1 - t0;
-        if (d <= 0.0) return 0.0f;
+        if (d <= 0.0) 
+            return 0.0f;
         return std::clamp(static_cast<float>((t - t0) / d), 0.0f, 1.0f);
     }
 
-    // ˆÊ’uEƒXƒP[ƒ‹—piüŒ`•âŠÔjBƒL[‚ª–³‚¯‚ê‚Î false
-    bool SampleVec3(const std::vector<std::pair<double, Vector3>>& keys,
-        double t, DirectX::XMVECTOR& out)
+    // ä½ç½®ãƒ»ã‚¹ã‚±ãƒ¼ãƒ«ç”¨ï¼ˆç·šå½¢è£œé–“ï¼‰ã€‚ã‚­ãƒ¼ãŒç„¡ã‘ã‚Œã° false
+    bool SampleVector3(const std::vector<std::pair<double, Vector3>>& keys,double t, DirectX::XMVECTOR& out)
     {
-        if (keys.empty()) return false;
+        if (keys.empty()) 
+            return false;
         if (keys.size() == 1)
         {
             out = DirectX::XMLoadFloat3(&keys[0].second);
@@ -38,25 +50,24 @@ namespace
         }
         const size_t i = FindKey(keys, t);
         const float  f = Factor(keys[i].first, keys[i + 1].first, t);
-        out = DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&keys[i].second),
-            DirectX::XMLoadFloat3(&keys[i + 1].second), f);
+        out = DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&keys[i].second),DirectX::XMLoadFloat3(&keys[i + 1].second), f);
         return true;
     }
 
-    // ‰ñ“]—pi‹…–ÊüŒ`•âŠÔj
-    bool SampleQuat(const std::vector<std::pair<double, Vector4>>& keys,
-        double t, DirectX::XMVECTOR& out)
+    // å›è»¢ç”¨ï¼ˆçƒé¢ç·šå½¢è£œé–“ï¼‰
+    bool SampleQuotation(const std::vector<std::pair<double, Vector4>>& keys,double t, DirectX::XMVECTOR& out)
     {
-        if (keys.empty()) return false;
+        if (keys.empty())
+            return false;
         if (keys.size() == 1)
         {
             out = DirectX::XMLoadFloat4(&keys[0].second);
             return true;
         }
         const size_t i = FindKey(keys, t);
-        const float  f = Factor(keys[i].first, keys[i + 1].first, t);
-        out = DirectX::XMQuaternionSlerp(DirectX::XMLoadFloat4(&keys[i].second),
-            DirectX::XMLoadFloat4(&keys[i + 1].second), f);
+        float  f = Factor(keys[i].first, keys[i + 1].first, t);
+        f = Easing::SmoothStep<float>(0.0f, 1.0f, f);
+        out = DirectX::XMQuaternionSlerp(DirectX::XMLoadFloat4(&keys[i].second),DirectX::XMLoadFloat4(&keys[i + 1].second), f);
         out = DirectX::XMQuaternionNormalize(out);
         return true;
     }
@@ -73,26 +84,7 @@ Animator::Animator(const ModelData& _data)
         originalLocalTransforms.push_back(node.localTransform);
     }
 
-    // ƒ`ƒƒƒ“ƒlƒ‹–¼ -> ƒm[ƒh”Ô†‚ğAƒ[ƒh‚É1‰ñ‚¾‚¯‰ğŒˆ‚·‚é
-    std::unordered_map<std::wstring, int> nodeByName;
-    for (size_t i = 0; i < modelData.nodes.size(); ++i)
-        nodeByName.emplace(modelData.nodes[i].name, static_cast<int>(i));
-
-    channelNodeIndices.resize(modelData.animations.size());
-    for (size_t a = 0; a < modelData.animations.size(); ++a)
-    {
-        const auto& anim = modelData.animations[a];
-        channelNodeIndices[a].assign(anim.channels.size(), -1);
-
-        for (size_t c = 0; c < anim.channels.size(); ++c)
-        {
-            auto it = nodeByName.find(anim.channels[c].nodeName);
-            if (it != nodeByName.end())
-                channelNodeIndices[a][c] = it->second;
-            else
-                OutputDebugStringW((L"ƒ`ƒƒƒ“ƒlƒ‹‚É‘Î‰‚·‚éƒm[ƒh‚ª‚ ‚è‚Ü‚¹‚ñ: " + anim.channels[c].nodeName + L"\n").c_str());
-        }
-    }
+    AddAnimation(modelData);
 }
 
 Animator::~Animator()
@@ -101,19 +93,19 @@ Animator::~Animator()
 
 void Animator::Update(float deltaTime)
 {
-    //ƒm[ƒh‚Ìƒ[ƒJƒ‹•ÏŠ·‚ğXV
-   // UpdateManualPose();
+    //ãƒãƒ¼ãƒ‰ã®ãƒ­ãƒ¼ã‚«ãƒ«å¤‰æ›ã‚’æ›´æ–°
+    //UpdateManualPose();
 
     if (currentAnimation >= 0)
         UpdateAnimation(deltaTime);
 
 
-    //ƒm[ƒhŠK‘w‚©‚çƒOƒ[ƒoƒ‹•ÏŠ·‚ğŒvZ
+    //ãƒãƒ¼ãƒ‰éšå±¤ã‹ã‚‰ã‚°ãƒ­ãƒ¼ãƒãƒ«å¤‰æ›ã‚’è¨ˆç®—
     CalculateGlobalTransforms();
-    // ƒOƒ[ƒoƒ‹•ÏŠ·‚©‚çƒ{[ƒ“s—ñ‚ğŒvZ
+    // ã‚°ãƒ­ãƒ¼ãƒãƒ«å¤‰æ›ã‹ã‚‰ãƒœãƒ¼ãƒ³è¡Œåˆ—ã‚’è¨ˆç®—
     CalculateBoneMatrices();
 
-    // ƒ‚[ƒVƒ‡ƒ“À‘•Œã‚ÍA‚±‚¿‚ç‚ÉØ‚è‘Ö‚¦‚é
+    // ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å®Ÿè£…å¾Œã¯ã€ã“ã¡ã‚‰ã«åˆ‡ã‚Šæ›¿ãˆã‚‹
     // UpdateAnimation(deltaTime);
 }
 
@@ -145,10 +137,10 @@ void Animator::UpdateManualPose()
     
     //boneMatrices[index] = DirectX::XMMatrixRotationZ(DirectX::XM_PIDIV2);
 
-    // Mixamo: L"mixamorig:RightForeArm" / Œ³ƒ‚ƒfƒ‹: L"d_RightForeArm"
+    // Mixamo: L"mixamorig:RightForeArm" / å…ƒãƒ¢ãƒ‡ãƒ«: L"d_RightForeArm"
     const std::wstring target = L"d_RightForeArm";
 
-    int nameIndex = 126;
+    int nameIndex = 98;
 
     int nodeIndex = -1;
     for (size_t i = 0; i < modelData.nodes.size(); ++i)
@@ -166,7 +158,7 @@ void Animator::UpdateManualPose()
     Matrix original = DirectX::XMLoadFloat4x4(&originalLocalTransforms[nodeIndex]);
     Matrix rotation = DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(testRotation));
 
-    // sƒxƒNƒgƒ‹: ‰ñ“]‚ğ¶‚©‚çŠ|‚¯‚é‚ÆAŠÖßˆÊ’u‚ğ’†S‚É‰ñ‚é
+    //ã“ã“ã§ã€ãƒœãƒ¼ãƒ³ã®ä½ç½®ã‚’åŸç‚¹ã«æˆ»ã—ã€å›è»¢ã•ã›ã¦ã„ã‚‹ã€‚
     DirectX::XMStoreFloat4x4(&modelData.nodes[nodeIndex].localTransform, rotation * original);
 }
 
@@ -182,8 +174,10 @@ void Animator::CalculateBoneMatrices()
             continue;
         }
 
+        //å…ˆã»ã©è¨ˆç®—ã—ãŸå›è»¢å‡¦ç†ã‚’å–å¾—
         Matrix offset = DirectX::XMLoadFloat4x4(&b.offsetMatrix);
-        boneMatrices[i] = offset * globalTransforms[b.nodeIndex];
+        //ã“ã“ã§ãƒœãƒ¼ãƒ³ã®ä½ç½®ã‚’ã€åŸç‚¹ã«æˆ»ã—ã¦ã„ã‚‹ã€‚
+        boneMatrices[i] = offset * globalTransforms[b.nodeIndex] * modelData.globalInverseTransform;;
     }
 }
 
@@ -198,13 +192,42 @@ void Animator::Play(int animIndex, bool _loop)
     playing = true;
 }
 
+void Animator::AddAnimation(const ModelData& _data)
+{
+    modelData = _data;
+    std::unordered_map<std::wstring, int> nodeByName;
+    for (size_t i = 0; i < modelData.nodes.size(); ++i)
+    {
+        nodeByName.emplace(modelData.nodes[i].name, static_cast<int>(i));
+    }
+
+    channelNodeIndices.clear();
+
+    channelNodeIndices.resize(modelData.animations.size());
+    for (size_t a = 0; a < modelData.animations.size(); ++a)
+    {
+        const auto& anim = modelData.animations[a];
+        channelNodeIndices[a].assign(anim.channels.size(), -1);
+
+        for (size_t c = 0; c < anim.channels.size(); ++c)
+        {
+            auto it = nodeByName.find(anim.channels[c].nodeName);
+            if (it != nodeByName.end())
+                channelNodeIndices[a][c] = it->second;
+            else
+                OutputDebugStringW((L"ãƒãƒ£ãƒ³ãƒãƒ«ã«å¯¾å¿œã™ã‚‹ãƒãƒ¼ãƒ‰ãŒã‚ã‚Šã¾ã›ã‚“: " + anim.channels[c].nodeName + L"\n").c_str());
+        }
+    }
+}
+
 void Animator::UpdateAnimation(float deltaTime)
 {
-    if (currentAnimation < 0) return;
+    if (currentAnimation < 0)  //ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒè¨­å®šã•ã‚Œã¦ã„ãªã‘ã‚Œã°ã‚„ã‚‰ãªã„
+        return;
 
     const AnimationData& anim = modelData.animations[currentAnimation];
 
-    // 1. ŠÔ‚ği‚ß‚éiticksPerSecond ‚ª 0 ‚Ì‚Æ‚«‚Í Assimp ‚ÌŠù’è’l 25 ‚ğg‚¤j
+    // 1. æ™‚é–“ã‚’é€²ã‚ã‚‹ï¼ˆticksPerSecond ãŒ 0 ã®ã¨ãã¯ Assimp ã®æ—¢å®šå€¤ 25 ã‚’ä½¿ã†ï¼‰
     const double tps = (anim.ticksPerSecond > 0.0) ? anim.ticksPerSecond : 25.0;
 
     if (playing)
@@ -225,34 +248,33 @@ void Animator::UpdateAnimation(float deltaTime)
         }
     }
 
-    // 2. ‘Sƒm[ƒh‚ğŒ³‚Ìp¨‚É–ß‚·
+    //å…¨ãƒãƒ¼ãƒ‰ã‚’å…ƒã®å§¿å‹¢ã«æˆ»ã™
+    //å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã®ãƒãƒ¼ã‚ºãŒé‡ã­æ›ã‘ã•ã‚Œã¦ãƒ¢ãƒ‡ãƒ«ãŒå£Šã‚Œã‚‹ãŸã‚
     for (size_t i = 0; i < modelData.nodes.size(); ++i)
         modelData.nodes[i].localTransform = originalLocalTransforms[i];
 
-    // 3 & 4. ƒ`ƒƒƒ“ƒlƒ‹‚²‚Æ‚É•âŠÔ‚µ‚ÄAƒ[ƒJƒ‹•ÏŠ·‚ğã‘‚«
+    //ãƒãƒ£ãƒ³ãƒãƒ«ã”ã¨ã«è£œé–“ã—ã¦ã€ãƒ­ãƒ¼ã‚«ãƒ«å¤‰æ›ã‚’ä¸Šæ›¸ã
     const auto& nodeIds = channelNodeIndices[currentAnimation];
 
     for (size_t c = 0; c < anim.channels.size(); ++c)
     {
         const int nodeIndex = nodeIds[c];
-        if (nodeIndex < 0) continue;
+        if (nodeIndex < 0) 
+            continue;
 
         const BoneChannel& ch = anim.channels[c];
 
-        // ƒL[‚ª–³‚¢¬•ª‚ÍAŒ³‚Ìp¨‚©‚ç•ª‰ğ‚µ‚Äg‚¤
+        // ã‚­ãƒ¼ãŒç„¡ã„æˆåˆ†ã¯ã€å…ƒã®å§¿å‹¢ã‹ã‚‰åˆ†è§£ã—ã¦ä½¿ã†
         DirectX::XMVECTOR s, r, t;
-        DirectX::XMMATRIX orig = DirectX::XMLoadFloat4x4(&originalLocalTransforms[nodeIndex]);
+        Matrix orig = DirectX::XMLoadFloat4x4(&originalLocalTransforms[nodeIndex]);
         DirectX::XMMatrixDecompose(&s, &r, &t, orig);
 
-        SampleVec3(ch.scalingKeys, currentTick, s);
-        SampleQuat(ch.rotationKeys, currentTick, r);
-        SampleVec3(ch.positionKeys, currentTick, t);
+        SampleVector3(ch.scalingKeys, currentTick, s);
+        SampleQuotation(ch.rotationKeys, currentTick, r);
+        SampleVector3(ch.positionKeys, currentTick, t);
 
-        // sƒxƒNƒgƒ‹‹K–ñ: S ¨ R ¨ T ‚Ì‡
-        DirectX::XMMATRIX local =
-            DirectX::XMMatrixScalingFromVector(s) *
-            DirectX::XMMatrixRotationQuaternion(r) *
-            DirectX::XMMatrixTranslationFromVector(t);
+        // SRTã®é †ç•ªã§æ›ã‘ã‚‹
+        Matrix local = DirectX::XMMatrixScalingFromVector(s) * DirectX::XMMatrixRotationQuaternion(r) * DirectX::XMMatrixTranslationFromVector(t);
 
         DirectX::XMStoreFloat4x4(&modelData.nodes[nodeIndex].localTransform, local);
     }
@@ -278,11 +300,12 @@ void Animator::CalculateGlobalTransformsRecursive(int nodeIndex,const Matrix& pa
     Matrix localTransform;
     localTransform = DirectX::XMLoadFloat4x4(& node.localTransform);
 
-    // sƒxƒNƒgƒ‹‹K–ñFƒ[ƒJƒ‹•ÏŠ·‚ÌŒã‚Ée‚Ì•ÏŠ·‚ğ“K—p
+    //ãƒ­ãƒ¼ã‚«ãƒ«å¤‰æ›ã®å¾Œã«è¦ªã®å¤‰æ›ã‚’é©ç”¨
     globalTransforms[nodeIndex] = localTransform * parentTransform;
 
     for (uint32_t childIndex : node.children)
     {
+        //å­ä¾›ã®ãƒœãƒ¼ãƒ³ã«ã‚‚å›è»¢ã‚’é©ç”¨ã•ã›ãªã„ã¨ã„ã‘ãªã„
         CalculateGlobalTransformsRecursive(static_cast<int>(childIndex),globalTransforms[nodeIndex]);
     }
 }

@@ -21,6 +21,12 @@ public:
     void Stop() { playing = false; }
     void SetSpeed(float s) { speed = s; }
 
+    void AddAnimation(const ModelData& _data);
+
+    int GetAnimationIndex() { return currentAnimation; }
+    
+    bool GetPlaying() { return playing; }
+
 private:
     // ボーンの姿勢を更新する処理
     void UpdateBonePose();

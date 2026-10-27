@@ -20,8 +20,6 @@ struct ModelData;
 struct ImportSettings // インポートするときのパラメータ
 {
     const wchar_t* filename = nullptr; // ファイルパス
-    std::vector<Mesh>& meshes; // 出力先のメッシュ配列
-    std::vector<AnimationData>& animations;
 
     bool inverseU = false; // U座標を反転させるか
     bool inverseV = false; // V座標を反転させるか
@@ -31,6 +29,8 @@ class AssimpLoader
 {
 public:
     bool Load(const ImportSettings& setting, ModelData& _model); // モデルをロードする
+    bool LoadAnimation(const std::string& _filePath, ModelData& _model);
+    bool LoadAnimation(const std::wstring& _filePath, ModelData& _model);
 
 private:
     void LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool inverseV);

@@ -157,6 +157,9 @@
     <Filter Include="Shader\FBXModelShader">
       <UniqueIdentifier>{8a54a56e-b67d-4e6a-8b8c-10edd300c45f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MyLibrary\Easing">
+      <UniqueIdentifier>{21fd1f81-467b-4c22-90fd-7971e91f93f7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp">
@@ -538,6 +541,9 @@
     </ClInclude>
     <ClInclude Include="MyLibrary/Animator/Animator.h">
       <Filter>MyLibrary\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Easing\Easing.h">
+      <Filter>MyLibrary\Easing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

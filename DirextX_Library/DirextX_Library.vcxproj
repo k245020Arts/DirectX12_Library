@@ -224,6 +224,7 @@
     <ClInclude Include="MyLibrary\ConstBuffer\ConstBuffer.h" />
     <ClInclude Include="MyLibrary\DescriptorHeap\DescriptorHeap.h" />
     <ClInclude Include="MyLibrary\DirectX12Imgui\DirectX12Imgui.h" />
+    <ClInclude Include="MyLibrary\Easing\Easing.h" />
     <ClInclude Include="MyLibrary\Engine\Engine.h" />
     <ClInclude Include="MyLibrary\Extension\Extension.h" />
     <ClInclude Include="MyLibrary\FBXModel\FBXModel.h" />

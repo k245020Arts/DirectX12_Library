@@ -92,10 +92,22 @@ Scene::Scene()
 #ifdef MODEL
 	//L"data/Alicia/FBX/Alicia_solid_Unity.FBX"
 	model = new FBXModel();
-	model->Load(L"data/motion.fbx", false, true);
+	model->Load(L"data/Walking.fbx", false, true);
+
+	model->LoadAnimation(L"data/Sword And Shield Attack.fbx");
+	model->LoadAnimation(L"data/Fast Run.fbx");
+
+	model->PlayAnimation(2, true);
+	//Ch34_nonPBR
+	//Walking
+	//Sword And Shield Attack
 
 	model1 = new FBXModel();
-	model1->Load(L"data/Dragon 2.5_fbx.fbx", false, true);
+	model1->Load(L"data/Walking.fbx", false, true);
+	model1->LoadAnimation(L"data/Defender.fbx");
+	model1->LoadAnimation(L"data/Shopping Cart Dance.fbx");
+
+	model1->PlayAnimation(1, false);
 
 	model1->GetTransform().position.x += 150.0f;
 
@@ -221,10 +233,20 @@ void Scene::Update()
 #endif //  ON2D
 
 #ifdef MODEL
-	model->GetTransform().rotation.y += 0.007f;
-	model1->GetTransform().rotation.y += 0.005f;
+	/*model->GetTransform().rotation.y += 0.007f;
+	model1->GetTransform().rotation.y += 0.005f;*/
 	model2->GetTransform().rotation.y += 0.003f;
 	//model->Update();
+
+	if (!model1->GetAnimationPlaying())
+	{
+		if (model1->GetAnimationIndex() == 1) {
+			model1->PlayAnimation(2, false);
+		}
+		else {
+			model1->PlayAnimation(1, false);
+		}
+	}
 #endif // DEBUG
 
 	

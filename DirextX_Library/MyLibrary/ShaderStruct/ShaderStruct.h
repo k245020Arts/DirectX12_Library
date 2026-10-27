@@ -5,6 +5,7 @@
 #include "../../DirectX12_Library/d3dx12.h"
 #include "../Helper/Helper.h"
 #include "../Extension/Extension.h"
+#include "../Easing/Easing.h"
 
 struct Vertex
 {

@@ -19,6 +19,7 @@
 #include "../ImGui/imgui_impl_dx12.h"
 
 #include "Application/Application.h"
+#include "Input/InputManager.h"
 
 class Main
 {
@@ -74,12 +75,12 @@ void Main::Run()
 		return;
 	}
 
-	Application::GetInstance()->ApplicationInit(window);
+	Application::GetInstance()->ApplicationInit(window); //‰Šú‰»ˆ—
 
 	std::unique_ptr<Scene> scene = std::make_unique<Scene>();
 	while (true)
 	{
-		if (!window.ProcessMessage()) {
+		if (!window.ProcessMessage() || InputManager::GetInstance()->GetKeyInputDown(KeyCode::Escape)) {
 			break;
 		}
 
