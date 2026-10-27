@@ -145,12 +145,160 @@ void DirectX12Imgui::DebugRenderer()
 void DirectX12Imgui::SetUpStyle()
 {
     ImGuiIO& io = ImGui::GetIO();
-
-    // ImGui全体の文字サイズを80%にする
-    io.FontGlobalScale = 1.0f;
-
     ImGuiStyle& style = ImGui::GetStyle();
 
-    // ウィンドウ・ボタン・余白などを全体的に縮小
-    style.ScaleAllSizes(0.5f);
+    ImGui::StyleColorsDark();
+
+    //---------- 形状：カクカク＋線くっきり----------
+    style.WindowRounding = 0.0f;
+    style.ChildRounding = 0.0f;
+    style.FrameRounding = 0.0f;
+    style.PopupRounding = 0.0f;
+    style.ScrollbarRounding = 0.0f;
+    style.GrabRounding = 0.0f;
+    style.TabRounding = 0.0f;
+
+    style.WindowBorderSize = 1.0f;
+    style.ChildBorderSize = 1.0f;
+    style.PopupBorderSize = 1.0f;
+    style.FrameBorderSize = 1.0f;   // ボタン・入力欄にも枠線を出す
+    style.TabBorderSize = 1.0f;
+
+    style.WindowPadding = ImVec2(10, 10);
+    style.FramePadding = ImVec2(8, 5);
+    style.ItemSpacing = ImVec2(8, 7);
+    style.ItemInnerSpacing = ImVec2(6, 5);
+    style.ScrollbarSize = 12.0f;
+    style.GrabMinSize = 10.0f;
+    style.WindowTitleAlign = ImVec2(0.0f, 0.5f);
+
+    style.AntiAliasedLines = true;
+    style.AntiAliasedFill = true;
+
+    // ---------- カラー ----------
+    auto RGBA = [](int r, int g, int b, int a) {
+        return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+        };
+
+    //Primary：シアン #1CFEFF
+    const ImVec4 primary = RGBA(0x1c, 0xfe, 0xff, 0xcc);
+    const ImVec4 primaryA99 = RGBA(0x1c, 0xfe, 0xff, 0x99);
+    const ImVec4 primaryA66 = RGBA(0x1c, 0xfe, 0xff, 0x66);
+    const ImVec4 primaryA33 = RGBA(0x1c, 0xfe, 0xff, 0x33);
+    const ImVec4 primaryDark = RGBA(0x03, 0x19, 0x1a, 0xee); // 暗い青緑
+    const ImVec4 primaryDeep = RGBA(0x02, 0x10, 0x11, 0xff);
+
+    // Accent：オレンジ #FFA100
+    const ImVec4 accent = RGBA(0xff, 0xa1, 0x00, 0xee);
+    const ImVec4 accentHov = RGBA(0xff, 0xa1, 0x00, 0xcc);
+    const ImVec4 accentA99 = RGBA(0xff, 0xa1, 0x00, 0x99);
+
+    const ImVec4 blackA55 = RGBA(0x11, 0x11, 0x11, 0x55);
+
+    ImVec4* c = style.Colors;
+
+    // 背景
+    c[ImGuiCol_WindowBg] = primaryDark;
+    c[ImGuiCol_ChildBg] = RGBA(0, 0, 0, 0x30);
+    c[ImGuiCol_PopupBg] = primaryDark;
+    c[ImGuiCol_Border] = primaryA99;
+    c[ImGuiCol_BorderShadow] = RGBA(0, 0, 0, 0);
+
+    // タイトルバー・メニューバー
+    c[ImGuiCol_TitleBg] = primaryDark;
+    c[ImGuiCol_TitleBgActive] = primaryA99;
+    c[ImGuiCol_TitleBgCollapsed] = primaryDark;
+    c[ImGuiCol_MenuBarBg] = primaryA33;
+
+    // スクロールバー
+    c[ImGuiCol_ScrollbarBg] = primaryA33;
+    c[ImGuiCol_ScrollbarGrab] = primaryA99;
+    c[ImGuiCol_ScrollbarGrabHovered] = primaryA99;
+    c[ImGuiCol_ScrollbarGrabActive] = primary;
+
+    // チェック・スライダー
+    c[ImGuiCol_CheckMark] = accent;
+    c[ImGuiCol_SliderGrab] = primaryA99;
+    c[ImGuiCol_SliderGrabActive] = primary;
+
+    // 区切り線（記事の Column 系の代替）
+    c[ImGuiCol_Separator] = blackA55;
+    c[ImGuiCol_SeparatorHovered] = accentHov;
+    c[ImGuiCol_SeparatorActive] = accent;
+
+    c[ImGuiCol_ResizeGrip] = primaryA33;
+    c[ImGuiCol_ResizeGripHovered] = accentHov;
+    c[ImGuiCol_ResizeGripActive] = accent;
+
+    // タブ（v1.93 の名前）
+    c[ImGuiCol_Tab] = primaryA33;
+    c[ImGuiCol_TabHovered] = accentHov;
+    c[ImGuiCol_TabSelected] = primaryA99;
+    c[ImGuiCol_TabSelectedOverline] = accent;
+    c[ImGuiCol_TabDimmed] = primaryDark;
+    c[ImGuiCol_TabDimmedSelected] = primaryA66;
+    c[ImGuiCol_TabDimmedSelectedOverline] = primaryA99;
+
+    // ドッキング
+    c[ImGuiCol_DockingPreview] = accentA99;
+    c[ImGuiCol_DockingEmptyBg] = primaryDeep;
+
+    // グラフ・テーブル
+    c[ImGuiCol_PlotLines] = primaryA99;
+    c[ImGuiCol_PlotLinesHovered] = primary;
+    c[ImGuiCol_PlotHistogram] = primaryA99;
+    c[ImGuiCol_PlotHistogramHovered] = primary;
+    c[ImGuiCol_TableHeaderBg] = primaryA33;
+    c[ImGuiCol_TableBorderStrong] = primaryA99;
+    c[ImGuiCol_TableBorderLight] = primaryA33;
+    c[ImGuiCol_TableRowBg] = RGBA(0, 0, 0, 0);
+    c[ImGuiCol_TableRowBgAlt] = RGBA(0x1c, 0xfe, 0xff, 0x0a);
+
+    // その他
+    c[ImGuiCol_DragDropTarget] = accent;
+    c[ImGuiCol_NavCursor] = accent;
+    c[ImGuiCol_NavWindowingHighlight] = primary;
+    c[ImGuiCol_NavWindowingDimBg] = RGBA(0x00, 0x20, 0x20, 0x50);
+    c[ImGuiCol_ModalWindowDimBg] = RGBA(0x00, 0x10, 0x10, 0x90);
+
+    // 本文：ほぼ白＋ほんのりシアン、不透明
+    const ImVec4 textMain = RGBA(0xE6, 0xFF, 0xFF, 0xFF);
+    // 無効テキスト：以前より明るく（背景に埋もれない程度）
+    const ImVec4 textDisabled = RGBA(0x7F, 0xB5, 0xB8, 0xFF);
+
+    // hover / active は「暗めのオレンジ」にして、白い文字のコントラストを確保
+    const ImVec4 accentHovDk = RGBA(0xB8, 0x6A, 0x00, 0xF0);
+    const ImVec4 accentActDk = RGBA(0xE0, 0x84, 0x00, 0xFF);
+    const ImVec4 accentHdrDk = RGBA(0xB8, 0x6A, 0x00, 0x90);
+
+    c[ImGuiCol_Text] = textMain;
+    c[ImGuiCol_TextDisabled] = textDisabled;
+    c[ImGuiCol_TextSelectedBg] = RGBA(0xFF, 0xA1, 0x00, 0x70); // 半透明にして文字を潰さない
+
+    // 入力欄
+    c[ImGuiCol_FrameBg] = RGBA(0x1c, 0xfe, 0xff, 0x22);
+    c[ImGuiCol_FrameBgHovered] = accentHovDk;
+    c[ImGuiCol_FrameBgActive] = accentActDk;
+
+    // ボタン
+    c[ImGuiCol_Button] = RGBA(0x1c, 0xfe, 0xff, 0x2a);
+    c[ImGuiCol_ButtonHovered] = accentHovDk;
+    c[ImGuiCol_ButtonActive] = accentActDk;
+
+    // ヘッダー（TreeNode / Selectable）
+    c[ImGuiCol_Header] = accentHdrDk;
+    c[ImGuiCol_HeaderHovered] = accentHovDk;
+    c[ImGuiCol_HeaderActive] = accentActDk;
+
+    // タブ
+    c[ImGuiCol_TabHovered] = accentHovDk;
+
+    // ---------- ビューポート有効時の注意 ----------
+    // 別OSウィンドウになった時に半透明だと背後が透けるので不透明化
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        style.WindowRounding = 0.0f;
+        c[ImGuiCol_WindowBg].w = 1.0f;
+        c[ImGuiCol_PopupBg].w = 1.0f;
+    }
 }

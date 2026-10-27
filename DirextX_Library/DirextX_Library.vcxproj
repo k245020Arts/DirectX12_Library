@@ -114,6 +114,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\DirectXTex-main\DirectXTex\Bin\Desktop_2022_Win10\x64\Debug;%(AdditionalLibraryDirectories);$(ProjectDir)\Assimp\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateMapFile>false</GenerateMapFile>
+      <MapFileName>
+      </MapFileName>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(ProjectDir)\Assimp\bin\*.dll" "$(OutDir)"</Command>

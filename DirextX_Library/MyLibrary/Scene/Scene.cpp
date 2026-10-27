@@ -358,6 +358,26 @@ void Scene::Update()
 		}
 	}
 #endif
+
+	// デモウィンドウの表示フラグ（static変数で状態を保持）
+	static bool show_demo_window = false;
+
+	// 1. フラグがtrueの場合のみ、公式のデモウィンドウを表示
+	// 引数にアドレスを渡すことで、ウィンドウ右上か右下の「×」ボタンを押したときに自動でフラグがfalseになります
+	if (show_demo_window)
+	{
+		ImGui::ShowDemoWindow(&show_demo_window);
+	}
+
+	// 2. 自作のコントロール用ウィンドウ（デモの開閉テスト用）
+	ImGui::Begin("Control Panel"); // ウィンドウの開始
+
+	ImGui::Text("Dear ImGui Demo Controller");
+
+	// チェックボックスでデモウィンドウの表示/非表示を切り替え
+	ImGui::Checkbox("Show ImGui Demo Window", &show_demo_window);
+
+	ImGui::End(); // ウィンドウの終了
 }
 
 void Scene::Draw()
