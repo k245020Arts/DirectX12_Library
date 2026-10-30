@@ -180,7 +180,7 @@ void DirectX12Imgui::SetUpStyle()
         return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
         };
 
-    //Primary：シアン #1CFEFF
+    //シアン
     const ImVec4 primary = RGBA(0x1c, 0xfe, 0xff, 0xcc);
     const ImVec4 primaryA99 = RGBA(0x1c, 0xfe, 0xff, 0x99);
     const ImVec4 primaryA66 = RGBA(0x1c, 0xfe, 0xff, 0x66);
@@ -188,7 +188,7 @@ void DirectX12Imgui::SetUpStyle()
     const ImVec4 primaryDark = RGBA(0x03, 0x19, 0x1a, 0xee); // 暗い青緑
     const ImVec4 primaryDeep = RGBA(0x02, 0x10, 0x11, 0xff);
 
-    // Accent：オレンジ #FFA100
+    //オレンジ
     const ImVec4 accent = RGBA(0xff, 0xa1, 0x00, 0xee);
     const ImVec4 accentHov = RGBA(0xff, 0xa1, 0x00, 0xcc);
     const ImVec4 accentA99 = RGBA(0xff, 0xa1, 0x00, 0x99);
@@ -261,9 +261,7 @@ void DirectX12Imgui::SetUpStyle()
     c[ImGuiCol_NavWindowingDimBg] = RGBA(0x00, 0x20, 0x20, 0x50);
     c[ImGuiCol_ModalWindowDimBg] = RGBA(0x00, 0x10, 0x10, 0x90);
 
-    // 本文：ほぼ白＋ほんのりシアン、不透明
     const ImVec4 textMain = RGBA(0xE6, 0xFF, 0xFF, 0xFF);
-    // 無効テキスト：以前より明るく（背景に埋もれない程度）
     const ImVec4 textDisabled = RGBA(0x7F, 0xB5, 0xB8, 0xFF);
 
     // hover / active は「暗めのオレンジ」にして、白い文字のコントラストを確保

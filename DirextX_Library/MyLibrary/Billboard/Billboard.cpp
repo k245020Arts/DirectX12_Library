@@ -178,6 +178,7 @@ DirectX::XMMATRIX Billboard::YBillBoardMatrix(const Camera3D* _camera)
 
 DirectX::XMMATRIX Billboard::AllBillBoardMatrix(const Camera3D* _camera)
 {
+	//カメラのアップベクトルを取得
 	const Vector3 cameraUpVecVector3 = _camera->GetUpVec();
 	const DirectX::XMVECTOR cameraUpVec = DirectX::XMVectorSet(cameraUpVecVector3.x, cameraUpVecVector3.y, cameraUpVecVector3.z, 0.0f);
 	const Vector3 cameraPosVec3 = _camera->GetPosition();

@@ -71,6 +71,21 @@ namespace
         out = DirectX::XMQuaternionNormalize(out);
         return true;
     }
+
+    // 2つのポーズを f(0〜1) で混ぜる
+    // 位置・スケールは線形補間、回転は球面線形補間（最短経路）
+    NodePose BlendPose(const NodePose& a, const NodePose& b, float f)
+    {
+        NodePose o;
+
+        DirectX::XMStoreFloat3(&o.scale,DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&a.scale), DirectX::XMLoadFloat3(&b.scale), f));
+
+        DirectX::XMStoreFloat3(&o.translation,DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&a.translation), DirectX::XMLoadFloat3(&b.translation), f));
+
+        DirectX::XMStoreFloat4(&o.rotation,DirectX::XMQuaternionNormalize(DirectX::XMQuaternionSlerp(DirectX::XMLoadFloat4(&a.rotation), DirectX::XMLoadFloat4(&b.rotation), f)));
+
+        return o;
+    }
 }
 
 Animator::Animator(const ModelData& _data)
@@ -85,6 +100,10 @@ Animator::Animator(const ModelData& _data)
     }
 
     AddAnimation(modelData);
+
+    BuildBindPoses();
+    driven.assign(modelData.nodes.size(), 0);
+    BuildChannelBindings();
 }
 
 Animator::~Animator()
@@ -161,7 +180,6 @@ void Animator::UpdateManualPose()
     //ここで、ボーンの位置を原点に戻し、回転させている。
     DirectX::XMStoreFloat4x4(&modelData.nodes[nodeIndex].localTransform, rotation * original);
 }
-
 void Animator::CalculateBoneMatrices()
 {
     for (size_t i = 0; i < modelData.bones.size(); ++i)
@@ -181,10 +199,36 @@ void Animator::CalculateBoneMatrices()
     }
 }
 
-void Animator::Play(int animIndex, bool _loop)
+void Animator::Play(int animIndex, bool _loop, float blendSeconds)
 {
     if (animIndex < 0 || animIndex >= static_cast<int>(modelData.animations.size()))
         return;
+
+    //ループ再生中の同じ動きがもう一度要求されても、最初に戻さない
+    //毎フレーム Play を呼ぶ使い方でも、動きが止まらないようにする
+    if (animIndex == currentAnimation && playing && loop && _loop)
+        return;
+
+    //直前のポーズを保存して、新しい動きへのブレンドを始める
+    //ブレンド中に再度切り替えた場合も、poseOut（混ぜ途中のポーズ）から滑らかにつながる
+    if (blendSeconds > 0.0f && hasPose)
+    {
+        poseFrom = poseOut;
+        blending = true;
+        blendTime = blendSeconds;
+        blendElapsed = 0.0f;
+    }
+    else
+    {
+        blending = false;
+    }
+
+    //この動きが動かすノードを記録する（動かされたノードだけ、成分から行列を組み立てる）
+    for (int nodeIndex : channelNodeIndices[animIndex])
+    {
+        if (nodeIndex >= 0 && nodeIndex < static_cast<int>(driven.size()))
+            driven[nodeIndex] = 1;
+    }
 
     currentAnimation = animIndex;
     currentTick = 0.0;
@@ -195,6 +239,33 @@ void Animator::Play(int animIndex, bool _loop)
 void Animator::AddAnimation(const ModelData& _data)
 {
     modelData = _data;
+
+    // ノード数が変わっていたら（別のモデルが読み込まれた場合など）、ノードに依存するバッファを作り直す
+    if (originalLocalTransforms.size() != modelData.nodes.size())
+    {
+        originalLocalTransforms.clear();
+        for (const auto& node : modelData.nodes)
+        {
+            originalLocalTransforms.push_back(node.localTransform);
+        }
+
+        globalTransforms.resize(modelData.nodes.size());
+        BuildBindPoses();
+        driven.assign(modelData.nodes.size(), 0);
+
+        currentAnimation = -1;
+        playing = false;
+        blending = false;
+        hasPose = false;
+    }
+
+    boneMatrices.resize(modelData.bones.size());
+
+    BuildChannelBindings();
+}
+
+void Animator::BuildChannelBindings()
+{
     std::unordered_map<std::wstring, int> nodeByName;
     for (size_t i = 0; i < modelData.nodes.size(); ++i)
     {
@@ -220,6 +291,107 @@ void Animator::AddAnimation(const ModelData& _data)
     }
 }
 
+void Animator::BuildBindPoses()
+{
+    bindPoses.resize(originalLocalTransforms.size());
+
+    for (size_t i = 0; i < bindPoses.size(); ++i)
+    {
+        Matrix m = DirectX::XMLoadFloat4x4(&originalLocalTransforms[i]);
+
+        DirectX::XMVECTOR s, r, t;
+        if (!DirectX::XMMatrixDecompose(&s, &r, &t, m))
+        {
+            // 分解できない行列（スケール0など）は、位置だけ取り出して他は初期値にする
+            s = DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f);
+            r = DirectX::XMQuaternionIdentity();
+            t = m.r[3];
+        }
+
+        DirectX::XMStoreFloat3(&bindPoses[i].scale, s);
+        DirectX::XMStoreFloat4(&bindPoses[i].rotation, r);
+        DirectX::XMStoreFloat3(&bindPoses[i].translation, t);
+    }
+
+    poseCurrent = bindPoses;
+    poseFrom = bindPoses;
+    poseOut = bindPoses;
+}
+
+void Animator::AdvanceTime(const AnimationData& anim, float deltaTime)
+{
+    if (!playing)
+        return;
+
+    // ticksPerSecond が 0 のときは Assimp の既定値 25 を使う
+    const double tps = (anim.ticksPerSecond > 0.0) ? anim.ticksPerSecond : 25.0;
+
+    currentTick += static_cast<double>(deltaTime) * speed * tps;
+
+    if (anim.duration > 0.0)
+    {
+        if (loop)
+        {
+            currentTick = std::fmod(currentTick, anim.duration);
+        }
+        else if (currentTick >= anim.duration)
+        {
+            currentTick = anim.duration;
+            playing = false;
+        }
+    }
+}
+
+void Animator::SamplePose(const AnimationData& anim, const std::vector<int>& nodeIds, double tick, std::vector<NodePose>& out) const
+{
+    // 全ノードを元の姿勢に戻してから、チャンネルのあるノードだけ上書きする
+    out = bindPoses;
+
+    for (size_t c = 0; c < anim.channels.size(); ++c)
+    {
+        const int nodeIndex = nodeIds[c];
+        if (nodeIndex < 0)
+            continue;
+
+        const BoneChannel& ch = anim.channels[c];
+
+        // キーが無い成分は、元の姿勢の値をそのまま使う
+        DirectX::XMVECTOR s = DirectX::XMLoadFloat3(&out[nodeIndex].scale);
+        DirectX::XMVECTOR r = DirectX::XMLoadFloat4(&out[nodeIndex].rotation);
+        DirectX::XMVECTOR t = DirectX::XMLoadFloat3(&out[nodeIndex].translation);
+
+        SampleVector3(ch.scalingKeys, tick, s);
+        SampleQuotation(ch.rotationKeys, tick, r);
+        SampleVector3(ch.positionKeys, tick, t);
+
+        DirectX::XMStoreFloat3(&out[nodeIndex].scale, s);
+        DirectX::XMStoreFloat4(&out[nodeIndex].rotation, r);
+        DirectX::XMStoreFloat3(&out[nodeIndex].translation, t);
+    }
+}
+
+void Animator::ApplyPoseToNodes(const std::vector<NodePose>& pose)
+{
+    for (size_t i = 0; i < modelData.nodes.size(); ++i)
+    {
+        // 一度も動かされていないノードは、元の行列をそのまま使う
+        // 分解と再構成による誤差や、せん断の欠落を避けるため
+        if (!driven[i])
+        {
+            modelData.nodes[i].localTransform = originalLocalTransforms[i];
+            continue;
+        }
+
+        // SRTの順番で掛ける
+        Matrix local =
+            DirectX::XMMatrixScalingFromVector(DirectX::XMLoadFloat3(&pose[i].scale)) *
+            DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&pose[i].rotation)) *
+            DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&pose[i].translation));
+
+        DirectX::XMStoreFloat4x4(&modelData.nodes[i].localTransform, local);
+    }
+}
+
 void Animator::UpdateAnimation(float deltaTime)
 {
     if (currentAnimation < 0)  //アニメーションが設定されていなければやらない
@@ -227,62 +399,44 @@ void Animator::UpdateAnimation(float deltaTime)
 
     const AnimationData& anim = modelData.animations[currentAnimation];
 
-    // 1. 時間を進める（ticksPerSecond が 0 のときは Assimp の既定値 25 を使う）
-    const double tps = (anim.ticksPerSecond > 0.0) ? anim.ticksPerSecond : 25.0;
+    //時間を進める
+    AdvanceTime(anim, deltaTime);
 
-    if (playing)
+    //今の動きの姿勢を取り出す
+    SamplePose(anim, channelNodeIndices[currentAnimation], currentTick, poseCurrent);
+
+    //ブレンド中なら、切り替え前のポーズと混ぜる
+    if (blending)
     {
-        currentTick += static_cast<double>(deltaTime) * speed * tps;
+        blendElapsed += deltaTime;
 
-        if (anim.duration > 0.0)
+        float f = (blendTime > 0.0f) ? std::clamp(blendElapsed / blendTime, 0.0f, 1.0f) : 1.0f;
+
+        if (f >= 1.0f)
+            blending = false;
+
+        // 混ぜ始めと終わりをなめらかにする（直線のままなら f をそのまま使う）
+        const float w = Easing::SmoothStep<float>(0.0f, 1.0f, f);
+
+        for (size_t i = 0; i < poseOut.size(); ++i)
         {
-            if (loop)
-            {
-                currentTick = std::fmod(currentTick, anim.duration);
-            }
-            else if (currentTick >= anim.duration)
-            {
-                currentTick = anim.duration;
-                playing = false;
-            }
+            poseOut[i] = BlendPose(poseFrom[i], poseCurrent[i], w);
         }
     }
-
-    //全ノードを元の姿勢に戻す
-    //前フレームのポーズが重ね掛けされてモデルが壊れるため
-    for (size_t i = 0; i < modelData.nodes.size(); ++i)
-        modelData.nodes[i].localTransform = originalLocalTransforms[i];
-
-    //チャンネルごとに補間して、ローカル変換を上書き
-    const auto& nodeIds = channelNodeIndices[currentAnimation];
-
-    for (size_t c = 0; c < anim.channels.size(); ++c)
+    else
     {
-        const int nodeIndex = nodeIds[c];
-        if (nodeIndex < 0) 
-            continue;
-
-        const BoneChannel& ch = anim.channels[c];
-
-        // キーが無い成分は、元の姿勢から分解して使う
-        DirectX::XMVECTOR s, r, t;
-        Matrix orig = DirectX::XMLoadFloat4x4(&originalLocalTransforms[nodeIndex]);
-        DirectX::XMMatrixDecompose(&s, &r, &t, orig);
-
-        SampleVector3(ch.scalingKeys, currentTick, s);
-        SampleQuotation(ch.rotationKeys, currentTick, r);
-        SampleVector3(ch.positionKeys, currentTick, t);
-
-        // SRTの順番で掛ける
-        Matrix local = DirectX::XMMatrixScalingFromVector(s) * DirectX::XMMatrixRotationQuaternion(r) * DirectX::XMMatrixTranslationFromVector(t);
-
-        DirectX::XMStoreFloat4x4(&modelData.nodes[nodeIndex].localTransform, local);
+        poseOut = poseCurrent;
     }
+
+    hasPose = true;
+
+    //最終ポーズをノードのローカル変換へ書き込む
+    ApplyPoseToNodes(poseOut);
 }
 
 void Animator::CalculateGlobalTransforms()
 {
-    if (modelData.rootNodeIndex < 0 ||modelData.rootNodeIndex >= static_cast<int>(modelData.nodes.size()))
+    if (modelData.rootNodeIndex < 0 || modelData.rootNodeIndex >= static_cast<int>(modelData.nodes.size()))
     {
         return;
     }
@@ -290,15 +444,15 @@ void Animator::CalculateGlobalTransforms()
     Matrix identity;
     identity = DirectX::XMMatrixIdentity();
 
-    CalculateGlobalTransformsRecursive(modelData.rootNodeIndex,identity);
+    CalculateGlobalTransformsRecursive(modelData.rootNodeIndex, identity);
 }
 
-void Animator::CalculateGlobalTransformsRecursive(int nodeIndex,const Matrix& parentTransform)
+void Animator::CalculateGlobalTransformsRecursive(int nodeIndex, const Matrix& parentTransform)
 {
     const NodeData& node = modelData.nodes[nodeIndex];
 
     Matrix localTransform;
-    localTransform = DirectX::XMLoadFloat4x4(& node.localTransform);
+    localTransform = DirectX::XMLoadFloat4x4(&node.localTransform);
 
     //ローカル変換の後に親の変換を適用
     globalTransforms[nodeIndex] = localTransform * parentTransform;
@@ -306,6 +460,6 @@ void Animator::CalculateGlobalTransformsRecursive(int nodeIndex,const Matrix& pa
     for (uint32_t childIndex : node.children)
     {
         //子供のボーンにも回転を適用させないといけない
-        CalculateGlobalTransformsRecursive(static_cast<int>(childIndex),globalTransforms[nodeIndex]);
+        CalculateGlobalTransformsRecursive(static_cast<int>(childIndex), globalTransforms[nodeIndex]);
     }
 }

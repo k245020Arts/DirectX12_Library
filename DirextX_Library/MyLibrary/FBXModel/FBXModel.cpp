@@ -137,9 +137,9 @@ void FBXModel::Draw()
 	}
 }
 
-void FBXModel::PlayAnimation(int animIndex, bool loop)
+void FBXModel::PlayAnimation(int animIndex, bool loop, float blendSeconds)
 {
-	animator->Play(animIndex, loop);
+	animator->Play(animIndex, loop, blendSeconds);
 }
 
 void FBXModel::StopAnimation()

@@ -12,17 +12,17 @@ Box2D::Box2D()
 
 	// 頂点を4つにして四角形を定義する
 	vertices.resize(4);
-	vertices[0].position = DirectX::XMFLOAT3(-50.0f, 50.0f, 0.0f);
-	vertices[0].color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	vertices[0].position = Vector3(-50.0f, 50.0f, 0.0f);
+	vertices[0].color = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 
-	vertices[1].position = DirectX::XMFLOAT3(50.0f, 50.0f, 0.0f);
-	vertices[1].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	vertices[1].position = Vector3(50.0f, 50.0f, 0.0f);
+	vertices[1].color = Vector4(0.0f, 1.0f, 0.0f, 1.0f);
 
-	vertices[2].position = DirectX::XMFLOAT3(50.0f, -50.0f, 0.0f);
-	vertices[2].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	vertices[2].position = Vector3(50.0f, -50.0f, 0.0f);
+	vertices[2].color = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
-	vertices[3].position = DirectX::XMFLOAT3(-50.0f, -50.0f, 0.0f);
-	vertices[3].color = DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
+	vertices[3].position = Vector3(-50.0f, -50.0f, 0.0f);
+	vertices[3].color = Vector4(1.0f, 0.0f, 1.0f, 1.0f);
 
 	std::vector<uint32_t> indices = { 0, 1, 2, 0, 2, 3 }; // これに書かれている順序で描画する
 

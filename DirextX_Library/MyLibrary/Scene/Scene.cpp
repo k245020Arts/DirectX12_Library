@@ -1,3 +1,5 @@
+//#define ORIGINAL_MOUSE_POINTER
+static const float CLICK_TIME = 0.2f;
 #include "Scene.h"
 #include "../Primitives/Triangle/Triangle.h"
 #include "../Primitives/Box/Box2D.h"
@@ -22,12 +24,11 @@
 #include <algorithm>
 
 
-//#define ORIGINAL_MOUSE_POINTER
+
 //#define ON2D
 //#define ON3D
 #define MODEL
 
-static const float CLICK_TIME = 0.2f;
 
 Scene::Scene()
 {
@@ -94,7 +95,7 @@ Scene::Scene()
 	model = new FBXModel();
 	model->Load(L"data/Walking.fbx", false, true);
 
-	model->LoadAnimation(L"data/Sword And Shield Attack.fbx");
+	model->LoadAnimation(L"data/Idle.fbx");
 	model->LoadAnimation(L"data/Fast Run.fbx");
 
 	model->PlayAnimation(2, true);
@@ -241,12 +242,67 @@ void Scene::Update()
 	if (!model1->GetAnimationPlaying())
 	{
 		if (model1->GetAnimationIndex() == 1) {
-			model1->PlayAnimation(2, false);
+			model1->PlayAnimation(2, false,2.0f);
 		}
 		else {
-			model1->PlayAnimation(1, false);
+			model1->PlayAnimation(1, false, 2.0f);
 		}
 	}
+
+	if (!model->GetAnimationPlaying())
+	{
+		if (model->GetAnimationIndex() == 0) {
+			model->PlayAnimation(2, false);
+		}
+		else {
+			model->PlayAnimation(0, false);
+		}
+	}
+
+	Matrix matrix = Matrix::Rotation(model->GetTransform().rotation);
+
+	bool isMove = false;
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::W)) {
+		isMove = true;
+		model->GetTransform().position += matrix.TransformDirection(Vector3(0.0f, 0.0f, 2.0f));
+	}
+
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::A)) {
+		isMove = true;
+		model->GetTransform().position += matrix.TransformDirection(Vector3(-2.0f, 0.0f, 2.0f));
+	}
+
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::S)) {
+		isMove = true;
+		model->GetTransform().position += matrix.TransformDirection(Vector3(0.0f, 0.0f, -2.0f));
+	}
+
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::D)) {
+		isMove = true;
+		model->GetTransform().position += matrix.TransformDirection(Vector3(2.0f, 0.0f, 0.0f));
+	}
+
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::Left)) {
+		model->GetTransform().rotation.y += -0.02f;
+	}
+
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::Right)) {
+		model->GetTransform().rotation.y += 0.02f;
+	}
+
+	if (isMove) {
+		if (InputManager::GetInstance()->GetKeyInput(KeyCode::Shift)) {
+			model->PlayAnimation(2, true,0.0f);
+		}
+		else {
+			model->PlayAnimation(0, true, 0.0f);
+		}
+	}
+	else {
+		model->PlayAnimation(1, true, 0.0f);
+	}
+	
+
 #endif // DEBUG
 
 	
@@ -359,6 +415,8 @@ void Scene::Update()
 	}
 #endif
 
+#ifdef IMGUI
+
 	// デモウィンドウの表示フラグ（static変数で状態を保持）
 	static bool show_demo_window = false;
 
@@ -378,6 +436,9 @@ void Scene::Update()
 	ImGui::Checkbox("Show ImGui Demo Window", &show_demo_window);
 
 	ImGui::End(); // ウィンドウの終了
+#endif // IMGUI
+
+	
 }
 
 void Scene::Draw()

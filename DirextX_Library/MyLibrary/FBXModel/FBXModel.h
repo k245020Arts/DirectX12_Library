@@ -72,7 +72,7 @@ public:
 
 	Transform& GetTransform() { return transform; }
 
-	void PlayAnimation(int animIndex, bool loop = true);
+	void PlayAnimation(int animIndex, bool loop = true, float blendSeconds = 0.2f);
 	void StopAnimation();
 	void SetAnimationSpeed(float s);
 
