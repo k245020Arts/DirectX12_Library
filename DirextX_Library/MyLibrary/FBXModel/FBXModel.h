@@ -124,6 +124,13 @@ public:
 	void AttachToNode(FBXModel* parent, const std::wstring& nodeName);
 	void Detach();
 
+	void SetColor(const Vector3& _color);
+	void SetColor(const Rgb& _rgb);
+
+	void SetBlendMode(BlendState _blendState);
+
+	void SetAlpha(float _alphaValue);
+
 private:
 
 	void Init();
@@ -167,5 +174,5 @@ private:
 	int       attachNode = -1;
 	std::vector<FBXModel*> attachedChildren;     // Ž©•ª‚ÉŽæ‚è•t‚¢‚Ä‚¢‚éƒ‚ƒfƒ‹
 
-
+	Vector3 baseColor;
 };

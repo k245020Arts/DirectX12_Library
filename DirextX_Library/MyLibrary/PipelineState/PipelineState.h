@@ -17,7 +17,7 @@ public:
 	void SetPS(std::wstring _filePath, std::string _entryPoint); // ピクセルシェーダーを設定
 	void Create(); // パイプラインステートを生成
 	
-
+	void ErrorStateChange();
 	void SetDrawLayOut(D3D12_FILL_MODE _fillMode);
 	void SetBlendMode(BlendState _state);
 
@@ -32,6 +32,7 @@ private:
 	ComPtr<ID3D12PipelineState> mulPipelineState = nullptr; // パイプラインステート
 	ComPtr<ID3D12PipelineState> subPipelineState = nullptr; // パイプラインステート
 	ComPtr<ID3D12PipelineState> currentPipelineState = nullptr; // パイプラインステート
+	ComPtr<ID3D12PipelineState> errorPipelineState = nullptr; // パイプラインステート
 	ComPtr<ID3DBlob> pVSBlob; // 頂点シェーダー
 	ComPtr<ID3DBlob> pPSBlob; // ピクセルシェーダー
 	ComPtr<ID3DBlob> errorBlob; // エラー検出用
@@ -42,5 +43,6 @@ private:
 	void CreateMulPipelineState(); // パイプラインステートを生成
 	void CreateAddPipelineState(); // パイプラインステートを生成
 	void CreateSubPipelineState(); // パイプラインステートを生成
+	void CreateErrorPipelineState();
 };
 

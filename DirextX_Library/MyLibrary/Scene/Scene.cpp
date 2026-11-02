@@ -93,6 +93,11 @@ Scene::Scene()
 
 #ifdef MODEL
 	//L"data/Alicia/FBX/Alicia_solid_Unity.FBX"
+	/*texture2D1 = new Texture2D();
+	auto texresult = texture2D1->Load("data/textest.png");
+
+	texture2D1->GetTransform().position = Vector3(1000, 200, 0);*/
+
 	model = new FBXModel();
 	model->Load(L"data/Walking.fbx", false, true);
 
@@ -126,14 +131,16 @@ Scene::Scene()
 
 	hand = new FBXModel();
 
+	//hand->Load("data/Sword.fbx");
 	hand->Load("data/motion.fbx");
 
 	// キャラクターの右手に取り付ける
 	hand->AttachToNode(model, L"mixamorig:LeftHand");
 
 	// 手のノードから見たオフセット（握りの位置・向きの調整）
-	hand->GetTransform().position = Vector3(0.0f, 8.0f, 2.0f);
-	hand->GetTransform().rotation = Vector3(0.0f, 0.0f, DirectX::XMConvertToRadians(-90.0f));
+	//hand->GetTransform().position = Vector3(63.3f, -76.08f, 41.305f);
+	hand->GetTransform().position = Vector3(0.0f, -0.0f, 0.0f);
+	hand->GetTransform().rotation = Vector3(0.0f, 0.0f, 0.0f);
 	hand->GetTransform().scale = Vector3(1.0f, 1.0f, 1.0f);
 
 	// 腕や脚（TwoBone）
@@ -153,6 +160,9 @@ Scene::Scene()
 	model->SetIKHinge(legIK, 1, Vector3(1, 0, 0), 0.0f, DirectX::XMConvertToRadians(130.0f));
 
 	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Color::RGBToVector3(WHITE)));
+
+	model->SetBlendMode(BlendState::ALPHA);
+	model->SetAlpha(0.5f);
 #endif // MODEL
 
 	
@@ -277,6 +287,8 @@ void Scene::Update()
 	ImGui::Begin("IK");
 	ImGui::SliderFloat3("target", target, -300.0f, 300.0f);
 	ImGui::SliderFloat("weight", &weight, 0.0f, 1.0f);
+
+	ImGui::SliderFloat3("hand", &hand->GetTransform().position.x, -300.0f, 300.0f);
 	ImGui::End();
 
 	model->SetIKTarget(legIK, Vector3(target[0], target[1], target[2]), weight);

@@ -76,7 +76,7 @@ static std::wstring ResolveTexturePath(const std::wstring& modelFile, const std:
             return it->path().wstring(); //見つかれば
     }
 
-    return L"404_NotFound_Texture_Path"; //最後まで探して見つからなければテクスチャが見つからない
+    return L"404_NotFound_Texture_Path.err"; //最後まで探して見つからなければテクスチャが見つからない
 }
 
 ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
@@ -288,6 +288,13 @@ void AssimpLoader::LoadTexture(const wchar_t* filename, Mesh& dst, const aiMater
 
         dst.DiffuseMap = ResolveTexturePath(filename, p);
 
+        if (dst.DiffuseMap == L"404_NotFound_Texture_Path.err") {
+            textureLoader = false;
+        }
+        else {
+            textureLoader = true;
+        }
+
         if (dst.DiffuseMap.empty())
             OutputDebugStringA(("[Texture] 見つかりません: " + p + "\n").c_str());
         else
@@ -296,6 +303,7 @@ void AssimpLoader::LoadTexture(const wchar_t* filename, Mesh& dst, const aiMater
     else
     {
         dst.DiffuseMap.clear();
+        textureLoader = false;
     }
 }
 

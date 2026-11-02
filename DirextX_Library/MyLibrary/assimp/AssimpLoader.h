@@ -32,6 +32,7 @@ public:
     ResultErrorHandle::ErrorCode  LoadAnimation(const std::string& _filePath, ModelData& _model);
     ResultErrorHandle::ErrorCode  LoadAnimation(const std::wstring& _filePath, ModelData& _model);
 
+    bool GetTextureLoader() { return textureLoader; }
 private:
     void LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool inverseV);
     void LoadTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src);
@@ -39,4 +40,6 @@ private:
     ResultErrorHandle::ErrorCode  LoadBones(Mesh& dst, const aiMesh* src, ModelData& model);
     int LoadNodeHierarchy(const aiNode* src, int parentIndex, ModelData& model);
     void ApplyStaticMeshNodeTransforms(ModelData& model);
+
+    bool textureLoader = false;
 };

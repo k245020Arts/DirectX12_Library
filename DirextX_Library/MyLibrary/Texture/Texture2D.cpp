@@ -132,6 +132,9 @@ ResultErrorHandle Texture2D::Load(std::string _path)
 	}
 
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/2DTextureShader/2DTextureVertexShader.hlsl", "TexVsMain", L"Shader/2DTextureShader/2DTexturePixelShader.hlsl", "TexPsMain");
+	if (!handle.IsSuccess()) {
+		pipelineState->ErrorStateChange();
+	}
 	return handle;
 }
 

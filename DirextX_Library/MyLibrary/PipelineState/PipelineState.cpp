@@ -87,9 +87,15 @@ void PipelineState::Create()
 	CreateAddPipelineState();
 	CreateSubPipelineState();
 	CreateAlphaPipelineState();
+	CreateErrorPipelineState();
 
 	currentPipelineState = defalutPipelineState;
 	success = true;
+}
+
+void PipelineState::ErrorStateChange()
+{
+	currentPipelineState = errorPipelineState;
 }
 
 void PipelineState::SetDrawLayOut(D3D12_FILL_MODE _fillMode)
@@ -150,6 +156,9 @@ void PipelineState::CreateAlphaPipelineState()
 	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
 	desc.BlendState.IndependentBlendEnable = false;
 	desc.BlendState.AlphaToCoverageEnable = false;
+	//半透明用に、深度バッファへの書き込みだけを「禁止（ZERO）」にする
+	desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	desc.DepthStencilState.DepthEnable = true;
 
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(alphaPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
@@ -180,6 +189,7 @@ void PipelineState::CreateMulPipelineState()
 	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
 	desc.BlendState.IndependentBlendEnable = false;
 	desc.BlendState.AlphaToCoverageEnable = false;
+	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // 深度ステンシルはデフォルトを使う
 
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(mulPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
@@ -210,6 +220,7 @@ void PipelineState::CreateAddPipelineState()
 	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
 	desc.BlendState.IndependentBlendEnable = false;
 	desc.BlendState.AlphaToCoverageEnable = false;
+	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // 深度ステンシルはデフォルトを使う
 
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(addPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
@@ -222,6 +233,17 @@ void PipelineState::CreateAddPipelineState()
 void PipelineState::CreateSubPipelineState()
 {
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(subPipelineState.ReleaseAndGetAddressOf()));
+	if (FAILED(hr))
+	{
+		OutputDebugStringW(L"パイプラインステートの生成に失敗");
+		return;
+	}
+}
+
+void PipelineState::CreateErrorPipelineState()
+{
+	SetPS(L"Shader/ErrorShader/ErrorPixelShader.hlsl", "ErrorMain");
+	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(errorPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
 	{
 		OutputDebugStringW(L"パイプラインステートの生成に失敗");

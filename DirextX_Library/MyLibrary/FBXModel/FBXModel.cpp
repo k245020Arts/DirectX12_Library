@@ -113,6 +113,9 @@ ResultErrorHandle FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, boo
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/FBXModelShader/FBXModelVertexShader.hlsl", "BasicVS_FBX", L"Shader/FBXModelShader/FBXModelPixelShader.hlsl", "BasicPS_FBX");
 	//SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
+	if (!loader.GetTextureLoader()) {
+		pipelineState->ErrorStateChange();
+	}
 	return handle;
 }
 
@@ -392,7 +395,7 @@ void FBXModel::Init()
 		auto texPath = modelData.meshes[i].DiffuseMap;
 		if (!modelData.meshes[i].DiffuseMap.empty()) {
 			if (GetExtension(modelData.meshes[i].DiffuseMap) == TexExtension::PSD) {
-				texPath = ReplaceExtension(modelData.meshes[i].DiffuseMap, "tga"); //psdの場合はtgaとして扱う
+				texPath = ReplaceExtension(modelData.meshes[i].DiffuseMap, "png"); //psdの場合はtgaとして扱う
 			}
 		}
 		ResultErrorHandle::ErrorCode errorHandle = TextureLoader::GetInstance()->Load(texPath);
@@ -524,4 +527,60 @@ void FBXModel::Detach()
 	}
 	attachParent = nullptr;
 	attachNode = -1;
+}
+
+void FBXModel::SetBlendMode(BlendState _blendState)
+{
+	pipelineState->SetBlendMode(_blendState);
+}
+
+void FBXModel::SetAlpha(float _alphaValue)
+{
+	const float alpha = _alphaValue >= 1.0f ? 1.0f : _alphaValue;
+	// メッシュごとに頂点カラーを変更
+	for (size_t i = 0; i < modelData.meshes.size(); ++i)
+	{
+		auto& meshVertices = modelData.meshes[i].Vertices;
+
+		for (auto& vertex : meshVertices)
+		{
+			vertex.color.w = alpha;
+		}
+
+		// 対応する頂点バッファへ反映
+		if (i < vertexBuffer.size() && vertexBuffer[i])
+		{
+			vertexBuffer[i]->BufferMapping(meshVertices.data());
+		}
+	}
+}
+
+void FBXModel::SetColor(const Rgb& _rgb)
+{
+	SetColor(Color::RGBToVector3(_rgb));
+}
+
+void FBXModel::SetColor(const Vector3& _color)
+{
+	// メッシュごとに頂点カラーを変更
+	for (size_t i = 0; i < modelData.meshes.size(); ++i)
+	{
+		auto& meshVertices = modelData.meshes[i].Vertices;
+
+		for (auto& vertex : meshVertices)
+		{
+			// RGBのみ変更してアルファ値は維持する
+			vertex.color.x = _color.x;
+			vertex.color.y = _color.y;
+			vertex.color.z = _color.z;
+		}
+
+		// 対応する頂点バッファへ反映
+		if (i < vertexBuffer.size() && vertexBuffer[i])
+		{
+			vertexBuffer[i]->BufferMapping(meshVertices.data());
+		}
+	}
+
+	baseColor = _color;
 }
