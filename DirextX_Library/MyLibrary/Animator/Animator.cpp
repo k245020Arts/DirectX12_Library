@@ -113,19 +113,27 @@ Animator::~Animator()
 void Animator::Update(float deltaTime)
 {
     //ノードのローカル変換を更新
-    //UpdateManualPose();
+   //UpdateManualPose();
 
     if (currentAnimation >= 0)
+    {
         UpdateAnimation(deltaTime);
-
+    }
+    else if (!ikChains.empty())
+    {
+        // アニメーションが無いときも、IKの結果が毎フレーム重なっていかないよう、元の姿勢に戻す
+        for (size_t i = 0; i < modelData.nodes.size(); ++i)
+            modelData.nodes[i].localTransform = originalLocalTransforms[i];
+    }
 
     //ノード階層からグローバル変換を計算
     CalculateGlobalTransforms();
+
+    // FKの結果に、IKで補正をかける（内部で必要に応じてグローバル変換を再計算する）
+    ApplyIK();
+
     // グローバル変換からボーン行列を計算
     CalculateBoneMatrices();
-
-    // モーション実装後は、こちらに切り替える
-    // UpdateAnimation(deltaTime);
 }
 
 void Animator::UpdateBonePose()
@@ -234,6 +242,50 @@ void Animator::Play(int animIndex, bool _loop, float blendSeconds)
     currentTick = 0.0;
     loop = _loop;
     playing = true;
+}
+
+const std::wstring& Animator::GetNodeName(int nodeIndex) const
+{
+    static const std::wstring empty;
+
+    if (nodeIndex < 0 || nodeIndex >= static_cast<int>(modelData.nodes.size()))
+        return empty;
+
+    return modelData.nodes[nodeIndex].name;
+}
+
+int Animator::GetNodeIndex(const std::wstring& nodeName) const
+{
+    return FindNode(nodeName);       // AnimatorIK.cpp で定義済み
+}
+
+Matrix Animator::GetNodeModelMatrix(int nodeIndex) const
+{
+    if (nodeIndex < 0 || nodeIndex >= static_cast<int>(globalTransforms.size()))
+        return Matrix::Identity();
+
+    // CalculateBoneMatrices と同じ空間へ: ノード階層の空間 → モデルのローカル空間
+    return globalTransforms[nodeIndex] * modelData.globalInverseTransform;
+}
+
+Matrix Animator::GetNodeModelMatrix(const std::wstring& nodeName) const
+{
+    return GetNodeModelMatrix(FindNode(nodeName));
+}
+
+Vector3 Animator::GetNodeModelPosition(int nodeIndex) const
+{
+    const Matrix m = GetNodeModelMatrix(nodeIndex);
+
+    // 行ベクトル規約なので、位置は行列の4行目
+    DirectX::XMFLOAT3 p;
+    DirectX::XMStoreFloat3(&p, m.r[3]);
+    return Vector3(p.x, p.y, p.z);
+}
+
+Vector3 Animator::GetNodeModelPosition(const std::wstring& nodeName) const
+{
+    return GetNodeModelPosition(FindNode(nodeName));
 }
 
 void Animator::AddAnimation(const ModelData& _data)

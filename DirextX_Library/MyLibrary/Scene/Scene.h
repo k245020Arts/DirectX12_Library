@@ -73,4 +73,9 @@ private:
 
 	float cameraYaw;
 	float cameraPitch;
+
+	FBXModel* hand;
+
+	float speedUP;
+	int legIK = 0;
 };

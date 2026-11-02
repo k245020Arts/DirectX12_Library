@@ -11,17 +11,49 @@
 #include "../Camera3D/Camera3D.h"
 #include "../Animator/Animator.h"
 #include "../Time/DeltaTime.h"
-
 #include <filesystem>
+
 namespace fs = std::filesystem;
-std::wstring ReplaceExtension(const std::wstring& origin, const char* ext)
-{
-	fs::path p = origin.c_str();
-	return p.replace_extension(ext).c_str();
+namespace {
+	std::wstring ReplaceExtension(const std::wstring& origin, const char* ext)
+	{
+		fs::path p = origin.c_str();
+		return p.replace_extension(ext).c_str();
+	}
+
+	// VertexMapping と同じ式のワールド行列
+	Matrix MakeWorldMatrix(const Transform& t)
+	{
+		return Matrix::Scale(t.scale)
+			* Matrix::Rotation(t.rotation)
+			* Matrix::Translation(t.position);
+	}
+
+	Vector3 ToModelLocal(const Matrix& world, const Vector3& worldPos)
+	{
+		const DirectX::XMVECTOR p = DirectX::XMVector3TransformCoord(
+			DirectX::XMLoadFloat3(&worldPos),
+			DirectX::XMMatrixInverse(nullptr, world));
+
+		DirectX::XMFLOAT3 out;
+		DirectX::XMStoreFloat3(&out, p);
+		return out;
+	}
 }
 
 FBXModel::FBXModel()
 {
+	Detach();                                    // 自分が誰かに付いているなら外れる
+
+	for (FBXModel* child : attachedChildren)     // 自分に付いているものを、取り外す
+	{
+		if (child)
+		{
+			child->attachParent = nullptr;
+			child->attachNode = -1;
+		}
+	}
+
 	animator = nullptr;
 }
 
@@ -157,9 +189,106 @@ bool FBXModel::GetAnimationPlaying()
 	return animator->GetPlaying();
 }
 
+
+Matrix FBXModel::GetNodeWorldMatrix(const std::wstring& nodeName) const
+{
+	if (!animator)
+		return BuildWorldMatrix();
+
+	// モデルのローカル → ワールド（行ベクトル: ローカル × ワールド行列）
+	return animator->GetNodeModelMatrix(nodeName) * BuildWorldMatrix();
+}
+
+Vector3 FBXModel::GetNodeWorldPosition(const std::wstring& nodeName) const
+{
+	const Matrix m = GetNodeWorldMatrix(nodeName);
+
+	Vector3 p;
+	DirectX::XMStoreFloat3(&p, m.r[3]);
+	return Vector3(p.x, p.y, p.z);
+}
+
+int FBXModel::GetNodeIndex(const std::wstring& nodeName) const
+{
+	return animator ? animator->GetNodeIndex(nodeName) : -1;
+}
+
+const std::wstring& FBXModel::GetNodeName(int nodeIndex) const
+{
+	static const std::wstring empty;
+	return animator ? animator->GetNodeName(nodeIndex) : empty;
+}
+
+int FBXModel::GetNodeCount() const
+{
+	return animator ? animator->GetNodeCount() : 0;
+}
+
 int FBXModel::GetAnimationIndex()
 {
 	return animator->GetAnimationIndex();
+}
+
+// ---------------- IK ----------------
+
+int FBXModel::AddIK(const std::wstring& name, IKSolverType type, const std::vector<std::wstring>& nodeNames)
+{
+	return animator ? animator->AddIK(name, type, nodeNames) : -1;
+}
+
+int FBXModel::FindIK(const std::wstring& name) const
+{
+	return animator ? animator->FindIK(name) : -1;
+}
+
+void FBXModel::SetIKTarget(int ikId, const Vector3& worldPos, float weight)
+{
+	if (animator) animator->SetIKTarget(ikId, ToModelLocal(BuildWorldMatrix(), worldPos), weight);
+}
+
+void FBXModel::SetIKTargetNode(int ikId, const std::wstring& nodeName, float weight)
+{
+	if (animator) animator->SetIKTargetNode(ikId, nodeName, weight);
+}
+
+void FBXModel::SetIKPole(int ikId, const Vector3& worldPos)
+{
+	if (animator) animator->SetIKPole(ikId, ToModelLocal(BuildWorldMatrix(), worldPos));
+}
+
+void FBXModel::SetIKPoleNode(int ikId, const std::wstring& nodeName)
+{
+	if (animator) animator->SetIKPoleNode(ikId, nodeName);
+}
+
+void FBXModel::ClearIKPole(int ikId)
+{
+	if (animator) animator->ClearIKPole(ikId);
+}
+
+void FBXModel::SetIKHinge(int ikId, int linkIndex, const Vector3& boneLocalAxis, float minAngle, float maxAngle)
+{
+	if (animator) animator->SetIKHinge(ikId, linkIndex, boneLocalAxis, minAngle, maxAngle);
+}
+
+void FBXModel::SetIKWeight(int ikId, float weight)
+{
+	if (animator) animator->SetIKWeight(ikId, weight);
+}
+
+void FBXModel::SetIKEnabled(int ikId, bool enabled)
+{
+	if (animator) animator->SetIKEnabled(ikId, enabled);
+}
+
+float FBXModel::GetIKHingeAngle(int ikId, int linkIndex) const
+{
+	return animator ? animator->GetIKHingeAngle(ikId, linkIndex) : 0.0f;
+}
+
+IKChain* FBXModel::GetIK(int ikId)
+{
+	return animator ? animator->GetIK(ikId) : nullptr;
 }
 
 void FBXModel::Init()
@@ -295,10 +424,7 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 	Vector3 rotation = transform.rotation;
 	Vector3 position = transform.position;
 
-	// ワールド行列の計算
-	Matrix world = Matrix::Scale(scale)
-		* Matrix::Rotation(rotation)
-		* Matrix::Translation(position);
+	Matrix world = BuildWorldMatrix();
 
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
@@ -322,4 +448,70 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 			DirectX::XMStoreFloat4x4(&bone->bones[j],matrices[j]);
 		}
 	}
+}
+
+Matrix FBXModel::BuildWorldMatrix() const
+{
+	Matrix world = Matrix::Scale(transform.scale) * Matrix::Rotation(transform.rotation) * Matrix::Translation(transform.position);
+
+	// 取り付けられているなら、親のノードの姿勢を掛ける
+	if (attachParent)
+		world = world * attachParent->GetSocketMatrix(attachNode);
+
+	return world;
+}
+
+Matrix FBXModel::GetSocketMatrix(int nodeIndex) const
+{
+	if (!animator)
+		return BuildWorldMatrix();
+
+	const Matrix model = animator->GetNodeModelMatrix(nodeIndex);
+
+	// スケールを取り除く（剣がボーンのスケールで伸び縮みしないように）
+	Matrix rigid = model;
+	DirectX::XMVECTOR s, r, t;
+	if (DirectX::XMMatrixDecompose(&s, &r, &t, model))
+	{
+		rigid = DirectX::XMMatrixRotationQuaternion(r) * DirectX::XMMatrixTranslationFromVector(t);
+	}
+
+	// 親自身のワールド行列（親のスケールは、そのまま武器にも掛かる）
+	return rigid * BuildWorldMatrix();
+}
+
+void FBXModel::AttachToNode(FBXModel* parent, const std::wstring& nodeName)
+{
+	Detach();
+
+	if (!parent || parent == this)
+		return;
+
+	// 循環（AがBに、BがAに取り付く）を防ぐ
+	for (const FBXModel* p = parent; p; p = p->attachParent) {
+		if (p == this)
+			return;
+	}
+
+	const int node = parent->GetNodeIndex(nodeName);
+	if (node < 0)
+	{
+		OutputDebugStringW((L"AttachToNode: ノードが見つかりません: " + nodeName + L"\n").c_str());
+		return;
+	}
+
+	attachParent = parent;
+	attachNode = node;
+	parent->attachedChildren.push_back(this);
+}
+
+void FBXModel::Detach()
+{
+	if (attachParent)
+	{
+		auto& v = attachParent->attachedChildren;
+		v.erase(std::remove(v.begin(), v.end(), this), v.end());
+	}
+	attachParent = nullptr;
+	attachNode = -1;
 }

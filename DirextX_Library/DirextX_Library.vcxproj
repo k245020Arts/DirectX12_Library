@@ -157,6 +157,7 @@
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="KLibrary\File\FileExplorer\FileExplorer.cpp" />
     <ClCompile Include="KLibrary\File\FileSystemUtils\FileSystemUtils.cpp" />
+    <ClCompile Include="MyLibrary\Animator\AnimatorIK.cpp" />
     <ClCompile Include="MyLibrary\Application\Application.cpp" />
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp" />
     <ClCompile Include="MyLibrary\Billboard\Billboard.cpp" />

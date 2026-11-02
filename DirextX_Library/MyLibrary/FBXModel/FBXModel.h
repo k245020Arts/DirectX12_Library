@@ -12,6 +12,8 @@ class RootSignature;
 class IndexBuffer;
 class Animator;
 
+struct IKChain;
+
 struct DescriptorHandle;
 
 struct NodeData
@@ -42,6 +44,13 @@ struct ModelData
 
 	// ルートノードの逆行列
 	Matrix globalInverseTransform;
+};
+
+// IKソルバーの種類
+enum class IKSolverType
+{
+	TwoBone,	// 余弦定理。腕・脚向け（ノードをちょうど3つ指定する）
+	CCD,		// 反復法。首・背骨・尻尾など、2関節以上の鎖向け
 };
 
 static constexpr int BONE_MAX = 1024;
@@ -79,6 +88,42 @@ public:
 	int GetAnimationIndex();
 	bool GetAnimationPlaying();
 
+	// ---- ノード情報（ワールド空間）----
+	// 直近の Update の結果。他のモデルのノードを目標にするなら、そのモデルの Update を先に済ませておくこと
+	Matrix  GetNodeWorldMatrix(const std::wstring& nodeName) const;
+	Vector3 GetNodeWorldPosition(const std::wstring& nodeName) const;
+	int     GetNodeIndex(const std::wstring& nodeName) const;
+	const std::wstring& GetNodeName(int nodeIndex) const;
+	int     GetNodeCount() const;
+
+	// ---------------- IK ----------------
+	// nodeNames: 付け根 → 先端 の順のノード名（TwoBone は3つ、CCD は2つ以上）
+	// 戻り値は IK の ID。失敗したら -1
+	int  AddIK(const std::wstring& name, IKSolverType type, const std::vector<std::wstring>& nodeNames);
+	int  FindIK(const std::wstring& name) const;
+
+	// 目標をワールド座標で指定する。weight: 0 = FKのまま、1 = 完全にIK
+	void SetIKTarget(int ikId, const Vector3& worldPos, float weight);
+	// 別のノード（IKボーンなど）の位置を目標にする（MMDのIKボーン方式）
+	void SetIKTargetNode(int ikId, const std::wstring& nodeName, float weight);
+	// 肘・膝が出る側の目安（TwoBone のみ）
+	void SetIKPole(int ikId, const Vector3& worldPos);
+	void SetIKPoleNode(int ikId, const std::wstring& nodeName);
+	void ClearIKPole(int ikId);
+	// linkIndex 番目の関節を蝶番にする（軸はボーンのローカル軸。角度はバインド姿勢からの値で、ラジアン）
+	void SetIKHinge(int ikId, int linkIndex, const Vector3& boneLocalAxis, float minAngle, float maxAngle);
+	void SetIKWeight(int ikId, float weight);
+	void SetIKEnabled(int ikId, bool enabled);
+	// 蝶番の現在の角度（ラジアン）。可動範囲を決めるときの確認用
+	float GetIKHingeAngle(int ikId, int linkIndex) const;
+	// CCD の iterations など、細かい設定が必要なとき（Animator.h の IKChain を参照）
+	IKChain* GetIK(int ikId);
+
+	// 別のFBXModelのノード（手など）に取り付ける。
+	// このモデルの transform は、そのノードから見たオフセットになる
+	void AttachToNode(FBXModel* parent, const std::wstring& nodeName);
+	void Detach();
+
 private:
 
 	void Init();
@@ -112,5 +157,15 @@ private:
 	std::vector<DescriptorHandle*> materialHandles; // テクスチャ用のハンドル一覧
 
 	void VertexMapping(const Camera3D* _camera)override;
+
+	// 取り付けも含めた、ワールド行列
+	Matrix BuildWorldMatrix() const;
+	// ノードのワールド空間での姿勢（スケールなし）
+	Matrix GetSocketMatrix(int nodeIndex) const;
+
+	FBXModel* attachParent = nullptr;
+	int       attachNode = -1;
+	std::vector<FBXModel*> attachedChildren;     // 自分に取り付いているモデル
+
 
 };

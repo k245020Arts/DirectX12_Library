@@ -22,7 +22,7 @@ static const float CLICK_TIME = 0.2f;
 #include "../Billboard/Billboard.h"
 #include "../Input/InputManager.h"
 #include <algorithm>
-
+#include "../Animator/Animator.h"
 
 
 //#define ON2D
@@ -116,6 +116,34 @@ Scene::Scene()
 	model2->Load(L"data/Dragon 2.5_fbx.fbx", false, true);
 
 	model2->GetTransform().position.x -= 150.0f;
+
+	hand = new FBXModel();
+
+	hand->Load("data/motion.fbx");
+
+	// キャラクターの右手に取り付ける
+	hand->AttachToNode(model, L"mixamorig:LeftHand");
+
+	// 手のノードから見たオフセット（握りの位置・向きの調整）
+	hand->GetTransform().position = Vector3(0.0f, 8.0f, 2.0f);
+	hand->GetTransform().rotation = Vector3(0.0f, 0.0f, DirectX::XMConvertToRadians(-90.0f));
+	hand->GetTransform().scale = Vector3(1.0f, 1.0f, 1.0f);
+
+	// 腕や脚（TwoBone）
+	legIK = model->AddIK(L"leftLeg", IKSolverType::TwoBone,
+		{ L"mixamorig:LeftUpLeg", L"mixamorig:LeftLeg", L"mixamorig:LeftFoot" });
+
+	model->SetIKTarget(legIK, Vector3(100, 0, 50), 1.0f);    // ワールド座標の目標へ
+	model->SetIKPole(legIK, Vector3(100, 50, 200));          // 膝を向ける側（任意）
+	model->SetIKWeight(legIK, 0.0f);                          // FKのままへ戻す
+
+	// 首や尻尾（CCD）
+	//int tailIK = model->AddIK(L"tail", IKSolverType::CCD, { L"tail_1", L"tail_2", L"tail_3", L"tail_4" });
+	//model->SetIKTargetNode(tailIK, L"IK_Target_Kopf", 1.0f);  // 別のノードの位置を目標に
+	//model->GetIK(tailIK)->iterations = 15;                    // 細かい設定
+
+	// 蝶番の制限（例: 膝）
+	model->SetIKHinge(legIK, 1, Vector3(1, 0, 0), 0.0f, DirectX::XMConvertToRadians(130.0f));
 
 	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Vector3(1.0f, 0.0f, 0.0f)));
 #endif // MODEL
@@ -234,6 +262,19 @@ void Scene::Update()
 #endif //  ON2D
 
 #ifdef MODEL
+#ifdef IMGUI
+	static float target[3] = { 100.0f, 150.0f, 50.0f };
+	static float weight = 0.0f;
+
+	ImGui::Begin("IK");
+	ImGui::SliderFloat3("target", target, -300.0f, 300.0f);
+	ImGui::SliderFloat("weight", &weight, 0.0f, 1.0f);
+	ImGui::End();
+
+	model->SetIKTarget(legIK, Vector3(target[0], target[1], target[2]), weight);
+#endif
+
+	//model->SetIKHinge(legIK, 1, Vector3(1, 0, 0), 0.0f, DirectX::XMConvertToRadians(130.0f));
 	/*model->GetTransform().rotation.y += 0.007f;
 	model1->GetTransform().rotation.y += 0.005f;*/
 	model2->GetTransform().rotation.y += 0.003f;
@@ -264,22 +305,22 @@ void Scene::Update()
 	bool isMove = false;
 	if (InputManager::GetInstance()->GetKeyInput(KeyCode::W)) {
 		isMove = true;
-		model->GetTransform().position += matrix.TransformDirection(Vector3(0.0f, 0.0f, 2.0f));
+		model->GetTransform().position += matrix.TransformDirection(Vector3(0.0f, 0.0f, 2.0f + speedUP));
 	}
 
 	if (InputManager::GetInstance()->GetKeyInput(KeyCode::A)) {
 		isMove = true;
-		model->GetTransform().position += matrix.TransformDirection(Vector3(-2.0f, 0.0f, 2.0f));
+		model->GetTransform().position += matrix.TransformDirection(Vector3(-2.0f - speedUP, 0.0f, 2.0f));
 	}
 
 	if (InputManager::GetInstance()->GetKeyInput(KeyCode::S)) {
 		isMove = true;
-		model->GetTransform().position += matrix.TransformDirection(Vector3(0.0f, 0.0f, -2.0f));
+		model->GetTransform().position += matrix.TransformDirection(Vector3(0.0f, 0.0f, -2.0f - speedUP));
 	}
 
 	if (InputManager::GetInstance()->GetKeyInput(KeyCode::D)) {
 		isMove = true;
-		model->GetTransform().position += matrix.TransformDirection(Vector3(2.0f, 0.0f, 0.0f));
+		model->GetTransform().position += matrix.TransformDirection(Vector3(2.0f + speedUP, 0.0f, 0.0f));
 	}
 
 	if (InputManager::GetInstance()->GetKeyInput(KeyCode::Left)) {
@@ -292,16 +333,22 @@ void Scene::Update()
 
 	if (isMove) {
 		if (InputManager::GetInstance()->GetKeyInput(KeyCode::Shift)) {
-			model->PlayAnimation(2, true,0.0f);
+			model->PlayAnimation(2, true,0.2f);
 		}
 		else {
-			model->PlayAnimation(0, true, 0.0f);
+			model->PlayAnimation(0, true, 0.2f);
 		}
 	}
 	else {
-		model->PlayAnimation(1, true, 0.0f);
+		model->PlayAnimation(1, true, 0.2f);
 	}
 	
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::Shift)) {
+		speedUP = 2.0f;
+	}
+	else {
+		speedUP = 0.0f;
+	}
 
 #endif // DEBUG
 

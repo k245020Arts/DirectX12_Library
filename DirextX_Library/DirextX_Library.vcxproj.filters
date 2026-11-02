@@ -333,6 +333,9 @@
     <ClCompile Include="MyLibrary/Animator/Animator.cpp">
       <Filter>MyLibrary\Animator</Filter>
     </ClCompile>
+    <ClCompile Include="MyLibrary\Animator\AnimatorIK.cpp">
+      <Filter>MyLibrary\Animator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyLibrary\assimp\AssimpLoader.h">
@@ -476,9 +479,6 @@
     <ClInclude Include="MyLibrary\Helper\Helper.h">
       <Filter>MyLibrary\Heaper</Filter>
     </ClInclude>
-    <ClInclude Include="MyLibrary\Helper\Matrix\MatrixHelper.h">
-      <Filter>MyLibrary\Heaper\Matrix</Filter>
-    </ClInclude>
     <ClInclude Include="KLibrary\File\FileExplorer\FileExplorer.h">
       <Filter>KLibrary\File\FileExplorer</Filter>
     </ClInclude>
@@ -544,6 +544,9 @@
     </ClInclude>
     <ClInclude Include="MyLibrary\Easing\Easing.h">
       <Filter>MyLibrary\Easing</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Helper\Matrix\MatrixHelper.h">
+      <Filter>MyLibrary\Heaper\Matrix</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
