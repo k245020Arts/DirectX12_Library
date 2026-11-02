@@ -176,7 +176,7 @@ void Polygon3D::SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology
 void Polygon3D::CreateWhiteTextureHandle()
 {
 	std::wstring white = L"white";
-	bool result = TextureLoader::GetInstance()->ColorTexture(white, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	ResultErrorHandle::ErrorCode result = TextureLoader::GetInstance()->ColorTexture(white, Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	//bool result = TextureLoader::GetInstance()->Load("data/textest.png");
 
 	TextureData* texture = TextureLoader::GetInstance()->Get(white);

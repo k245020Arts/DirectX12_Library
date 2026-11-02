@@ -76,7 +76,8 @@ Scene::Scene()
 	texture2D->SetAlpha(0.01f);*/
 
 	texture2D1 = new Texture2D();
-	texture2D1->Load("data/textest.png");
+	auto texresult = texture2D1->Load("data/textest.png");
+
 	texture2D1->GetTransform().position = Vector3(1000, 200, 0);
 	//texture2D1->SetSize(256, 256);
 	//texture2D1->SetRect(Vector4(0.0f, 0.0f, 128.0f, 128.0f));
@@ -113,7 +114,13 @@ Scene::Scene()
 	model1->GetTransform().position.x += 150.0f;
 
 	model2 = new FBXModel();
-	model2->Load(L"data/Dragon 2.5_fbx.fbx", false, true);
+	auto result = model2->Load(L"data/Dragon 2.5_fbx.fbx", false, true);
+
+	if (!result.IsSuccess()) {
+		int errorHandle = static_cast<int>(result.GetErrorCode());
+		std::string code = std::to_string(errorHandle);
+		assert(false && code.c_str());
+	}
 
 	model2->GetTransform().position.x -= 150.0f;
 
@@ -145,7 +152,7 @@ Scene::Scene()
 	// ’±”Ô‚Ì§ŒÀi—á: •Gj
 	model->SetIKHinge(legIK, 1, Vector3(1, 0, 0), 0.0f, DirectX::XMConvertToRadians(130.0f));
 
-	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Vector3(1.0f, 0.0f, 0.0f)));
+	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Color::RGBToVector3(WHITE)));
 #endif // MODEL
 
 	
@@ -262,6 +269,7 @@ void Scene::Update()
 #endif //  ON2D
 
 #ifdef MODEL
+
 #ifdef IMGUI
 	static float target[3] = { 100.0f, 150.0f, 50.0f };
 	static float weight = 0.0f;
@@ -272,7 +280,7 @@ void Scene::Update()
 	ImGui::End();
 
 	model->SetIKTarget(legIK, Vector3(target[0], target[1], target[2]), weight);
-#endif
+#endif //IMGUI
 
 	//model->SetIKHinge(legIK, 1, Vector3(1, 0, 0), 0.0f, DirectX::XMConvertToRadians(130.0f));
 	/*model->GetTransform().rotation.y += 0.007f;
@@ -310,7 +318,7 @@ void Scene::Update()
 
 	if (InputManager::GetInstance()->GetKeyInput(KeyCode::A)) {
 		isMove = true;
-		model->GetTransform().position += matrix.TransformDirection(Vector3(-2.0f - speedUP, 0.0f, 2.0f));
+		model->GetTransform().position += matrix.TransformDirection(Vector3(-2.0f - speedUP, 0.0f, 0.0f));
 	}
 
 	if (InputManager::GetInstance()->GetKeyInput(KeyCode::S)) {
@@ -350,10 +358,7 @@ void Scene::Update()
 		speedUP = 0.0f;
 	}
 
-#endif // DEBUG
-
-	
-
+#endif // MODEL
 	//box3D->Update();
 	
 

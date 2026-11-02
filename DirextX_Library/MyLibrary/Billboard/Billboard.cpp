@@ -18,16 +18,19 @@ Billboard::~Billboard()
 {
 }
 
-bool Billboard::Load(const std::string& _path)
+ResultErrorHandle Billboard::Load(const std::string& _path)
 {
-	bool result = TextureLoader::GetInstance()->Load(_path);
+	ResultErrorHandle::ErrorCode result = TextureLoader::GetInstance()->Load(_path);
+
+	ResultErrorHandle handle;
+	handle.SetErrorCode(result);
 
 	TextureData* texture = TextureLoader::GetInstance()->Get(_path);
 
 	if (texture == nullptr) {
 		std::string error = _path + "こちらのパスがありません";
-		assert(false && error.c_str());
-		return false;
+		//assert(false && error.c_str());
+		return handle;
 	}
 
 	constBuffer.resize(FRAME_BUFFER_COUNT);
@@ -38,15 +41,15 @@ bool Billboard::Load(const std::string& _path)
 	if (descriptorHandle == nullptr)
 	{
 		assert(false && "Descriptorの登録に失敗しました");
-		return false;
+		return handle;
 	}
 
 	vertices.resize(4);
 	//verticesの中心点を0,0,0にするために半分のサイズを取得
-	const float width = result ? static_cast<float>(texture->width) / 2.0f : 100;
-	const float height = result ? static_cast<float>(texture->height) / 2.0f : 100;
+	const float width = handle.IsSuccess() ? static_cast<float>(texture->width) / 2.0f : 100;
+	const float height = handle.IsSuccess() ? static_cast<float>(texture->height) / 2.0f : 100;
 
-	if (result) {
+	if (handle.IsSuccess()) {
 		textureSize.width = static_cast<LONG>(texture->width);
 		textureSize.height = static_cast<LONG>(texture->height);
 	}
@@ -119,7 +122,7 @@ bool Billboard::Load(const std::string& _path)
 	}
 
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/2DTextureShader/2DTextureVertexShader.hlsl", "TexVsMain", L"Shader/2DTextureShader/2DTexturePixelShader.hlsl", "TexPsMain");
-	return true;
+	return handle;
 }
 
 void Billboard::SetBillBoardType(bool _yBillboard)

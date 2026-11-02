@@ -67,14 +67,14 @@ public:
 	FBXModel();
 	~FBXModel();
 
-	bool Load(const std::string& _modelFilePath);
-	bool Load(const std::string& _modelFilePath,bool _uflip,bool _vflip);
+	ResultErrorHandle Load(const std::string& _modelFilePath);
+	ResultErrorHandle Load(const std::string& _modelFilePath,bool _uflip,bool _vflip);
 
-	bool Load(const wchar_t* _modelFilePath);
-	bool Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip);
+	ResultErrorHandle Load(const wchar_t* _modelFilePath);
+	ResultErrorHandle Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip);
 
-	bool LoadAnimation(const std::string& _animFilePath);
-	bool LoadAnimation(const std::wstring& _animFilePath);
+	ResultErrorHandle LoadAnimation(const std::string& _animFilePath);
+	ResultErrorHandle LoadAnimation(const std::wstring& _animFilePath);
 
 	void Update();
 	void Draw();

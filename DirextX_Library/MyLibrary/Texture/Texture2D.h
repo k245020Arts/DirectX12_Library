@@ -17,7 +17,7 @@ public:
 	Texture2D();
 	~Texture2D();
 
-	bool Load(std::string _path);
+	ResultErrorHandle Load(std::string _path);
 
     void SetBlendMode(BlendState _blendState);
 

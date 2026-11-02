@@ -24,7 +24,7 @@ public:
 	/// </summary>
 	/// <param name="_path">ファイルパス</param>
 	/// <returns>結果 : true : 成功 false : 失敗</returns>
-	bool Load(const std::string& _path);
+	ResultErrorHandle Load(const std::string& _path);
 
 	/// <summary>
 	///	ビルボードのタイプを設定することが出来る関数

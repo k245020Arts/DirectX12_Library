@@ -5,6 +5,7 @@
 #include <assimp/postprocess.h>
 #include <filesystem>
 #include "../FBXModel/FBXModel.h"
+#include "../ResultErrorHandle/ResultErrorHandle.h"
 
 namespace fs = std::filesystem;
 
@@ -78,12 +79,16 @@ static std::wstring ResolveTexturePath(const std::wstring& modelFile, const std:
     return L"404_NotFound_Texture_Path"; //最後まで探して見つからなければテクスチャが見つからない
 }
 
-bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
+ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
 {
-    if (setting.filename == nullptr) {
-        assert(false && "ファイルネームがないです");
-        return false;
+    // パス確認
+    ResultErrorHandle::ErrorCode pathResult = CheckPath(setting.filename);
+
+    if (pathResult != ResultErrorHandle::ErrorCode::OK)
+    {
+        return pathResult;
     }
+
     _model.meshes.clear();
     _model.animations.clear();
     _model.bones.clear();
@@ -114,10 +119,11 @@ bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
 
     auto scene = importer.ReadFile(path, flag);
 
-    if (scene == nullptr) 
+    // Assimpの解析失敗
+    if (scene == nullptr)
     {
-        assert(false && "ファイルの読み込みエラー");
-        return false;
+        OutputDebugStringA(importer.GetErrorString());
+        return ResultErrorHandle::ErrorCode::ParseFailed;
     }
 
     meshes.clear();
@@ -125,6 +131,11 @@ bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
     meshes.resize(scene->mNumMeshes);
     for (size_t i = 0; i < meshes.size(); i++) {
         const auto pMesh = scene->mMeshes[i];
+        if (pMesh == nullptr)
+        {
+            return ResultErrorHandle::ErrorCode::InvalidData;
+        }
+
         LoadMesh(meshes[i], pMesh, inverseU, inverseV);
         LoadBones(meshes[i], pMesh, _model);
 
@@ -168,22 +179,26 @@ bool AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
 
     if (scene->mNumAnimations > 0)
     {
-        LoadAnimations(scene, animations);
+        if (LoadAnimations(scene, animations) != ResultErrorHandle::ErrorCode::OK)
+        {
+            return ResultErrorHandle::ErrorCode::InvalidData;
+        }
+
     }
     
     ApplyStaticMeshNodeTransforms(_model);
 
     scene = nullptr;
 
-    return true;
+    return ResultErrorHandle::ErrorCode::OK;
 }
 
-bool AssimpLoader::LoadAnimation(const std::string& _filePath, ModelData& _model)
+ResultErrorHandle::ErrorCode AssimpLoader::LoadAnimation(const std::string& _filePath, ModelData& _model)
 {
     return LoadAnimation(GetWideString(_filePath),_model);
 }
 
-bool AssimpLoader::LoadAnimation(const std::wstring& _filePath, ModelData& _model)
+ResultErrorHandle::ErrorCode AssimpLoader::LoadAnimation(const std::wstring& _filePath, ModelData& _model)
 {
     Assimp::Importer importer;
 
@@ -197,13 +212,13 @@ bool AssimpLoader::LoadAnimation(const std::wstring& _filePath, ModelData& _mode
     if (scene == nullptr)
     {
         OutputDebugStringA(importer.GetErrorString());
-        return false;
+        return ResultErrorHandle::ErrorCode::ParseFailed;
     }
 
     if (scene->mNumAnimations == 0)
     {
         OutputDebugStringA("このファイルにはアニメーションがありません\n");
-        return false;
+        return ResultErrorHandle::ErrorCode::InvalidData;
     }
 
     return LoadAnimations(scene, _model.animations);
@@ -284,22 +299,22 @@ void AssimpLoader::LoadTexture(const wchar_t* filename, Mesh& dst, const aiMater
     }
 }
 
-bool AssimpLoader::LoadAnimations(const aiScene* scene, std::vector<AnimationData>& animations)
+ResultErrorHandle::ErrorCode AssimpLoader::LoadAnimations(const aiScene* scene, std::vector<AnimationData>& animations)
 {
     if (scene == nullptr)
     {
-        return false;
+        return ResultErrorHandle::ErrorCode::ParseFailed;
     }
 
     if (scene->mNumAnimations == 0)
     {
-        return false;
+        return ResultErrorHandle::ErrorCode::InvalidData;
     }
 
     if (scene->mNumAnimations == 0)
     {
         OutputDebugStringA("FBXファイルにアニメーションがありません。\n");
-        return false;
+        return ResultErrorHandle::ErrorCode::InvalidData;
     }
 
     //呼び出し側が「新しく入ったもの」を特定できるようにする
@@ -387,10 +402,10 @@ bool AssimpLoader::LoadAnimations(const aiScene* scene, std::vector<AnimationDat
         animations.emplace_back(std::move(dstAnimation));
     }
 
-    return true;
+    return ResultErrorHandle::ErrorCode::OK;
 }
 
-bool AssimpLoader::LoadBones(Mesh& dst, const aiMesh* src, ModelData& model)
+ResultErrorHandle::ErrorCode AssimpLoader::LoadBones(Mesh& dst, const aiMesh* src, ModelData& model)
 {
     for (uint32_t i = 0; i < src->mNumBones; ++i)
     {
@@ -433,7 +448,7 @@ bool AssimpLoader::LoadBones(Mesh& dst, const aiMesh* src, ModelData& model)
             }
         }
     }
-    return true;
+    return ResultErrorHandle::ErrorCode::OK;
 }
 
 int AssimpLoader::LoadNodeHierarchy(const aiNode* src,int parentIndex,ModelData& model)

@@ -2,6 +2,8 @@
 #include <string>
 #include <assert.h>
 #include <Windows.h>
+#include "../ResultErrorHandle/ResultErrorHandle.h"
+#include <filesystem>
 
 // 拡張子を返す
 inline std::wstring FileExtension(const std::wstring& path)
@@ -87,4 +89,60 @@ inline TexExtension GetExtension(const std::wstring& _filePath)
 inline TexExtension GetExtension(const std::string& _filePath)
 {
 	return GetExtension(GetWideString(_filePath));
+}
+
+inline ResultErrorHandle::ErrorCode CheckPath(const wchar_t* _filePath)
+{
+	namespace fs = std::filesystem;
+	if (_filePath == nullptr || *_filePath == L'\0')
+	{
+		return ResultErrorHandle::ErrorCode::InvalidPath;
+	}
+
+	fs::path path(_filePath);
+	std::error_code ec;
+
+	// 親フォルダの確認
+	fs::path parentPath = path.parent_path();
+
+	if (!parentPath.empty())
+	{
+		bool exists = fs::exists(parentPath, ec);
+
+		if (ec)
+		{
+			return ec == std::errc::permission_denied ? ResultErrorHandle::ErrorCode::AccessDenied : ResultErrorHandle::ErrorCode::InvalidPath;
+		}
+
+		if (!exists || !fs::is_directory(parentPath, ec))
+		{
+			return ResultErrorHandle::ErrorCode::DirectoryNotFound;
+		}
+	}
+
+	// ファイルの存在確認
+	bool exists = fs::exists(path, ec);
+
+	if (ec)
+	{
+		return ec == std::errc::permission_denied ? ResultErrorHandle::ErrorCode::AccessDenied : ResultErrorHandle::ErrorCode::InvalidPath;
+	}
+
+	if (!exists)
+	{
+		return ResultErrorHandle::ErrorCode::FileNotFound;
+	}
+
+	// フォルダを指定していないか確認
+	if (fs::is_directory(path, ec))
+	{
+		return ResultErrorHandle::ErrorCode::InvalidPath;
+	}
+
+	if (ec)
+	{
+		return ResultErrorHandle::ErrorCode::InvalidPath;
+	}
+
+	return ResultErrorHandle::ErrorCode::OK;
 }

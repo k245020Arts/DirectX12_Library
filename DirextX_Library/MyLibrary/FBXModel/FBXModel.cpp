@@ -62,23 +62,31 @@ FBXModel::~FBXModel()
 
 }
 
-bool FBXModel::Load(const std::string& _modelFilePath)
+ResultErrorHandle FBXModel::Load(const std::string& _modelFilePath)
 {
 	return Load(GetWideString(_modelFilePath).c_str(), false, false);
 }
 
-bool FBXModel::Load(const std::string& _modelFilePath, bool _uflip, bool _vflip)
+ResultErrorHandle FBXModel::Load(const std::string& _modelFilePath, bool _uflip, bool _vflip)
 {
 	return Load(GetWideString(_modelFilePath).c_str(), _uflip, _vflip);
 }
 
-bool FBXModel::Load(const wchar_t* _modelFilePath)
+ResultErrorHandle FBXModel::Load(const wchar_t* _modelFilePath)
 {
 	return Load(_modelFilePath, false, false);
 }
 
-bool FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip)
+ResultErrorHandle FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip)
 {
+	ResultErrorHandle handle;
+	handle.SetErrorCode(ResultErrorHandle::ErrorCode::OK);
+	if (_modelFilePath == nullptr)
+	{
+		handle.SetErrorCode(ResultErrorHandle::ErrorCode::InvalidPath);
+		return handle;
+	}
+
 	ImportSettings importSetting = // ‚±‚êŽ©‘Ì‚ÍŽ©ì‚Ì“Ç‚Ýž‚ÝÝ’è\‘¢‘Ì
 	{
 		_modelFilePath,
@@ -87,9 +95,10 @@ bool FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip)
 	};
 
 	AssimpLoader loader;
-	if (!loader.Load(importSetting, modelData))
+	handle.SetErrorCode(loader.Load(importSetting, modelData));
+	if (!handle.IsSuccess())
 	{
-		return false;
+		return handle;
 	}
 
 	constBuffer.resize(FRAME_BUFFER_COUNT);
@@ -104,20 +113,21 @@ bool FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip)
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/FBXModelShader/FBXModelVertexShader.hlsl", "BasicVS_FBX", L"Shader/FBXModelShader/FBXModelPixelShader.hlsl", "BasicPS_FBX");
 	//SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
-	return true;
+	return handle;
 }
 
-bool FBXModel::LoadAnimation(const std::string& _modelFilePath)
+ResultErrorHandle FBXModel::LoadAnimation(const std::string& _modelFilePath)
 {
 	return LoadAnimation(GetWideString(_modelFilePath));
 }
 
-bool FBXModel::LoadAnimation(const std::wstring& _modelFilePath)
+ResultErrorHandle FBXModel::LoadAnimation(const std::wstring& _modelFilePath)
 {
 	AssimpLoader loader;
-
-	if (!loader.LoadAnimation(_modelFilePath, modelData)) {
-		return false;
+	ResultErrorHandle handle;
+	handle.SetErrorCode(loader.LoadAnimation(_modelFilePath, modelData));
+	if (!handle.IsSuccess()) {
+		return handle;
 	}
 
 	if (animator == nullptr) {
@@ -127,7 +137,7 @@ bool FBXModel::LoadAnimation(const std::wstring& _modelFilePath)
 		animator->AddAnimation(modelData);
 	}
 
-	return false;
+	return handle;
 }
 
 void FBXModel::Update()
@@ -385,7 +395,7 @@ void FBXModel::Init()
 				texPath = ReplaceExtension(modelData.meshes[i].DiffuseMap, "tga"); //psd‚Ìê‡‚Ítga‚Æ‚µ‚Äˆµ‚¤
 			}
 		}
-		TextureLoader::GetInstance()->Load(texPath);
+		ResultErrorHandle::ErrorCode errorHandle = TextureLoader::GetInstance()->Load(texPath);
 		auto mainTex = TextureLoader::GetInstance()->Get(texPath);
 		auto handle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), texPath);
 		materialHandles.push_back(handle);

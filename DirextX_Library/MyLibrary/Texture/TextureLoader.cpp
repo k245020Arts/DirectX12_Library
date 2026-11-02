@@ -3,6 +3,9 @@
 #include <filesystem>
 #include <algorithm>
 #include "../Engine/Engine.h"
+#include <filesystem>
+
+using ErrorCode = ResultErrorHandle::ErrorCode;
 
 TextureLoader::TextureLoader()
 {
@@ -13,19 +16,34 @@ TextureLoader::~TextureLoader()
 
 }
 
-bool TextureLoader::Load(const std::string& _path)
+ErrorCode TextureLoader::Load(const std::string& _path)
 {
+	if (_path.empty())
+	{
+		return ErrorCode::InvalidPath;
+	}
+
     return Load(GetWideString(_path));
 }
 
-bool TextureLoader::Load(const std::wstring& _path)
+ErrorCode TextureLoader::Load(const std::wstring& _path)
 {
+	namespace fs = std::filesystem;
+
+	ResultErrorHandle::ErrorCode pathResult = CheckPath(_path.c_str());
+
+	if (pathResult != ResultErrorHandle::ErrorCode::OK)
+	{
+		ColorTexture(_path, Vector4(1.0f, 0.0f, 1.0f, 1.0f));
+		return pathResult;
+	}
+
 	//既にロード済みか確認
 	auto it = textureBuffer.find(_path);
 
 	if (it != textureBuffer.end())
 	{
-		return false;
+		return ErrorCode::OK;
 	}
 
 	DirectX::TexMetadata metadata = {};
@@ -63,17 +81,17 @@ bool TextureLoader::Load(const std::wstring& _path)
 
 	if (hr == S_FALSE) {
 		ColorTexture(_path, Vector4(1.0f, 0.0f, 1.0f, 1.0f));
-		return false;
+		return ErrorCode::NotInitializationErrorCode;
 	}
 
 	if (FAILED(hr))
 	{
 		ColorTexture(_path, Vector4(1.0f, 0.0f, 1.0f, 1.0f));
-		return false;
+		return ErrorCode::LoadFailed;
 	}
 
 	CreateTexture(metadata,scratchImg,_path);
-    return true;
+    return ErrorCode::OK;
 }
 
 TextureData* TextureLoader::Get(const std::wstring& path)
@@ -93,14 +111,14 @@ TextureData* TextureLoader::Get(const std::string& path)
 	return Get(GetWideString(path));
 }
 
-bool TextureLoader::ColorTexture(const std::wstring& _name,const DirectX::XMFLOAT4& _color)
+ErrorCode TextureLoader::ColorTexture(const std::wstring& _name,const DirectX::XMFLOAT4& _color)
 {
 	// すでに作られているなら作らない
 	auto it = textureBuffer.find(_name);
 
 	if (it != textureBuffer.end())
 	{
-		return true;
+		return ErrorCode::OK;
 	}
 
 	DirectX::TexMetadata metadata = {};
@@ -111,7 +129,7 @@ bool TextureLoader::ColorTexture(const std::wstring& _name,const DirectX::XMFLOA
 
 	if (FAILED(result))
 	{
-		return false;
+		return ErrorCode::LoadFailed;
 	}
 
 	//Metadata取得
@@ -122,7 +140,7 @@ bool TextureLoader::ColorTexture(const std::wstring& _name,const DirectX::XMFLOA
 
 	if (image == nullptr)
 	{
-		return false;
+		return ErrorCode::LoadFailed;
 	}
 
 	// RGBAを設定
@@ -157,9 +175,14 @@ D3D12_SHADER_RESOURCE_VIEW_DESC TextureLoader::ViewDesc(const std::wstring& _pat
 	return srvDesc;
 }
 
-bool TextureLoader::CreateTexture(DirectX::TexMetadata& metadata, DirectX::ScratchImage& scratchImg, const std::wstring& _path)
+ErrorCode TextureLoader::CreateTexture(DirectX::TexMetadata& metadata, DirectX::ScratchImage& scratchImg, const std::wstring& _path)
 {
 	auto image = scratchImg.GetImage(0, 0, 0);
+
+	if (image == nullptr)
+	{
+		return ErrorCode::InvalidData;
+	}
 
 	//テクステャバッファーの作成
 
@@ -193,6 +216,11 @@ bool TextureLoader::CreateTexture(DirectX::TexMetadata& metadata, DirectX::Scrat
 
 	auto result = Engine::GetInstance()->Device()->CreateCommittedResource(&upLoadheapProp, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&upLoadBuffer));
 
+	if (FAILED(result))
+	{
+		return ErrorCode::GPUResourceCreateFailed;
+	}
+
 	D3D12_HEAP_PROPERTIES texHeapProp = {};
 
 	texHeapProp.Type = D3D12_HEAP_TYPE_DEFAULT; //テクスチャ用
@@ -224,8 +252,21 @@ bool TextureLoader::CreateTexture(DirectX::TexMetadata& metadata, DirectX::Scrat
 	//result = texbuff->WriteToSubresource(0, nullptr, texturedata.data(), sizeof(TexRGBA) * 256, sizeof(TexRGBA) * texturedata.size());
 	//result = texbuff->WriteToSubresource(0, nullptr, image->pixels, (UINT)image->rowPitch, (UINT)image->slicePitch);
 
+	if (FAILED(result))
+	{
+		return ErrorCode::GPUResourceCreateFailed;
+	}
+
+
 	uint8_t* mapforImg = nullptr;//image->pixelsと同じ型にする
 	result = upLoadBuffer->Map(0, nullptr, (void**)&mapforImg);//マップ
+
+	if (FAILED(result))
+	{
+		return ErrorCode::UploadFailed;
+	}
+
+
 	auto srcAddress = image->pixels;
 	auto rowPitch = AlignmentedSize(image->rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 	for (int y = 0; y < image->height; ++y) {
@@ -266,7 +307,14 @@ bool TextureLoader::CreateTexture(DirectX::TexMetadata& metadata, DirectX::Scrat
 	data.height = static_cast<UINT>(metadata.height);
 	data.format = metadata.format;
 
-	textureBuffer.emplace(_path, data);
+	//textureBuffer.emplace(_path, data);
 
-    return true;
+	auto [it, inserted] = textureBuffer.emplace(_path, std::move(data));
+
+	if (!inserted)
+	{
+		return ErrorCode::Unknown;
+	}
+
+	return ErrorCode::OK;
 }

@@ -5,7 +5,7 @@
 #include <DirectXMath.h>
 #include <string>
 #include <vector>
-
+#include "../ResultErrorHandle/ResultErrorHandle.h"
 
 struct Mesh;
 struct Vertex;
@@ -28,15 +28,15 @@ struct ImportSettings // インポートするときのパラメータ
 class AssimpLoader
 {
 public:
-    bool Load(const ImportSettings& setting, ModelData& _model); // モデルをロードする
-    bool LoadAnimation(const std::string& _filePath, ModelData& _model);
-    bool LoadAnimation(const std::wstring& _filePath, ModelData& _model);
+    ResultErrorHandle::ErrorCode  Load(const ImportSettings& setting, ModelData& _model); // モデルをロードする
+    ResultErrorHandle::ErrorCode  LoadAnimation(const std::string& _filePath, ModelData& _model);
+    ResultErrorHandle::ErrorCode  LoadAnimation(const std::wstring& _filePath, ModelData& _model);
 
 private:
     void LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool inverseV);
     void LoadTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src);
-    bool LoadAnimations(const aiScene* scene,std::vector<AnimationData>& animations);
-    bool LoadBones(Mesh& dst, const aiMesh* src, ModelData& model);
+    ResultErrorHandle::ErrorCode  LoadAnimations(const aiScene* scene,std::vector<AnimationData>& animations);
+    ResultErrorHandle::ErrorCode  LoadBones(Mesh& dst, const aiMesh* src, ModelData& model);
     int LoadNodeHierarchy(const aiNode* src, int parentIndex, ModelData& model);
     void ApplyStaticMeshNodeTransforms(ModelData& model);
 };
