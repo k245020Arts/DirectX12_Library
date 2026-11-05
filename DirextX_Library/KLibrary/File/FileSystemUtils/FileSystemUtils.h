@@ -3,8 +3,20 @@
 #include <iostream>
 #include <list>
 
-// Alpha 1.0 K.H
+/*
+Alpha 1.1 K
 
+// エントリの作成順番によって、エントリコンテナのデータ情報が異なる問題を修正
+// ImGuiでのフォルダ表示が見にくかったので黄色い四角を描画するように変更
+
+*/
+
+/*
+Alpha 1.0 K
+
+// 一旦一通りの処理の実装
+
+*/
 /// <summary>
 /// ファイル、ディレクトリの操作をする
 /// </summary>
@@ -192,6 +204,13 @@ public:
 	/// <param name="_addIndent">		インデントを追加するかどうか					</param>
 	/// <returns>						再帰的なディレクトリ名とファイル名一覧			</returns>
 	static std::list<EntryPathData> GetRecursiveDirectoryAndFilePathDataList(std::string_view _directoryPath, bool _addIndent);
+
+	/// <summary>
+	///							ファイルパスまたは、ファイル名から拡張子を文字列を返す  例) test.png -> png
+	/// </summary>
+	/// <param name="_filePath">ファイルパスまたはファイル名							</param>
+	/// <returns>				拡張子文字列											</returns>
+	static std::string GetFileExtension(std::string_view _filePath);
 
 private:
 

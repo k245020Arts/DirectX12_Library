@@ -174,6 +174,13 @@ void DirectX12Imgui::SetUpStyle()
 
     style.AntiAliasedLines = true;
     style.AntiAliasedFill = true;
+    style.FrameRounding = 12;
+    style.WindowRounding = 12;
+    style.PopupRounding = 12;
+    style.ChildRounding = 12;
+    style.GrabRounding = 12;
+    style.ScrollbarRounding = 12;
+    style.WindowTitleAlign.x = 1.0f;
 
     // ---------- ÉJÉâÅ[ ----------
     auto RGBA = [](int r, int g, int b, int a) {

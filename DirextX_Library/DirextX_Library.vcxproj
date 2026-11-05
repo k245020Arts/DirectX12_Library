@@ -219,7 +219,7 @@
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="KLibrary\File\FileExplorer\FileExplorer.h" />
     <ClInclude Include="KLibrary\File\FileSystemUtils\FileSystemUtils.h" />
-    <ClInclude Include="KLibrary\StringUtils\StringUtils.h" />
+    <ClInclude Include="KLibrary\GeneralUtils\StringUtils\StringUtils.h" />
     <ClInclude Include="MyLibrary\Application\Application.h" />
     <ClInclude Include="MyLibrary\assimp\AssimpLoader.h" />
     <ClInclude Include="MyLibrary\Billboard\Billboard.h" />

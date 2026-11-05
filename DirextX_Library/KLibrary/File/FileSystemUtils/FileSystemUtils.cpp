@@ -2,6 +2,7 @@
 #include <fstream>
 #include <list>
 #include <unordered_map>
+#include <map>
 #include <iostream>
 #include <string>
 #include <assert.h>
@@ -126,6 +127,23 @@ std::list<FileSystemUtils::EntryPathData> FileSystemUtils::GetRecursiveDirectory
 	return GetRecursiveEntryPathDataList(_directoryPath, ENTRY_TYPE::ALL,_addIndent);
 }
 
+std::string FileSystemUtils::GetFileExtension(std::string_view _filePath)
+{
+	std::string extensionStr	= std::string(_filePath);	// 拡張子文字列
+	size_t pos					= _filePath.rfind(".");		// 末尾から「.」が見つかった位置
+
+	if (pos == std::string::npos)
+	{
+		assert(false && "拡張子が見つかりませんでした。");
+		return std::string();
+	}
+
+	// 「.」を含まないように、右に位置をずらす
+	++pos;
+
+	return extensionStr.substr(pos);
+}
+
 std::list<std::string> FileSystemUtils::GetRecursiveEntryNameList(std::string_view _directoryPath, const ENTRY_TYPE& _type, bool _addIndent)
 {
 	std::list<std::string> entryNameList;	// フォルダ内のエントリ名コンテナ
@@ -141,9 +159,9 @@ std::list<std::string> FileSystemUtils::GetRecursiveEntryNameList(std::string_vi
 std::list<FileSystemUtils::EntryPathData> FileSystemUtils::GetRecursiveEntryPathDataList(std::string_view _directoryPath, const ENTRY_TYPE& _type, bool _addIndent)
 {
 	std::list<EntryPathData> entryPathDataList;	// フォルダ内のエントリ情報を、EntryPathDataとして保存するコンテナ
+	std::vector<EntryData> entryDataList;		// エントリデータのコンテナ  最終的に全てのエントリデータがpushされる
+	
 	std::filesystem::recursive_directory_iterator recursiveDirectoryItr = GetRecursiveEntry(_directoryPath);	// ディレクトリパスの先頭要素を指すイテレータを構築  
-
-	std::vector<EntryData> entryDataList;	// エントリデータのコンテナ  最終的に全てのエントリデータがpushされる
 
 	for (;recursiveDirectoryItr != std::filesystem::recursive_directory_iterator();recursiveDirectoryItr++)
 	{
@@ -180,30 +198,74 @@ std::list<FileSystemUtils::EntryPathData> FileSystemUtils::GetRecursiveEntryPath
 
 	//_ インデントを追加して、エントリ名として記録 _//
 
-	auto entryItr		= entryDataList.begin();// エントリデータイテレータ
+	std::map<int, std::list<EntryData>> depthFileDataList;	// フォルダ内の階層ごとのファイルのエントリデータコンテナ	指定エントリが全ての場合は、ファイルはフォルダの後に、コンテナにpushしたいので、このコンテナに一旦push
+	auto entryItr		= entryDataList.begin();			// エントリデータイテレータ
+	int beforDepth		= entryItr->depth;					// 前回の階層の深さ
+	bool isNewHierarchy = false;							// 新しい階層かどうか
+	int currentDepth	= entryItr->depth;					// 階層の深さ
 
-	int beforDepth		= entryItr->depth;		// 前回の階層の深さ
-	bool isNewHierarchy = false;				// 新しい階層かどうか
-
-	std::unordered_map<int, std::list<EntryData>> depthFileDataList;	// フォルダ内の階層ごとのファイルのエントリデータコンテナ	指定エントリが全ての場合は、ファイルはフォルダの後に、コンテナにpushしたいので、このコンテナに一旦push
-
-	int currentDepth = entryItr->depth;	// 階層の深さ 
 	for (;entryItr != entryDataList.end();entryItr++)
 	{
 		currentDepth = entryItr->depth;
 		const std::filesystem::directory_entry directoryEntry = entryItr->entry;	// エントリ情報
 
+		bool inContainerFile = false;	// コンテナにファイルを入れたかどうか
+
+		// 指定タイプが全てだったら
+		if (_type == ENTRY_TYPE::ALL)
+		{
+			// ファイルだったら
+			if (!directoryEntry.is_directory())
+			{
+				if (entryItr->entry.path().filename().string() == "dir1_a.txt")
+					int a = 0;
+
+				depthFileDataList[currentDepth];
+				depthFileDataList[currentDepth].emplace_back(*entryItr);
+				inContainerFile = true;
+				//continue;	// ファイルを保存するコンテナに追加したので  continue
+			}
+		}
+
+		// 前回の階層から変わったら
 		if (beforDepth != currentDepth)
 		{
 			//_ ファイル名をコンテナに追加 _//
 
+#if 0
 			for (auto depthFileDataItr = depthFileDataList.begin();depthFileDataItr != depthFileDataList.end();depthFileDataItr++)
 			{
+				// XXX: depthFileDataListのリスト順が間違っていて、Push順が異なって、リスト内の順がおかしくなる
+
 				int fileDepth = depthFileDataItr->first;	// ファイルの階層の深さ
-				
+
+				if (fileDepth < currentDepth)
+					continue;	// 現在よりも深い階層でなかったら
+
+				for (auto fileDataItr = depthFileDataItr->second.begin();fileDataItr != depthFileDataItr->second.end();fileDataItr++)
+				{
+					if (fileDataItr->entry.path().filename().string() == "block_00_5000.mv1")
+						int a = 0;
+
+					// ファイル名をコンテナに追加
+					PushEntryPathDataList(fileDataItr->entry, fileDataItr->depth, _addIndent, fileDataItr, depthFileDataItr->second, entryPathDataList);
+				}
+				// エントリのパスデータを追加したので、コンテナ内をクリア
+				depthFileDataItr->second.clear();
+			}
+#else
+			
+			/* 階層がより深い順から、PushEntryPathDataListに追加していく
+			// (entryDataListの順番は、ディレクトリ内のエントリ順は、バラバラだが、再帰的な部分(directory->file)は順番が合っていると仮定)
+			// そもそも、パスの文字列から、再帰的な構造をコンテナに入れない理由は、depthの方がintの比較で済むので、早いと考えたから
+			*/ 
+			for (auto depthFileDataItr = depthFileDataList.rbegin();depthFileDataItr != depthFileDataList.rend();depthFileDataItr++)
+			{
+				int fileDepth = depthFileDataItr->first;	// ファイルの階層の深さ
+
 				if (fileDepth <= currentDepth)
 					continue;	// 現在よりも深い階層でなかったら
-					
+
 				for (auto fileDataItr = depthFileDataItr->second.begin();fileDataItr != depthFileDataItr->second.end();fileDataItr++)
 				{
 					// ファイル名をコンテナに追加
@@ -212,20 +274,12 @@ std::list<FileSystemUtils::EntryPathData> FileSystemUtils::GetRecursiveEntryPath
 				// エントリのパスデータを追加したので、コンテナ内をクリア
 				depthFileDataItr->second.clear();
 			}
+#endif
 			beforDepth = currentDepth;
 		}
 
-		// 指定タイプが全てだったら
-		if (_type == ENTRY_TYPE::ALL)
-		{
-			// ファイルだったら
-			if (!directoryEntry.is_directory())
-			{
-				depthFileDataList[currentDepth];
-				depthFileDataList[currentDepth].emplace_back(*entryItr);
-				continue;	// ファイルを保存するコンテナに追加したので continue
-			}
-		}
+		if (inContainerFile)
+			continue;	// ファイルを保存するコンテナに追加したので  continue
 
 		// ディレクトリ名をコンテナに追加
 		PushEntryPathDataList(directoryEntry, currentDepth, _addIndent, entryItr, entryDataList, entryPathDataList);
@@ -382,6 +436,7 @@ std::string FileSystemUtils::GetIndentEntryPathString(const int& _depth, const s
 	}
 	return indentStr;
 }
+
 std::string FileSystemUtils::GetIndentEntryPathString(const int& _depth, const int& _nextDepth)
 {
 	std::string indentStr = "";		// インデント文字列
@@ -409,35 +464,23 @@ std::string FileSystemUtils::GetIndentEntryPathString(const int& _depth, const i
 
 bool FileSystemUtils::CreateDirectoryAndFile(std::string_view _filePath, std::string_view _writeString)
 {
-	std::string directoryPath = std::string(_filePath);	// ディレクトリパス
-	std::list<char> reverseFileName;					// 逆順のまま、ファイルパスの後ろから'/'までの文字列を保存するコンテナ	std::stringにpush_front()がないので、処理負荷軽減のため一度逆順でいいので、保存する
-	std::string fileName;								// reverseFileNameの逆順のファイル名を元の順に戻した文字列　
-
-	//_ ディレクトリパスの設定 _//
-
-	// ファイルパス文字列を後ろから回す
-	for (auto pathItr = _filePath.rbegin();pathItr != _filePath.rend();pathItr++)
+	std::string directoryPath	= std::string(_filePath);	// ディレクトリパス
+	std::string fileName;									// ファイル名を文字列
+	size_t pos					= directoryPath.rfind("/");	// 末尾から「 / 」が見つかった位置
+	
+	if (pos == std::string::npos)
 	{
-		if (*pathItr == '/')
-			break;	// '/'を見つけたら break
-
-		std::string::iterator directoryPathItr = directoryPath.end() - 1;	// 最後の文字のイテレータ
-
-		// ディレクトリパスからファイル名を削除するために、文字列の最後を削除
-		directoryPathItr = directoryPath.erase(directoryPathItr);
-
-		// 逆順のまま、ファイルパスの後ろから「 / 」までを代入
-		reverseFileName.emplace_back(*pathItr);
+		assert(false && "ファイル名を見つけることができませんでした。");
+		return false;
 	}
+	// 「 / 」を含まないように右に位置をずらす
+	++pos;
 
-	//_ ファイルパスの設定 _//
+	// ファイル名を代入
+	fileName = directoryPath.substr(pos);
 
-	// reverseFileNameで保存した逆ファイル名文字列を後ろから回す
-	for (auto rFileNameItr = reverseFileName.rbegin();rFileNameItr != reverseFileName.rend();rFileNameItr++)
-	{
-		// 逆順から戻した、ファイルパスの後ろから「 / 」までのファイル名を代入
-		fileName += *rFileNameItr;
-	}
+	// ファイル名分の文字列を抜いたサイズに変更
+	directoryPath.resize(pos);
 
 	return CreateDirectoryInCreateFile(directoryPath, fileName, _writeString);
 }

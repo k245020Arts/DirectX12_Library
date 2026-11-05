@@ -1,6 +1,6 @@
 #include "FileExplorer.h"
 #include IMGUI_INCLUDE_PATH
-#include "../../StringUtils/StringUtils.h"
+#include "../../GeneralUtils/StringUtils/StringUtils.h"
 #include <Windows.h>
 #include <string>
 #include <cwchar>
@@ -32,11 +32,12 @@ void FileExplorer::Init()
 {
 	directoryNum		= FileSystemUtils::GetRecursiveDirectoryCount("data");
 	fileNum				= FileSystemUtils::GetRecursiveFileCount("data");
-	directoryAndFileNum = FileSystemUtils::GetRecursiveDirectoryAndFileCount("data");
+	//directoryAndFileNum = FileSystemUtils::GetRecursiveDirectoryAndFileCount("data");
 
 	allEntryNameList.clear();
 	allEntryNameList = std::move(FileSystemUtils::GetRecursiveDirectoryAndFileNameList(FileExplorerInfo::START_READ_FILEPATH, true));
 	VisualStudioProjectEditor::ProjectFilePath(L"DirextX_Library.vcxproj");
+
 	// エントリデータの初期化
 	InitEntryData();
 }
@@ -241,16 +242,37 @@ void FileExplorer::TreeNodeDraw(EntryParentChildRelation* _entryParentChild, boo
 {
 	FileSystemUtils::EntryPathData& entryPathData = _entryParentChild->pathData;
 
-	std::string nodeName = entryPathData.entryName;	// TreeNodeの名前
+	std::string nodeNameStr = entryPathData.entryName;	// TreeNodeの名前
 	if (isDrawEntrySize)
 	{
 		// エントリ名の横に、エントリサイズの文字列を追加
-		nodeName += "	 | " + StringUtils::GetByteToFormatFileSize(entryPathData.size) + "      (" + StringUtils::GetNumberInCommas(entryPathData.size) + "byte) ";
+		nodeNameStr += "	 | " + StringUtils::GetByteToFormatFileSize(entryPathData.size) + "      (" + StringUtils::GetNumberInCommas(entryPathData.size) + "byte) ";
 	}
+
+	// 日本語表記できるように、SJISをUTF8に変換
+	nodeNameStr = StringUtils::ShiftJISToUTF8(nodeNameStr);
+
 	float windowRightX			= ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;		// ウィンドウ領域の右端
 	ImVec2 treeNodeRowMinPos	= ImGui::GetCursorScreenPos();											// TreeNodeの行座標左上
 	ImVec2 treeNodeRowMaxPos	= ImVec2(windowRightX, treeNodeRowMinPos.y + ImGui::GetFrameHeight());	// TreeNodeの行座標右下
 	bool isTreeNodeHovered		= (ImGui::IsMouseHoveringRect(treeNodeRowMinPos, treeNodeRowMaxPos) && !_isDrawnButton);// マウスポインタがTreeNode上にあるかどうか
+
+	if (entryPathData.isDirectory)
+	{
+		ImVec2 backgroundDrawStartPos = treeNodeRowMinPos;
+		backgroundDrawStartPos.x += 20.0f;
+
+		ImVec2 backgroundDrawEndPos = backgroundDrawStartPos;
+		backgroundDrawEndPos.x += 4.0f;
+		backgroundDrawEndPos.y += 18.0f;
+
+		// TreeNodeの背景色を描画
+		ImGui::GetWindowDrawList()->AddRectFilled(
+			backgroundDrawStartPos,
+			backgroundDrawEndPos,
+			IM_COL32(242, 191, 64, 150)
+		);
+	}
 
 	// ファイル作成のImGuiWindowが表示されていたら、他のファイル関連の操作は行わない
 	/*if (createFileImGuiWindowData.isDraw)
@@ -260,7 +282,7 @@ void FileExplorer::TreeNodeDraw(EntryParentChildRelation* _entryParentChild, boo
 
 	if (_entryParentChild->childList.empty())
 	{
-		if (ImGui::TreeNodeEx(nodeName.c_str(), ImGuiTreeNodeFlags_Leaf))
+		if (ImGui::TreeNodeEx(nodeNameStr.c_str(), ImGuiTreeNodeFlags_Leaf))
 		{
 			ImGui::TreePop();
 		}
@@ -286,18 +308,19 @@ void FileExplorer::TreeNodeDraw(EntryParentChildRelation* _entryParentChild, boo
 		return;	// 子が存在しないので return
 	}
 
-	bool isTreeNodeExOpen = ImGui::TreeNodeEx(nodeName.c_str());	// TreeNodeを開いているかどうか
+	bool isTreeNodeExOpen = ImGui::TreeNodeEx(nodeNameStr.c_str());	// TreeNodeを開いているかどうか
 
 #if 0
 	// TreeNodeの判定範囲を取得
 	ImVec2 min = ImGui::GetItemRectMin();
 	ImVec2 max = ImGui::GetItemRectMax();
-
+	
 	// 赤い枠を表示
-	ImGui::GetWindowDrawList()->AddRect(
+	ImGui::GetWindowDrawList()->AddRectFilled(
 		min,
 		max,
-		IM_COL32(255, 0, 0, 255)
+		//IM_COL32(255, 0, 0, 255)
+		IM_COL32(242, 191, 64, 255)
 	);
 #endif
 
@@ -314,6 +337,7 @@ void FileExplorer::TreeNodeDraw(EntryParentChildRelation* _entryParentChild, boo
 			TreeNodeDraw(entryCild, _isDrawnButton);
 		}
 		ImGui::TreePop();
+
 		return;	// ツリーノードの最後でなかったら、以下のImGui::Buttonをスキップする  上記で表示したため
 	}
 
@@ -368,7 +392,7 @@ bool FileExplorer::ButtonDrawings(const FileSystemUtils::EntryPathData& _entryPa
 	return true;
 }
 
-//-- コピー -----------------------------------------------
+//-- ファイルの名、パス名のコピー -----------------------------------------------
 
 void FileExplorer::CopyButtonDraw(const FileSystemUtils::EntryPathData& _entryPathData)
 {
@@ -454,7 +478,7 @@ void FileExplorer::CopyButtonDraw(const FileSystemUtils::EntryPathData& _entryPa
 #endif
 }
 
-//-- エントリ -----------------------------------------------
+//-- エントリの作成 -----------------------------------------------
 
 void FileExplorer::CreateEntryButtonDraw(const FileSystemUtils::EntryPathData& _entryPathData, const std::string& _buttonName, CreateEntryImGuiWindowData& _createEntryImGuiWindowData)
 {
@@ -472,13 +496,12 @@ void FileExplorer::CreateEntryButtonDraw(const FileSystemUtils::EntryPathData& _
 
 	if (ImGui::Button(_buttonName.c_str(), buttonSize))
 	{
-		_createEntryImGuiWindowData.isDraw = true;
-		_createEntryImGuiWindowData.filePath = _entryPathData.path;
+		_createEntryImGuiWindowData.isDraw		= true;
+		_createEntryImGuiWindowData.filePath	= _entryPathData.path;
 	}
 
 	ImGui::PopStyleVar();
 
-#if 1
 	ImVec2 buttonMin = ImGui::GetItemRectMin();
 	ImVec2 buttonMax = ImGui::GetItemRectMax();
 
@@ -487,10 +510,9 @@ void FileExplorer::CreateEntryButtonDraw(const FileSystemUtils::EntryPathData& _
 		buttonMax,
 		IM_COL32(0, 255, 0, 255)
 	);
-#endif
 }
 
-//-- ディレクトリ -------------------------------------------
+//-- ディレクトリの作成 -------------------------------------------
 
 bool FileExplorer::CreateDirectoryWindowDraw()
 {
@@ -544,7 +566,7 @@ bool FileExplorer::CreateDirectoryWindowDraw()
 	return isCreateDirectory;
 }
 
-//-- ファイル ---------------------------------------------
+//-- ファイルの作成 ---------------------------------------------
 
 bool FileExplorer::CreateFileWindowDraw()
 {
@@ -631,7 +653,6 @@ bool FileExplorer::CreateFileWindowDraw()
 				}
 				else if (createFileImGuiWindowData.fileType == CLASS_FILE_TYPE::CLASS)
 				{
-					// Classファイルの作成
 #ifdef TEST
 					isCreateFile = VisualStudioProjectEditor::CreateClassFiles(createFileImGuiWindowData.filePath, createFileImGuiWindowData.fileName);
 #else
