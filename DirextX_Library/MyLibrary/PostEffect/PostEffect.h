@@ -7,32 +7,28 @@ class PipelineState;
 struct DescriptorHandle;
 class ConstBuffer;
 
-struct PostEffectParam
-{
-    float bkWeights[8];
-};
-
 class PostEffect
 {
 public:
-    PostEffect();
-    ~PostEffect();
 
-    bool Init();
+    PostEffect();
+
+    virtual ~PostEffect();
+
+    virtual bool Init() = 0;
+
+    virtual void Draw() = 0;
 
     void SetInputTexture(DescriptorHandle* handle);
 
-    void Draw();
-
-private:
+protected:
     std::unique_ptr<RootSignature> rootSignature = nullptr;
 
     std::unique_ptr<PipelineState> pipelineState = nullptr;
 
     DescriptorHandle* inputTexture = nullptr;
 
-    std::vector<float> GetGaussianWeights(size_t count, float s);
+    void DrawFullscreen(DescriptorHandle* inputTexture,ConstBuffer* constBuffer);
 
-    std::vector<std::shared_ptr<ConstBuffer>> postEffectConstBuff;
 };
 

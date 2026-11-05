@@ -354,6 +354,12 @@
         <ClCompile Include="MyLibrary/PostEffect/PostEffect.cpp">
             <Filter>MyLibrary\PostEffect</Filter>
         </ClCompile>
+        <ClCompile Include="MyLibrary/PostEffect/GaussianBlur/GaussianBlur.cpp">
+            <Filter>MyLibrary\PostEffect\GaussianBlur</Filter>
+        </ClCompile>
+        <ClCompile Include="MyLibrary/PostEffect/NormalMapPostEffect/NormalMapPostEffect.cpp">
+            <Filter>MyLibrary\PostEffect\NormalMapPostEffect</Filter>
+        </ClCompile>
     </ItemGroup>
     <ItemGroup>
         <ClInclude Include="MyLibrary\assimp\AssimpLoader.h">
@@ -581,6 +587,12 @@
         <ClInclude Include="MyLibrary/PostEffect/PostEffect.h">
             <Filter>MyLibrary\PostEffect</Filter>
         </ClInclude>
+        <ClInclude Include="MyLibrary/PostEffect/GaussianBlur/GaussianBlur.h">
+            <Filter>MyLibrary\PostEffect\GaussianBlur</Filter>
+        </ClInclude>
+        <ClInclude Include="MyLibrary/PostEffect/NormalMapPostEffect/NormalMapPostEffect.h">
+            <Filter>MyLibrary\PostEffect\NormalMapPostEffect</Filter>
+        </ClInclude>
     </ItemGroup>
     <ItemGroup>
         <FxCompile Include="Shader\2DBaseShader\Basic_VertexShader.hlsl">
@@ -643,6 +655,12 @@
         </Filter>
         <Filter Include="MyLibrary\PostEffect">
             <UniqueIdentifier>{27A0EF54-B832-4D11-BA84-0A301BA127DB}</UniqueIdentifier>
+        </Filter>
+        <Filter Include="MyLibrary\PostEffect\GaussianBlur">
+            <UniqueIdentifier>{2957A866-EBBE-456B-85C8-78CBCA385FCE}</UniqueIdentifier>
+        </Filter>
+        <Filter Include="MyLibrary\PostEffect\NormalMapPostEffect">
+            <UniqueIdentifier>{F0ED9C29-8AD6-4817-B6F4-5DA5EEB1763E}</UniqueIdentifier>
         </Filter>
     </ItemGroup>
 </Project>

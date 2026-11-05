@@ -7,12 +7,13 @@ struct PSInput
     float2 uv : TEXCOORD;
 };
 
-cbuffer PostEffectParam : register(b0)
+cbuffer GaussianBlurParam : register(b0)
 {
     float4 bkWeights[2];
+    float2 direction;
 };
 
-float4 PostEffectBasePSShader(PSInput input) : SV_TARGET
+float4 GaussianBlurPSShader(PSInput input) : SV_TARGET
 {
     float4 color = MainTex.Sample(MainSampler,input.uv);
     
@@ -127,11 +128,15 @@ float4 PostEffectBasePSShader(PSInput input) : SV_TARGET
     
     //float[8]‚¾‚ÆGPUƒAƒ‰ƒCƒƒ“ƒg‚Ì‰e‹¿‚ğó‚¯‚Ä‚µ‚Ü‚¤‚½‚ß‚ ‚¦‚Äfloat4[2]‚É‚µ‚Ä‚¢‚é
     
+    float2 texelSize = float2(1.0f / w, 1.0f / h);
+    
     ret += bkWeights[0] * color;
-    for (int i = 0; i < 8;++i)
+    for (int i = 1; i < 8;++i)
     {
-        ret += bkWeights[i >> 2][i % 4] * MainTex.Sample(MainSampler, input.uv + float2(i * dx, 0));
-        ret += bkWeights[i >> 2][i % 4] * MainTex.Sample(MainSampler, input.uv + float2(-i * dy, 0));
+        float2 offset = texelSize * direction * i * 1.0f;
+        
+        ret += bkWeights[i >> 2][i % 4] * MainTex.Sample(MainSampler, input.uv + offset);
+        ret += bkWeights[i >> 2][i % 4] * MainTex.Sample(MainSampler, input.uv - offset);
     }
     
     return float4(ret.rgb, color.a);

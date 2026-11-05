@@ -7,6 +7,8 @@ class Window;
 class RenderTarget;
 class RenderPass;
 class PostEffect;
+class GaussianBlur;
+class DistortionPostEffect;
 
 class Application : public SingletonBase<Application>
 {
@@ -30,10 +32,14 @@ private:
 	std::unique_ptr<DirectX12Imgui> imgui;
 
 	std::shared_ptr<RenderTarget> sceneRenderTarget;
+	std::shared_ptr<RenderTarget> blurRenderTarget;
 
 	std::shared_ptr<RenderPass> scenePass;
-	std::shared_ptr<RenderPass> postEffectPass;
+	std::shared_ptr<RenderPass> horizontalBlurPass;
+	std::shared_ptr<RenderPass> verticalBlurPass;
+	std::shared_ptr<RenderPass> distortionPass;
 
-	std::unique_ptr<PostEffect> postEffect;
+	std::unique_ptr<GaussianBlur> gaussianBlur;
+	std::unique_ptr<DistortionPostEffect> distortion;
 
 };

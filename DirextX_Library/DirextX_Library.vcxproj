@@ -207,6 +207,8 @@
     <ClCompile Include="MyLibrary/RenderPass/RenderPass.cpp" />
     <ClCompile Include="MyLibrary/RenderPass/RenderPassManager.cpp" />
     <ClCompile Include="MyLibrary/PostEffect/PostEffect.cpp" />
+    <ClCompile Include="MyLibrary/PostEffect/GaussianBlur/GaussianBlur.cpp" />
+    <ClCompile Include="MyLibrary\PostEffect\NormalMapPostEffect\DistortionPostEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\crude_json.h" />
@@ -284,6 +286,8 @@
     <ClInclude Include="MyLibrary/RenderPass/RenderPass.h" />
     <ClInclude Include="MyLibrary/RenderPass/RenderPassManager.h" />
     <ClInclude Include="MyLibrary/PostEffect/PostEffect.h" />
+    <ClInclude Include="MyLibrary/PostEffect/GaussianBlur/GaussianBlur.h" />
+    <ClInclude Include="MyLibrary\PostEffect\NormalMapPostEffect\DistortionPostEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\2DBaseShader\Basic_PixelShader.hlsl">
@@ -374,14 +378,24 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="Shader\PostEffectBaseShader\PostEffectBasePixelShader.hlsl">
+    <FxCompile Include="Shader\PostEffectBaseShader\DistortionShader\DistortionPixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PostEffectBasePSShader</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">DistortionPixelShader</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PostEffectBasePSShader</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">DistortionPixelShader</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\GaussianBlurPixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">GaussianBlurPSShader</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">GaussianBlurPSShader</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shader\PostEffectBaseShader\PostEffectBaseVertexShader.hlsl">

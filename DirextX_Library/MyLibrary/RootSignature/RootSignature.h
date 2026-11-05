@@ -16,6 +16,7 @@ public:
 	void SetModelRootSignature();
 	void Set3DRootSignature();
 	void SetPostEffectRootSignature();
+	void SetDistortionRootSignature();
 
 private:
 	bool success = false; // ルートシグネチャの生成に成功したかどうか

@@ -17,6 +17,8 @@
 #include "../RenderPass/RenderPassManager.h"
 #include "../RenderTarget/RenderTarget.h"
 #include "../PostEffect/PostEffect.h"
+#include "../PostEffect/GaussianBlur/GaussianBlur.h"
+#include "../PostEffect/NormalMapPostEffect/DistortionPostEffect.h"
 
 Application::Application()
 {
@@ -47,12 +49,15 @@ void Application::ApplicationInit(Window window)
 
     sceneRenderTarget->Create( size.width, size.height, DXGI_FORMAT_R8G8B8A8_UNORM );
 
+	blurRenderTarget = std::make_shared<RenderTarget>();
+	blurRenderTarget->Create(size.width,size.height,DXGI_FORMAT_R8G8B8A8_UNORM);
+
     // ポストエフェクト
-    postEffect = std::make_unique<PostEffect>();
+	gaussianBlur = std::make_unique<GaussianBlur>();
 
-    postEffect->Init();
+	gaussianBlur->Init();
 
-    postEffect->SetInputTexture(sceneRenderTarget->GetSRV());
+	gaussianBlur->SetInputTexture(sceneRenderTarget->GetSRV());
 
     // ScenePass
     scenePass = std::make_shared<RenderPass>();
@@ -64,21 +69,54 @@ void Application::ApplicationInit(Window window)
         Object3DManager::GetInstance()->Draw();
     });
 
-    // PostEffectPass
-    postEffectPass = std::make_shared<RenderPass>();
+	// 水平方向のブラー
+	horizontalBlurPass = std::make_shared<RenderPass>();
 
-    // nullptr = BackBuffer
-    postEffectPass->SetRenderTarget(nullptr);
+	horizontalBlurPass->SetRenderTarget(gaussianBlur->GetIntermediateRenderTarget());
 
-    postEffectPass->SetExecuteFunction([this]()
-    {
-        postEffect->Draw();
-    });
+	horizontalBlurPass->SetExecuteFunction([this]()
+	{
+		gaussianBlur->DrawHorizontal();
+	});
+
+
+	// 垂直方向のブラー
+	verticalBlurPass = std::make_shared<RenderPass>();
+
+	// nullptr = BackBuffer
+	verticalBlurPass->SetRenderTarget(nullptr);
+
+	verticalBlurPass->SetExecuteFunction([this]()
+	{
+		gaussianBlur->DrawVertical();
+	});
+
+	// 歪み
+	distortion = std::make_unique<DistortionPostEffect>();
+
+	distortion->Load("data/testDist.png");
+	distortion->Init();
+
+	distortion->SetInputTexture(blurRenderTarget->GetSRV());
+
+	// 歪みPass
+	distortionPass = std::make_shared<RenderPass>();
+
+	// nullptr = BackBuffer
+	distortionPass->SetRenderTarget(nullptr);
+
+	distortionPass->SetExecuteFunction([this]()
+	{
+		distortion->Draw();
+	});
+
 
     // 登録
     RenderPassManager::GetInstance()->AddPass(scenePass);
 
-    RenderPassManager::GetInstance()->AddPass(postEffectPass);
+    RenderPassManager::GetInstance()->AddPass(horizontalBlurPass);
+    RenderPassManager::GetInstance()->AddPass(verticalBlurPass);
+    //RenderPassManager::GetInstance()->AddPass(distortionPass);
 }
 
 void Application::BeginUpdate()
@@ -132,9 +170,12 @@ void Application::ApplicationRelease()
 	sceneRenderTarget.reset();
 
 	scenePass.reset();
-	postEffectPass.reset();
+	verticalBlurPass.reset();
+	horizontalBlurPass.reset();
+	distortion.reset();
 
-	postEffect.reset();
+	gaussianBlur.reset();
+	blurRenderTarget.reset();
 	//破棄処理
 	RenderPassManager::GetInstance()->Destroy();
 	Engine::GetInstance()->Destroy();
