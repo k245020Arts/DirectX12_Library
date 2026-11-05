@@ -342,8 +342,17 @@
         <ClCompile Include="MyLibrary/ResultErrorHandle/ResultErrorHandle.cpp">
             <Filter>MyLibrary\ResultErrorHandle</Filter>
         </ClCompile>
-        <ClCompile Include="KLibrary/fairu/kimishima.cpp">
-            <Filter>KLibrary\fairu</Filter>
+        <ClCompile Include="MyLibrary/RenderTarget/RenderTarget.cpp">
+            <Filter>MyLibrary\RenderTarget</Filter>
+        </ClCompile>
+        <ClCompile Include="MyLibrary/RenderPass/RenderPass.cpp">
+            <Filter>MyLibrary\RenderPass</Filter>
+        </ClCompile>
+        <ClCompile Include="MyLibrary/RenderPass/RenderPassManager.cpp">
+            <Filter>MyLibrary\RenderPass</Filter>
+        </ClCompile>
+        <ClCompile Include="MyLibrary/PostEffect/PostEffect.cpp">
+            <Filter>MyLibrary\PostEffect</Filter>
         </ClCompile>
     </ItemGroup>
     <ItemGroup>
@@ -560,8 +569,17 @@
         <ClInclude Include="KLibrary\GeneralUtils\StringUtils\StringUtils.h">
             <Filter>KLibrary\String</Filter>
         </ClInclude>
-        <ClInclude Include="KLibrary/fairu/kimishima.h">
-            <Filter>KLibrary\fairu</Filter>
+        <ClInclude Include="MyLibrary/RenderTarget/RenderTarget.h">
+            <Filter>MyLibrary\RenderTarget</Filter>
+        </ClInclude>
+        <ClInclude Include="MyLibrary/RenderPass/RenderPass.h">
+            <Filter>MyLibrary\RenderPass</Filter>
+        </ClInclude>
+        <ClInclude Include="MyLibrary/RenderPass/RenderPassManager.h">
+            <Filter>MyLibrary\RenderPass</Filter>
+        </ClInclude>
+        <ClInclude Include="MyLibrary/PostEffect/PostEffect.h">
+            <Filter>MyLibrary\PostEffect</Filter>
         </ClInclude>
     </ItemGroup>
     <ItemGroup>
@@ -617,8 +635,14 @@
         <Filter Include="MyLibrary\ResultErrorHandle">
             <UniqueIdentifier>{3981DA04-0890-4E54-A3F2-549B4B5DBCFC}</UniqueIdentifier>
         </Filter>
-        <Filter Include="KLibrary\fairu">
-            <UniqueIdentifier>{11D248B2-5652-4E91-A8FB-355C2EF2D061}</UniqueIdentifier>
+        <Filter Include="MyLibrary\RenderTarget">
+            <UniqueIdentifier>{0637B723-26FB-4D2D-BF1D-1807E62389FB}</UniqueIdentifier>
+        </Filter>
+        <Filter Include="MyLibrary\RenderPass">
+            <UniqueIdentifier>{6242A8B9-2CD0-4CDB-AD31-907B23FA0769}</UniqueIdentifier>
+        </Filter>
+        <Filter Include="MyLibrary\PostEffect">
+            <UniqueIdentifier>{27A0EF54-B832-4D11-BA84-0A301BA127DB}</UniqueIdentifier>
         </Filter>
     </ItemGroup>
 </Project>

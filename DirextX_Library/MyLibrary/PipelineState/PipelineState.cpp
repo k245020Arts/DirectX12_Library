@@ -93,6 +93,20 @@ void PipelineState::Create()
 	success = true;
 }
 
+void PipelineState::PostEffectPipelineCreate()
+{
+	// パイプラインステートを生成
+	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(defalutPipelineState.ReleaseAndGetAddressOf()));
+	if (FAILED(hr))
+	{
+		OutputDebugStringW(L"パイプラインステートの生成に失敗");
+		return;
+	}
+
+	currentPipelineState = defalutPipelineState;
+	success = true;
+}
+
 void PipelineState::ErrorStateChange()
 {
 	currentPipelineState = errorPipelineState;
@@ -133,6 +147,21 @@ void PipelineState::SetBlendMode(BlendState _state)
 ID3D12PipelineState* PipelineState::GetPipelineState()
 {
 	return currentPipelineState.Get();
+}
+
+void PipelineState::SetDepthEnable(bool enable)
+{
+	desc.DepthStencilState.DepthEnable = enable;
+}
+
+void PipelineState::SetDepthWriteMask(D3D12_DEPTH_WRITE_MASK mask)
+{
+	desc.DepthStencilState.DepthWriteMask = mask;
+}
+
+void PipelineState::SetDepthFunc(D3D12_COMPARISON_FUNC func)
+{
+	desc.DepthStencilState.DepthFunc = func;
 }
 
 void PipelineState::CreateAlphaPipelineState()

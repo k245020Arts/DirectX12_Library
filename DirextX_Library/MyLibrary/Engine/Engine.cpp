@@ -101,29 +101,7 @@ void Engine::BeginRender()
     commandList->RSSetViewports(1, &viewport);
     commandList->RSSetScissorRects(1, &scissor);
 
-    auto currentRtvHandle = pRtvHeap->GetCPUDescriptorHandleForHeapStart();
-
-    currentRtvHandle.ptr += currentBackBufferIndex * m_RtvDescriptorSize;
-
-    auto currentDsvHandle = pDsvHeap->GetCPUDescriptorHandleForHeapStart();
-
-    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentRenderTarget,D3D12_RESOURCE_STATE_PRESENT,D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-    commandList->ResourceBarrier(1, &barrier);
-
-    commandList->OMSetRenderTargets(1, &currentRtvHandle, FALSE,&currentDsvHandle);
-
-    const float clearColor[] =
-    {
-        0.25f,
-        0.25f,
-        0.25f,
-        1.0f
-    };
-
-    commandList->ClearRenderTargetView(currentRtvHandle, clearColor,0,nullptr );
-
-    commandList->ClearDepthStencilView( currentDsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0,0, nullptr);
+    
 }
 
 
@@ -156,6 +134,35 @@ void Engine::EndRender()
     WaitRender();
 
     
+}
+
+void Engine::BindBackBuffer(const Vector4& clearColor)
+{
+    auto commandList = CommandList();
+
+    auto rtvHandle =pRtvHeap->GetCPUDescriptorHandleForHeapStart();
+
+    rtvHandle.ptr += currentBackBufferIndex * m_RtvDescriptorSize;
+
+    auto dsvHandle =pDsvHeap->GetCPUDescriptorHandleForHeapStart();
+
+    auto barrier =CD3DX12_RESOURCE_BARRIER::Transition(currentRenderTarget,D3D12_RESOURCE_STATE_PRESENT,D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+    commandList->ResourceBarrier(1, &barrier);
+
+    commandList->OMSetRenderTargets(1,&rtvHandle,FALSE,&dsvHandle);
+
+    const float color[] =
+    {
+        clearColor.x,
+        clearColor.y,
+        clearColor.z,
+        clearColor.w
+    };
+
+    commandList->ClearRenderTargetView(rtvHandle,color,0,nullptr);
+
+    commandList->ClearDepthStencilView(dsvHandle,D3D12_CLEAR_FLAG_DEPTH,1.0f,0,0,nullptr);
 }
 
 ID3D12Device6* Engine::Device()
@@ -220,6 +227,10 @@ void Engine::UploadTexture(ID3D12Resource* uploadBuffer,ID3D12Resource* textureB
     }
 }
 
+D3D12_CPU_DESCRIPTOR_HANDLE Engine::GetDSVHandle() const
+{
+    return pDsvHeap->GetCPUDescriptorHandleForHeapStart();
+}
 
 void Engine::CreateDebugLayer()
 {

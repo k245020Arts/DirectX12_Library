@@ -13,6 +13,10 @@
 #include "../../ImGui/imgui_impl_dx12.h"
 #include "../Input/InputManager.h"
 #include "../../KLibrary/File/FileExplorer/FileExplorer.h"
+#include "../RenderPass/RenderPass.h"
+#include "../RenderPass/RenderPassManager.h"
+#include "../RenderTarget/RenderTarget.h"
+#include "../PostEffect/PostEffect.h"
 
 Application::Application()
 {
@@ -21,7 +25,7 @@ Application::Application()
 
 Application::~Application()
 {
-
+	
 }
 
 void Application::ApplicationInit(Window window)
@@ -35,6 +39,46 @@ void Application::ApplicationInit(Window window)
 #ifdef IMGUI
 	FileExplorer::Init();
 #endif // IMGUI
+
+    auto size = Engine::GetInstance()->GetWindowSize();
+
+    // シーン描画用RenderTarget
+    sceneRenderTarget =std::make_shared<RenderTarget>();
+
+    sceneRenderTarget->Create( size.width, size.height, DXGI_FORMAT_R8G8B8A8_UNORM );
+
+    // ポストエフェクト
+    postEffect = std::make_unique<PostEffect>();
+
+    postEffect->Init();
+
+    postEffect->SetInputTexture(sceneRenderTarget->GetSRV());
+
+    // ScenePass
+    scenePass = std::make_shared<RenderPass>();
+
+    scenePass->SetRenderTarget(sceneRenderTarget.get());
+
+    scenePass->SetExecuteFunction([]()
+    {
+        Object3DManager::GetInstance()->Draw();
+    });
+
+    // PostEffectPass
+    postEffectPass = std::make_shared<RenderPass>();
+
+    // nullptr = BackBuffer
+    postEffectPass->SetRenderTarget(nullptr);
+
+    postEffectPass->SetExecuteFunction([this]()
+    {
+        postEffect->Draw();
+    });
+
+    // 登録
+    RenderPassManager::GetInstance()->AddPass(scenePass);
+
+    RenderPassManager::GetInstance()->AddPass(postEffectPass);
 }
 
 void Application::BeginUpdate()
@@ -63,8 +107,13 @@ void Application::ApplicationUpdate()
 
 void Application::ApplicationDraw()
 {
+	//Object3DManager::GetInstance()->Draw(); //オブジェクト3Dの描画に必要な情報を流し込む
+	// マルチパスレンダリング
+	RenderPassManager::GetInstance()->Execute();
+
+	// UI描画用にBackBufferを再設定
+	// PostEffectPassがBackBufferを使用しているため
 	Object2DManager::GetInstance()->Draw(); //オブジェクト2Dの描画に必要な情報を流し込む
-	Object3DManager::GetInstance()->Draw(); //オブジェクト3Dの描画に必要な情報を流し込む
 
 	if (imgui != nullptr) {
 		imgui->EndRenderImGui();
@@ -80,8 +129,14 @@ void Application::ApplicationRelease()
 	if (imgui != nullptr) {
 		imgui->ReleaseImGui();
 	}
+	sceneRenderTarget.reset();
 
+	scenePass.reset();
+	postEffectPass.reset();
+
+	postEffect.reset();
 	//破棄処理
+	RenderPassManager::GetInstance()->Destroy();
 	Engine::GetInstance()->Destroy();
 	TextureLoader::GetInstance()->Destroy();
 	Object2DManager::GetInstance()->Destroy();

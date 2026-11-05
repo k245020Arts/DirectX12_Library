@@ -17,6 +17,7 @@
 #include "../Window/Window.h"
 #include "../Comptr.h"
 #include "../SingleTon/SingletonBase.h"
+#include "../Helper/Helper.h"
 
 static constexpr int FRAME_BUFFER_COUNT = 2;
 
@@ -31,6 +32,8 @@ public:
 
 	void BeginRender();
 	void EndRender();
+	void BindBackBuffer(const Vector4& clearColor);
+
 	ID3D12Device6* Device();
 	ID3D12GraphicsCommandList* CommandList();
 	ID3D12CommandQueue* CommandQueue();
@@ -39,6 +42,8 @@ public:
 	const Size& GetWindowSize() { return windowSize; }
 
 	void UploadTexture(ID3D12Resource* uploadBuffer, ID3D12Resource* textureBuffer, const D3D12_TEXTURE_COPY_LOCATION& src, const D3D12_TEXTURE_COPY_LOCATION& dst);
+	D3D12_CPU_DESCRIPTOR_HANDLE GetDSVHandle() const;
+
 
 private:
 

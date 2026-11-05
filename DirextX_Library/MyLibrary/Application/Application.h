@@ -4,6 +4,9 @@
 
 class DirectX12Imgui;
 class Window;
+class RenderTarget;
+class RenderPass;
+class PostEffect;
 
 class Application : public SingletonBase<Application>
 {
@@ -25,5 +28,12 @@ private:
 	friend class SingletonBase<Application>;
 
 	std::unique_ptr<DirectX12Imgui> imgui;
+
+	std::shared_ptr<RenderTarget> sceneRenderTarget;
+
+	std::shared_ptr<RenderPass> scenePass;
+	std::shared_ptr<RenderPass> postEffectPass;
+
+	std::unique_ptr<PostEffect> postEffect;
 
 };

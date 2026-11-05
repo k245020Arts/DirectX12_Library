@@ -16,12 +16,17 @@ public:
 	void SetVS(std::wstring _filePath,std::string _entryPoint); // 頂点シェーダーを設定
 	void SetPS(std::wstring _filePath, std::string _entryPoint); // ピクセルシェーダーを設定
 	void Create(); // パイプラインステートを生成
+	void PostEffectPipelineCreate();
 	
 	void ErrorStateChange();
 	void SetDrawLayOut(D3D12_FILL_MODE _fillMode);
 	void SetBlendMode(BlendState _state);
 
 	ID3D12PipelineState* GetPipelineState();
+
+	void SetDepthEnable(bool enable);
+	void SetDepthWriteMask(D3D12_DEPTH_WRITE_MASK mask);
+	void SetDepthFunc(D3D12_COMPARISON_FUNC func);
 
 private:
 	bool success = false; // 生成に成功したかどうか

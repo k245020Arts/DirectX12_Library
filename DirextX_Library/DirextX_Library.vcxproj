@@ -203,6 +203,10 @@
     <ClCompile Include="MyLibrary\Window\Window.cpp" />
     <ClCompile Include="MyLibrary/Animator/Animator.cpp" />
     <ClCompile Include="MyLibrary/ResultErrorHandle/ResultErrorHandle.cpp" />
+    <ClCompile Include="MyLibrary/RenderTarget/RenderTarget.cpp" />
+    <ClCompile Include="MyLibrary/RenderPass/RenderPass.cpp" />
+    <ClCompile Include="MyLibrary/RenderPass/RenderPassManager.cpp" />
+    <ClCompile Include="MyLibrary/PostEffect/PostEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\crude_json.h" />
@@ -276,6 +280,10 @@
     <ClInclude Include="MyLibrary/Color/Color.h" />
     <ClInclude Include="MyLibrary/Animator/Animator.h" />
     <ClInclude Include="MyLibrary/ResultErrorHandle/ResultErrorHandle.h" />
+    <ClInclude Include="MyLibrary/RenderTarget/RenderTarget.h" />
+    <ClInclude Include="MyLibrary/RenderPass/RenderPass.h" />
+    <ClInclude Include="MyLibrary/RenderPass/RenderPassManager.h" />
+    <ClInclude Include="MyLibrary/PostEffect/PostEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\2DBaseShader\Basic_PixelShader.hlsl">
@@ -365,6 +373,26 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\PostEffectBasePixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PostEffectBasePSShader</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PostEffectBasePSShader</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\PostEffectBaseVertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PostEffectBaseVSShader</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PostEffectBaseVSShader</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

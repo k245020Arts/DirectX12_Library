@@ -161,7 +161,7 @@ Scene::Scene()
 
 	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Color::RGBToVector3(WHITE)));
 
-	model->SetBlendMode(BlendState::ALPHA);
+	model->SetBlendMode(BlendState::NO_BLEND);
 	model->SetAlpha(0.5f);
 #endif // MODEL
 
