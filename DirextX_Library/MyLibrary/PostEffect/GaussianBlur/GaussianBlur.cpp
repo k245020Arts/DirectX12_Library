@@ -30,39 +30,21 @@ bool GaussianBlur::Init()
         return false;
     }
 
-    // 定数バッファ生成
-    horizontalConstBuffers.resize(FRAME_BUFFER_COUNT);
-    verticalConstBuffers.resize(FRAME_BUFFER_COUNT);
-
-    auto weights = GetGaussianWeights(8, 5.0f);
-
-    for (int i = 0; i < FRAME_BUFFER_COUNT; i++)
+    // 定数バッファ生成(フレーム数分)
+    if (!horizontalParam.Create() || !verticalParam.Create())
     {
-        horizontalConstBuffers[i] =std::make_shared<ConstBuffer>(sizeof(GaussianBlurParam));
-
-        verticalConstBuffers[i] =std::make_shared<ConstBuffer>(sizeof(GaussianBlurParam));
-
-        if (!horizontalConstBuffers[i]->IsValid() || !verticalConstBuffers[i]->IsValid())
-        {
-            return false;
-        }
-
-        // 横方向
-        auto horizontal = horizontalConstBuffers[i]->GetPtr<GaussianBlurParam>();
-
-        std::copy(weights.begin(),weights.end(),horizontal->bkWeights);
-
-        horizontal->direction[0] = 1.0f;
-        horizontal->direction[1] = 0.0f;
-
-        // 縦方向
-        auto vertical =verticalConstBuffers[i]->GetPtr<GaussianBlurParam>();
-
-        std::copy(weights.begin(),weights.end(),vertical->bkWeights);
-
-        vertical->direction[0] = 0.0f;
-        vertical->direction[1] = 1.0f;
+        return false;
     }
+
+    // 方向は固定
+    horizontalParam.Edit().direction[0] = 1.0f;
+    horizontalParam.Edit().direction[1] = 0.0f;
+
+    verticalParam.Edit().direction[0] = 0.0f;
+    verticalParam.Edit().direction[1] = 1.0f;
+
+    // 重みとサンプル間隔
+    ApplyParam();
 
     rootSignature = std::make_unique<RootSignature>();
 
@@ -91,18 +73,60 @@ void GaussianBlur::Draw()
     
 }
 
+std::vector<PostEffectPassInfo> GaussianBlur::CreatePasses()
+{
+    std::vector<PostEffectPassInfo> passes;
+
+    // 水平方向のブラー : 中間RenderTargetへ
+    passes.push_back({ [this]() { DrawHorizontal(); }, intermediateRenderTarget.get() });
+
+    // 垂直方向のブラー : 最終出力(出力先はPipelineが決める)
+    passes.push_back({ [this]() { DrawVertical(); }, nullptr });
+
+    return passes;
+}
+
 void GaussianBlur::DrawHorizontal()
 {
-    auto currentIndex = Engine::GetInstance()->CurrentBackBufferIndex(); // 現在のフレーム番号を取得する
     // 元のテクスチャを使って水平方向のブラー
-    DrawFullscreen(inputTexture, horizontalConstBuffers[currentIndex].get());
+    DrawFullscreen(inputTexture, horizontalParam.GetBuffer());
 }
 
 void GaussianBlur::DrawVertical()
 {
-    auto currentIndex = Engine::GetInstance()->CurrentBackBufferIndex(); // 現在のフレーム番号を取得する
     // 中間RenderTargetを使って垂直方向のブラー
-    DrawFullscreen(intermediateRenderTarget->GetSRV(),verticalConstBuffers[currentIndex].get());
+    DrawFullscreen(intermediateRenderTarget->GetSRV(), verticalParam.GetBuffer());
+}
+
+void GaussianBlur::SetSigma(float _sigma)
+{
+    sigma = (_sigma < 0.01f) ? 0.01f : _sigma;
+
+    ApplyParam();
+}
+
+void GaussianBlur::SetSpread(float _spread)
+{
+    spread = (_spread < 0.0f) ? 0.0f : _spread;
+
+    ApplyParam();
+}
+
+void GaussianBlur::ApplyParam()
+{
+    auto weights = GetGaussianWeights(8, sigma);
+
+    auto apply = [&](PostEffectParam<GaussianBlurParam>& _param)
+    {
+        auto& p = _param.Edit();
+
+        std::copy(weights.begin(), weights.end(), p.bkWeights);
+
+        p.offsetScale = spread;
+    };
+
+    apply(horizontalParam);
+    apply(verticalParam);
 }
 
 RenderTarget* GaussianBlur::GetIntermediateRenderTarget()

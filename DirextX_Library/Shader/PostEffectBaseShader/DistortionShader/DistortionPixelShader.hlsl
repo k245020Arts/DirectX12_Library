@@ -3,6 +3,12 @@ Texture2D<float4> normalTexture : register(t1);
 
 SamplerState smp : register(s0);
 
+cbuffer DistortionParam : register(b0)
+{
+    float strength;
+    float3 padding;
+};
+
 struct PSInput
 {
     float4 position : SV_POSITION;
@@ -15,7 +21,7 @@ float4 DistortionPixelShader(PSInput input) : SV_TARGET
 
     float3 normal = normalTexture.Sample(smp, uv).xyz * 2.0f - 1.0f;
 
-    float2 distortion = normal.xy * 0.1f;
+    float2 distortion = normal.xy * strength;
 
     float2 distortedUV = uv + distortion;
 

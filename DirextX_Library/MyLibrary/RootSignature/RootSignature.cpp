@@ -363,7 +363,7 @@ void RootSignature::SetDistortionRootSignature()
 	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS; // ハルシェーダーのルートシグネチャへのアクセスを拒否する
 	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS; // ジオメトリシェーダーのルートシグネチャへのアクセスを拒否する
 
-	CD3DX12_ROOT_PARAMETER rootParam[2] = {};
+	CD3DX12_ROOT_PARAMETER rootParam[3] = {};
 	// スタティックサンプラーの設定
 	D3D12_STATIC_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;//横繰り返し
@@ -401,6 +401,9 @@ void RootSignature::SetDistortionRootSignature()
 	rootParam[1].DescriptorTable.pDescriptorRanges = &descTblRange1;
 	rootParam[1].DescriptorTable.NumDescriptorRanges = 1;
 	rootParam[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	// rootParam[2] : b0 (歪みのパラメータ)
+	rootParam[2].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_PIXEL);
 
 	// ルートシグニチャの設定（設定したいルートパラメーターとスタティックサンプラーを入れる）
 	D3D12_ROOT_SIGNATURE_DESC desc = {};

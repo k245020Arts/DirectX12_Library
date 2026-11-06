@@ -44,6 +44,12 @@ ResultErrorHandle DistortionPostEffect::Load(const std::string& _path)
 
 bool DistortionPostEffect::Init()
 {
+    // 定数バッファ生成(フレーム数分)
+    if (!param.Create())
+    {
+        return false;
+    }
+
     auto engine = Engine::GetInstance();
 
     auto size = engine->GetWindowSize();
@@ -70,9 +76,23 @@ bool DistortionPostEffect::Init()
     return true;
 }
 
+std::vector<PostEffectPassInfo> DistortionPostEffect::CreatePasses()
+{
+    // 1パスで完結するので最終出力パスのみ
+    return { { [this]() { Draw(); }, nullptr } };
+}
+
+void DistortionPostEffect::SetStrength(float _strength)
+{
+    param.Edit().strength = _strength;
+}
+
 void DistortionPostEffect::Draw()
 {
-    if (inputTexture == nullptr)
+    // 入力・歪みテクスチャ・定数バッファのどれかが無ければ描画しない
+    auto constBuffer = param.GetBuffer();
+
+    if (inputTexture == nullptr || descriptorHandle == nullptr || constBuffer == nullptr)
     {
         return;
     }
@@ -97,6 +117,7 @@ void DistortionPostEffect::Draw()
 
     commandList->SetGraphicsRootDescriptorTable(0, inputTexture->handleGPU);
     commandList->SetGraphicsRootDescriptorTable(1, descriptorHandle->handleGPU);
+    commandList->SetGraphicsRootConstantBufferView(2, constBuffer->GetAddress());
 
     commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

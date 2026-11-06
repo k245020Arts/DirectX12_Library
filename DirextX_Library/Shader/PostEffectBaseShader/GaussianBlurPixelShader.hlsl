@@ -11,11 +11,12 @@ cbuffer GaussianBlurParam : register(b0)
 {
     float4 bkWeights[2];
     float2 direction;
+    float offsetScale;
 };
 
 float4 GaussianBlurPSShader(PSInput input) : SV_TARGET
 {
-    float4 color = MainTex.Sample(MainSampler,input.uv);
+    float4 color = MainTex.Sample(MainSampler, input.uv);
     
     //モノクロ
     //float Y = dot(color.rgb, float3(0.299, 0.587, 0.114));
@@ -127,13 +128,13 @@ float4 GaussianBlurPSShader(PSInput input) : SV_TARGET
     //ret += MainTex.Sample(MainSampler, input.uv + float2(2 * dx, -2 * dy)) * 1 / 256;
     
     //float[8]だとGPUアライメントの影響を受けてしまうためあえてfloat4[2]にしている
-    
+ 
     float2 texelSize = float2(1.0f / w, 1.0f / h);
     
-    ret += bkWeights[0] * color;
-    for (int i = 1; i < 8;++i)
+    ret += bkWeights[0].x * color;
+    for (int i = 1; i < 8; ++i)
     {
-        float2 offset = texelSize * direction * i * 1.0f;
+        float2 offset = texelSize * direction * i * offsetScale;
         
         ret += bkWeights[i >> 2][i % 4] * MainTex.Sample(MainSampler, input.uv + offset);
         ret += bkWeights[i >> 2][i % 4] * MainTex.Sample(MainSampler, input.uv - offset);

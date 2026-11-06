@@ -176,6 +176,7 @@
     <ClCompile Include="MyLibrary\Object2D\Object2DManager.cpp" />
     <ClCompile Include="MyLibrary\Object3D\Object3DManager.cpp" />
     <ClCompile Include="MyLibrary\PipelineState\PipelineState.cpp" />
+    <ClCompile Include="MyLibrary\PostEffect\PostEffectCreater.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Box\Box2D.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Box\Box3D.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Capsule\Capsule.cpp" />
@@ -209,6 +210,7 @@
     <ClCompile Include="MyLibrary/PostEffect/PostEffect.cpp" />
     <ClCompile Include="MyLibrary/PostEffect/GaussianBlur/GaussianBlur.cpp" />
     <ClCompile Include="MyLibrary\PostEffect\NormalMapPostEffect\DistortionPostEffect.cpp" />
+    <ClCompile Include="MyLibrary/PostEffect/PostEffectPipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\crude_json.h" />
@@ -253,6 +255,8 @@
     <ClInclude Include="MyLibrary\Object3D\Object3D.h" />
     <ClInclude Include="MyLibrary\Object3D\Object3DManager.h" />
     <ClInclude Include="MyLibrary\PipelineState\PipelineState.h" />
+    <ClInclude Include="MyLibrary\PostEffect\PostEffectCreater.h" />
+    <ClInclude Include="MyLibrary\PostEffect\PostEffectParam.h" />
     <ClInclude Include="MyLibrary\Primitives\Box\Box2D.h" />
     <ClInclude Include="MyLibrary\Primitives\Box\Box3D.h" />
     <ClInclude Include="MyLibrary\Primitives\Capsule\Capsule.h" />
@@ -288,6 +292,7 @@
     <ClInclude Include="MyLibrary/PostEffect/PostEffect.h" />
     <ClInclude Include="MyLibrary/PostEffect/GaussianBlur/GaussianBlur.h" />
     <ClInclude Include="MyLibrary\PostEffect\NormalMapPostEffect\DistortionPostEffect.h" />
+    <ClInclude Include="MyLibrary/PostEffect/PostEffectPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\2DBaseShader\Basic_PixelShader.hlsl">

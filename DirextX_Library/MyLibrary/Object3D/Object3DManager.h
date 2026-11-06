@@ -30,4 +30,5 @@ private:
 	void Draw();
 
 	friend class Application;
+	friend class PostEffectCreater;
 };

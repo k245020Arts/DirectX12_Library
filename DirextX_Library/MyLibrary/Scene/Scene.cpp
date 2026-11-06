@@ -29,6 +29,7 @@ static const float CLICK_TIME = 0.2f;
 //#define ON3D
 #define MODEL
 
+float lightRotation = 0.0f;;
 
 Scene::Scene()
 {
@@ -502,7 +503,8 @@ void Scene::Update()
 	ImGui::End(); // ウィンドウの終了
 #endif // IMGUI
 
-	
+	//lightRotation += 0.1f;
+	//Light::GetInstance()->SetLightData(1,LightData(Vector3(0.0f, lightRotation, 0.0f), 1.0f, Color::RGBToVector3(WHITE)));
 }
 
 void Scene::Draw()

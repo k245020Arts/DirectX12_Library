@@ -23,9 +23,22 @@ public:
         executeFunction = function;
     }
 
+    //–³Œø‚ÌŠÔ‚Í Execute() ‚Å‰½‚às‚í‚È‚¢(RenderTarget‚ÌØ‚è‘Ö‚¦‚às‚í‚È‚¢)
+    void SetEnabled(bool _enabled)
+    {
+        enabled = _enabled;
+    }
+
+    bool IsEnabled() const
+    {
+        return enabled;
+    }
+
     void Execute();
 
 private:
+
+    bool enabled = true;
 
     RenderTarget* renderTarget = nullptr;
 
