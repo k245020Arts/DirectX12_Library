@@ -3,7 +3,7 @@ cbuffer Transform : register(b0)
     float4x4 World; // ワールド行列
     float4x4 View; // ビュー行列
     float4x4 Proj; // 投影行列
-    
+    float4x4 shadow; //影行列
     float4 uvRect;
 
 }
@@ -56,4 +56,5 @@ struct VSOutput
     float4 color : COLOR; // 変換された色
     float2 uv : TEXCOORD; //uv座標
     float4 normal : NORMAL; // 法線
+    uint instNo : SV_InstanceID;//インスタンシング番号
 };

@@ -12,6 +12,7 @@
 #include "../Animator/Animator.h"
 #include "../Time/DeltaTime.h"
 #include <filesystem>
+#include "../Shadow/ShadowMap.h"
 
 namespace fs = std::filesystem;
 namespace {
@@ -177,8 +178,14 @@ void FBXModel::Draw()
 		commandList->SetDescriptorHeaps(1, DescriptorHeap::GetInstance()->GetHeap().GetAddressOf());
 
 		commandList->SetGraphicsRootDescriptorTable(1, materialHandles[i]->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
-
-		commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 1, 0, 0, 0); // インデックスの数分描画する
+		//地面影を描画する場合はインシタンシングを2にする。
+		if (groundShadow) {
+			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 2, 0, 0, 0); // インデックスの数分描画する
+		}
+		else {
+			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 1, 0, 0, 0); // インデックスの数分描画する
+		}
+		
 	}
 }
 
@@ -309,6 +316,7 @@ void FBXModel::Init()
 	lightConstBuffer.resize(FRAME_BUFFER_COUNT);
 	boneConstBuffer.resize(FRAME_BUFFER_COUNT);
 	vertexBuffer.reserve(modelData.meshes.size());
+	shadowConstBuffer.resize(FRAME_BUFFER_COUNT);
 
 	for (size_t i = 0; i < modelData.meshes.size(); i++)
 	{
@@ -366,12 +374,28 @@ void FBXModel::Init()
 		{
 			OutputDebugStringW(L"ボーン用バッファの生成に失敗\n");
 		}
+
+		shadowConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
+
+		if (!shadowConstBuffer[i]->IsValid())
+		{
+			OutputDebugStringW(L"シャドウ用定数バッファの生成に失敗\n");
+		}
+
+		// 初期値
+		auto shadowPtr = shadowConstBuffer[i]->GetPtr<MatrixTransform>();
+
+		shadowPtr->World = DirectX::XMMatrixIdentity();
+		shadowPtr->View = DirectX::XMMatrixIdentity();
+		shadowPtr->Proj = DirectX::XMMatrixIdentity();
+		shadowPtr->shadow = DirectX::XMMatrixIdentity();
 		
 		// 変換行列の登録
 		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
 		ptr->World = DirectX::XMMatrixIdentity();
 		ptr->View = DirectX::XMMatrixLookAtRH(eyePos, targetPos, upward);
 		ptr->Proj = DirectX::XMMatrixPerspectiveFovRH(fov, aspect, 0.3f, 1000.0f);
+		ptr->shadow = DirectX::XMMatrixIdentity();
 
 		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
 		LightBufferData l = Light::GetInstance()->GetLightBufferData();
@@ -411,7 +435,8 @@ void FBXModel::Init()
 		OutputDebugStringW(L"ルートシグネチャの生成に失敗\n");
 	}
 
-
+	// シャドウ用PipelineState
+	SetShadowPipelineState();
 	//uvRect = { 0.0f,0.0f,1.0f,1.0f };
 }
 
@@ -431,6 +456,69 @@ void FBXModel::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wst
 	}
 }
 
+void FBXModel::DrawShadow(const ShadowMap& _shadowMap)
+{
+	if (shadowPipelineState == nullptr || !shadowPipelineState->IsSuccess())
+	{
+		return;
+	}
+
+	auto engine = Engine::GetInstance();
+
+	auto currentIndex = engine->CurrentBackBufferIndex();
+
+	auto commandList = engine->CommandList();
+
+	//================================
+	// 定数バッファ設定
+	//================================
+
+	auto shadowData = shadowConstBuffer[currentIndex]->GetPtr<MatrixTransform>();
+
+	// ワールド行列
+	shadowData->World = BuildWorldMatrix();
+
+	// ライト視点の行列
+	shadowData->View = DirectX::XMMatrixIdentity();
+	shadowData->Proj = DirectX::XMMatrixIdentity();
+
+	//================================
+	// RootSignature / PipelineState
+	//================================
+
+	commandList->SetGraphicsRootSignature(rootSignature->Get());
+
+	commandList->SetPipelineState(shadowPipelineState->GetPipelineState());
+
+	// b0 : 変換行列
+	commandList->SetGraphicsRootConstantBufferView(0,shadowConstBuffer[currentIndex]->GetAddress());
+
+	// b2 : ボーン行列
+	commandList->SetGraphicsRootConstantBufferView(3,boneConstBuffer[currentIndex]->GetAddress());
+
+	/*commandList->SetDescriptorHeaps(1,DescriptorHeap::GetInstance()->GetHeap().GetAddressOf());
+
+	commandList->SetGraphicsRootDescriptorTable(0,_shadowMap.GetSRV()->handleGPU);*/
+
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//================================
+	// メッシュ描画
+	//================================
+
+	for (size_t i = 0; i < modelData.meshes.size(); i++)
+	{
+		auto vbView = vertexBuffer[i]->GetView();
+		auto ibView = indexBuffer[i]->View();
+
+		commandList->IASetVertexBuffers(0,1,&vbView);
+
+		commandList->IASetIndexBuffer(&ibView);
+
+		commandList->DrawIndexedInstanced(static_cast<UINT>(modelData.meshes[i].Indices.size()),1,0,0,0);
+	}
+}
+
 void FBXModel::VertexMapping(const Camera3D* _camera)
 {
 	Vector3 scale = transform.scale;
@@ -438,6 +526,10 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 	Vector3 position = transform.position;
 
 	Matrix world = BuildWorldMatrix();
+	
+	Vector4 plane = Vector4(0, 1, 0, 0);
+	Vector3 lightVec = Light::GetInstance()->GetLightBufferData().lights[0].direction * -1.0f;
+	Matrix shadow = DirectX::XMMatrixShadow(DirectX::XMLoadFloat4(&plane), DirectX::XMLoadFloat3(&lightVec));
 
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
@@ -445,6 +537,7 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 		ptr->World = world;
 		ptr->View = _camera->GetViewMatrix();
 		ptr->Proj = _camera->GetProjectionMatrix();
+		ptr->shadow = shadow;
 		ptr->uvRect = Vector4();
 
 		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
@@ -583,4 +676,27 @@ void FBXModel::SetColor(const Vector3& _color)
 	}
 
 	baseColor = _color;
+}
+
+void FBXModel::SetShadowPipelineState()
+{
+	shadowPipelineState = std::make_unique<PipelineState>(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+
+	// 頂点レイアウト
+	shadowPipelineState->SetInputLayout(VertexSkinning3D::InputLayout);
+
+	// 既存のModelRootSignatureを使用
+	shadowPipelineState->SetRootSignature(rootSignature->Get());
+
+	// 頂点シェーダーのみ設定
+	shadowPipelineState->SetVS(L"Shader/FBXModelShader/FBXModelDepthVertexShader.hlsl","DepthVS_FBX");
+	shadowPipelineState->SetPS(L"Shader/FBXModelShader/FBXModelDepthPixelShader.hlsl","ShadowMapDebugPS");
+
+	// 深度専用PSOを生成
+	shadowPipelineState->CreateDepthOnly();
+
+	if (!shadowPipelineState->IsSuccess())
+	{
+		OutputDebugStringW(L"シャドウ用PipelineStateの生成に失敗\n");
+	}
 }

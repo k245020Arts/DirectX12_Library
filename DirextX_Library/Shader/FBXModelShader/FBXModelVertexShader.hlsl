@@ -7,7 +7,7 @@ cbuffer BoneBuffer : register(b2)
     matrix bones[BONE_MAX];
 };
 
-VSOutput BasicVS_FBX(ModelVSInput input)
+VSOutput BasicVS_FBX(ModelVSInput input, uint instNo : SV_InstanceID)
 {
     VSOutput output = (VSOutput) 0;
 
@@ -33,7 +33,12 @@ VSOutput BasicVS_FBX(ModelVSInput input)
     //float4 bonePos = float4(input.pos, 1.0f);
     
     float4 worldPos = mul(World, bonePos);
-    float4 viewPos = mul(View, worldPos);
+    float4 shadowPos = worldPos;
+    if (instNo == 1)
+    {
+       shadowPos = mul(shadow, worldPos);
+    }
+    float4 viewPos = mul(View, shadowPos);
     float4 projPos = mul(Proj, viewPos);
 
     float4 normal = float4(input.normal.xyz,0.0);
@@ -43,6 +48,7 @@ VSOutput BasicVS_FBX(ModelVSInput input)
     output.uv = input.uv; // Ç±Ç±Ç™ïœçXì_ÅBì¸óÕÇ©ÇÁuvÇìnÇ∑
     float3 n = normalize(mul((float4x3) World, skinNormal).xyz);
     output.normal = float4(n, 0.0f);
+    output.instNo = instNo;
     
     return output;
 }

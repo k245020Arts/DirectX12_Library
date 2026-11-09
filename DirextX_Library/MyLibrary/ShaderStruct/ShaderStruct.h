@@ -28,6 +28,7 @@ struct alignas(256) MatrixTransform
     DirectX::XMMATRIX World; // ワールド行列
     DirectX::XMMATRIX View; // ビュー行列
     DirectX::XMMATRIX Proj; // 投影行列
+    Matrix shadow;
 
     DirectX::XMFLOAT4 uvRect; //切り取り座標(本当は分けたほうが良いと思うが、容量的にはこっちの方が少なく管理できると考えたためとりあえずこっちに)
 };

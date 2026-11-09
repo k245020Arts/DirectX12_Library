@@ -114,6 +114,12 @@ DescriptorHandle* DescriptorHeap::Allocate()
 	// 新規スロットの確保
 	const size_t index = m_pHandles.size();
 
+	// Registerで追加されたハンドル分も使用済みとして管理する
+	if (m_Used.size() < m_pHandles.size())
+	{
+		m_Used.resize(m_pHandles.size(), true);
+	}
+
 	if (index >= HANDLE_MAX)
 	{
 		return nullptr;

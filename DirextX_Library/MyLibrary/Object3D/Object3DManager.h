@@ -3,6 +3,7 @@
 #include <list>
 
 class Object3D;
+class ShadowMap;
 
 class Object3DManager : public SingletonBase<Object3DManager>
 {
@@ -28,6 +29,9 @@ private:
 
 	void Update();
 	void Draw();
+
+	// シャドウマップ用の描画
+	void DrawShadow(const ShadowMap& _shadowMap);
 
 	friend class Application;
 	friend class PostEffectCreater;

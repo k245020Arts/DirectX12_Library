@@ -1,6 +1,7 @@
 #include "Object3DManager.h"
 #include "Object3D.h"
 #include "../Camera3D/Camera3D.h"
+#include "../Shadow/ShadowMap.h"
 
 Object3DManager::Object3DManager()
 {
@@ -73,6 +74,17 @@ void Object3DManager::Draw()
 		if (obj == nullptr || obj->IsDestory())
 			continue;
 		obj->Draw();
+	}
+}
+
+void Object3DManager::DrawShadow(const ShadowMap& _shadowMap)
+{
+	for (Object3D* obj : *objects)
+	{
+		if (obj == nullptr || obj->IsDestory())
+			continue;
+
+		obj->DrawShadow(_shadowMap);
 	}
 }
 

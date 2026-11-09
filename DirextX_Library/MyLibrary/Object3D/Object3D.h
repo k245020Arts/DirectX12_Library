@@ -3,6 +3,7 @@
 #include "Object3DManager.h"
 
 class Camera3D;
+class ShadowMap;
 
 class Object3D
 {
@@ -29,6 +30,9 @@ protected:
 
     virtual void Update() {};
     virtual void Draw() {};
+
+    // シャドウマップ用の描画
+    virtual void DrawShadow(const ShadowMap& _shadowMap) {};
 
     virtual void VertexMapping(const Camera3D* _camera) { ; }
 

@@ -372,6 +372,9 @@
     <ClCompile Include="MyLibrary\PostEffect\PostEffectCreater.cpp">
       <Filter>MyLibrary\PostEffect</Filter>
     </ClCompile>
+    <ClCompile Include="MyLibrary/Shadow/ShadowMap.cpp">
+      <Filter>MyLibrary\Shadow</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyLibrary\assimp\AssimpLoader.h">
@@ -614,6 +617,9 @@
     <ClInclude Include="MyLibrary\PostEffect\PostEffectCreater.h">
       <Filter>MyLibrary\PostEffect</Filter>
     </ClInclude>
+    <ClInclude Include="MyLibrary/Shadow/ShadowMap.h">
+      <Filter>MyLibrary\Shadow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\2DBaseShader\Basic_VertexShader.hlsl">
@@ -655,6 +661,12 @@
     <FxCompile Include="Shader\PostEffectBaseShader\DistortionShader\DistortionPixelShader.hlsl">
       <Filter>Shader\PostEffectShader\DistoritionPixelShader</Filter>
     </FxCompile>
+    <FxCompile Include="Shader\FBXModelShader\FBXModelDepthVertexShader.hlsl">
+      <Filter>Shader\FBXModelShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\FBXModelShader\FBXModelDepthPixelShader.hlsl">
+      <Filter>Shader\FBXModelShader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\2DBaseShader\BasicShaderHeader.hlsli">
@@ -691,6 +703,9 @@
     </Filter>
     <Filter Include="MyLibrary\PostEffect\NormalMapPostEffect">
       <UniqueIdentifier>{F0ED9C29-8AD6-4817-B6F4-5DA5EEB1763E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLibrary\Shadow">
+      <UniqueIdentifier>{D0B37EA8-574E-4116-A372-7672E473DDDB}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

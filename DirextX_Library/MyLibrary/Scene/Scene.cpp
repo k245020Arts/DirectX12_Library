@@ -164,6 +164,7 @@ Scene::Scene()
 
 	model->SetBlendMode(BlendState::NO_BLEND);
 	model->SetAlpha(0.5f);
+	model->SetGroundShadow(true);
 #endif // MODEL
 
 	

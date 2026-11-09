@@ -107,6 +107,36 @@ void PipelineState::PostEffectPipelineCreate()
 	success = true;
 }
 
+void PipelineState::CreateDepthOnly()
+{
+	// カラーレンダーターゲットを使用しない
+	desc.NumRenderTargets = 0;
+	desc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+
+	// 深度バッファへの書き込みを有効化
+	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+
+	desc.DepthStencilState.DepthEnable = TRUE;
+	desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+
+	desc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+
+	// ピクセルシェーダーは使用しない
+	desc.PS = {};
+
+	// 深度専用PSOを生成
+	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc,IID_PPV_ARGS(defalutPipelineState.ReleaseAndGetAddressOf()));
+
+	if (FAILED(hr))
+	{
+		OutputDebugStringW(L"深度専用パイプラインステートの生成に失敗\n");
+		return;
+	}
+
+	currentPipelineState = defalutPipelineState;
+	success = true;
+}
+
 void PipelineState::ErrorStateChange()
 {
 	currentPipelineState = errorPipelineState;

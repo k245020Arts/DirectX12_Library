@@ -5,6 +5,10 @@ Texture2D _MainTex : register(t0); // テクスチャ
 
 float4 BasicPS_FBX(VSOutput input) : SV_TARGET
 {
+    if (input.instNo == 1)
+    {
+        return float4(0, 0, 0, 1);
+    }
     float3 totalLight = ambientColor * ambientIntensity;
 
     for (uint i = 0; i < lightCount; ++i)

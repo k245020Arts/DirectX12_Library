@@ -5,6 +5,7 @@
 class PostEffectPipeline;
 class GaussianBlur;
 class DistortionPostEffect;
+class ShadowMap;
 
 class PostEffectCreater : public SingletonBase<PostEffectCreater>
 {
@@ -28,5 +29,7 @@ private:
 	DistortionPostEffect* distortion = nullptr;
 
 	friend class SingletonBase<PostEffectCreater>;
+
+	std::shared_ptr<ShadowMap> shadowMap;
 
 };

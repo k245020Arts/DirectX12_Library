@@ -17,6 +17,7 @@ public:
 	void SetPS(std::wstring _filePath, std::string _entryPoint); // ピクセルシェーダーを設定
 	void Create(); // パイプラインステートを生成
 	void PostEffectPipelineCreate();
+	void CreateDepthOnly();
 	
 	void ErrorStateChange();
 	void SetDrawLayOut(D3D12_FILL_MODE _fillMode);

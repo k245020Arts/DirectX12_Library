@@ -17,6 +17,7 @@
 #include "../PostEffect/PostEffectPipeline.h"
 #include "../PostEffect/GaussianBlur/GaussianBlur.h"
 #include "../PostEffect/NormalMapPostEffect/DistortionPostEffect.h"
+#include "../Shadow/ShadowMap.h"
 
 
 PostEffectCreater::PostEffectCreater()
@@ -32,6 +33,16 @@ PostEffectCreater::~PostEffectCreater()
 void PostEffectCreater::Init()
 {
 	auto size = Engine::GetInstance()->GetWindowSize();
+
+	// ShadowMap生成
+	/*shadowMap = std::make_shared<ShadowMap>();
+
+	if (!shadowMap->Create(2048, 2048))
+	{
+		OutputDebugStringW(L"ShadowMapの生成に失敗\n");
+		return;
+	}*/
+
 	// ポストエフェクト
 	// RenderTarget / RenderPass / 入力テクスチャの設定は Build() が自動でやる
 	postEffectPipeline = std::make_unique<PostEffectPipeline>();
@@ -43,6 +54,20 @@ void PostEffectCreater::Init()
 	{
 		Object3DManager::GetInstance()->Draw();
 	});
+
+	/*auto shadowPass = std::make_shared<RenderPass>();
+
+	shadowPass->SetExecuteFunction([this]()
+	{
+		shadowMap->BeginRender();
+
+		Object3DManager::GetInstance()->DrawShadow(*shadowMap.get());
+
+		shadowMap->EndRender();
+	});*/
+
+	// RenderPassManagerに登録
+	/*RenderPassManager::GetInstance()->AddPass(shadowPass);*/
 
 	// 使いたいエフェクトを、かけたい順に追加するだけ
 	// 返ってきたポインタで、パラメータの変更や SetEnabled(true/false) による個別のON/OFFができる

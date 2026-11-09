@@ -130,6 +130,7 @@ public:
 	void SetBlendMode(BlendState _blendState);
 
 	void SetAlpha(float _alphaValue);
+	void SetGroundShadow(bool _shadow) { groundShadow = _shadow; }
 
 private:
 
@@ -138,6 +139,7 @@ private:
 	void SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint);
 
 	
+	void DrawShadow(const ShadowMap& _shadowMap)override;
 	ModelData modelData;
 
 	std::unique_ptr<Animator> animator;
@@ -175,4 +177,15 @@ private:
 	std::vector<FBXModel*> attachedChildren;     // 自分に取り付いているモデル
 
 	Vector3 baseColor;
+
+	bool groundShadow = false;
+
+	// シャドウ描画用の定数バッファ
+	std::vector<std::shared_ptr<ConstBuffer>> shadowConstBuffer;
+
+	// シャドウ描画用PipelineState
+	std::unique_ptr<PipelineState> shadowPipelineState;
+
+	// シャドウ用PipelineStateの生成
+	void SetShadowPipelineState();
 };
