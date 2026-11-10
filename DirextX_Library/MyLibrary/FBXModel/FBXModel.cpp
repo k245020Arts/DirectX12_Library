@@ -165,6 +165,8 @@ void FBXModel::Draw()
 		auto ibView = indexBuffer[i]->View(); // そのメッシュに対応する頂点バッファ
 		auto materialHeap = DescriptorHeap::GetInstance()->GetHeap().Get();
 
+		commandList->SetDescriptorHeaps(1, DescriptorHeap::GetInstance()->GetHeap().GetAddressOf());
+
 		commandList->SetGraphicsRootSignature(rootSignature->Get());
 		commandList->SetPipelineState(pipelineState->GetPipelineState());
 		commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
@@ -177,8 +179,6 @@ void FBXModel::Draw()
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &vbView);
 		commandList->IASetIndexBuffer(&ibView);
-
-		commandList->SetDescriptorHeaps(1, DescriptorHeap::GetInstance()->GetHeap().GetAddressOf());
 
 		commandList->SetGraphicsRootDescriptorTable(1, materialHandles[i]->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
 		//地面影を描画する場合はインシタンシングを2にする。
@@ -506,6 +506,7 @@ void FBXModel::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMa
 
 	auto* constBuff = constBuffer[currentIndex]->GetPtr<MatrixTransform>();
 	constBuff->lightViewProjection = lightViewProjection;
+	constBuff->useShadow = useShadowMap;
 
     commandList->SetGraphicsRootSignature(shadowRootSignature->Get());
     commandList->SetPipelineState(shadowPipelineState->GetPipelineState());
@@ -539,6 +540,10 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 	Vector3 position = transform.position;
 
 	Matrix world = BuildWorldMatrix();
+
+	Vector4 plane = Vector4(0, 1, 0, 0);
+	Vector3 lightVec = Light::GetInstance()->GetLightBufferData().lights[0].direction * -1.0f;
+	Matrix shadow = DirectX::XMMatrixShadow(DirectX::XMLoadFloat4(&plane), DirectX::XMLoadFloat3(&lightVec));
 	
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
@@ -547,6 +552,7 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 		ptr->View = _camera->GetViewMatrix();
 		ptr->Proj = _camera->GetProjectionMatrix();
 		ptr->uvRect = Vector4();
+		ptr->shadow = shadow;
 
 		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
 		LightBufferData l = Light::GetInstance()->GetLightBufferData();

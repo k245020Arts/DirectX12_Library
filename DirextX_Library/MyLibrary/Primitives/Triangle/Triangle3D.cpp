@@ -164,7 +164,9 @@ void Triangle3D::Draw()
 	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 	commandList->SetGraphicsRootDescriptorTable(1, descriptorHandle->handleGPU);
 	commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
-
+	if (shadowMapHandle != nullptr) {
+		commandList->SetGraphicsRootDescriptorTable(3, shadowMapHandle->handleGPU);
+	}
 	if (fillMode) {
 		commandList->IASetPrimitiveTopology(drawType);//適切な形に表示をするようにする
 	}

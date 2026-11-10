@@ -8,6 +8,8 @@
 #include "../Texture/TextureLoader.h"
 #include "../DescriptorHeap/DescriptorHeap.h"
 #include "../Camera3D/Camera3D.h"
+#include "../Shadow/ShadowCamera.h"
+#include "../Shadow/ShadowMap.h"
 
 Polygon3D::Polygon3D()
 {
@@ -40,6 +42,7 @@ void Polygon3D::Draw()
 	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 	commandList->SetGraphicsRootDescriptorTable(1, descriptorHandle->handleGPU);
 	commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
+	commandList->SetGraphicsRootDescriptorTable(3, shadowMapHandle->handleGPU);
 
 	if (fillMode) {
 		commandList->IASetPrimitiveTopology(drawType);//適切な形に表示をするようにする
@@ -52,17 +55,74 @@ void Polygon3D::Draw()
 
 	if (useIndex) {
 		commandList->IASetIndexBuffer(&indexBuffer->View());
-
-		commandList->DrawIndexedInstanced(indexSize, 1, 0, 0, 0); //形に応じたインデックスの数分描画する
+		if (groundShadow){
+			commandList->DrawIndexedInstanced(indexSize, 2, 0, 0, 0); //形に応じたインデックスの数分描画する
+		}
+		else {
+			commandList->DrawIndexedInstanced(indexSize, 1, 0, 0, 0); //形に応じたインデックスの数分描画する
+		}
+		
 	}
 	else {
 		commandList->DrawInstanced(polygonSize, 1, 0, 0); // 形に応じた頂点の数を描画する
 	}
 }
 
+void Polygon3D::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMap)
+{
+	shadowMapHandle = _shadowMap.GetSRV();
+	if (shadowPipelineState == nullptr || !shadowPipelineState->IsSuccess() || shadowConstBuffer.empty())
+	{
+		return;
+	}
+
+	const UINT currentIndex = Engine::GetInstance()->CurrentBackBufferIndex();
+	if (currentIndex >= shadowConstBuffer.size())
+	{
+		return;
+	}
+
+	auto* commandList = Engine::GetInstance()->CommandList();
+
+	auto* transformData = shadowConstBuffer[currentIndex]->GetPtr<MatrixTransform>();
+	Matrix world = Matrix::Scale(transform.scale) * Matrix::Rotation(transform.rotation) * Matrix::Translation(transform.position);
+	transformData->World = world;
+	transformData->View = camera.GetViewMatrix();
+	transformData->Proj = camera.GetProjectionMatrix();
+	transformData->uvRect = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+
+	Matrix lightViewProjection = camera.GetViewMatrix() * camera.GetProjectionMatrix();
+
+	transformData->lightViewProjection = lightViewProjection;
+
+	auto* constBuff = constBuffer[currentIndex]->GetPtr<MatrixTransform>();
+	constBuff->lightViewProjection = lightViewProjection;
+	//constBuff->useShadow = useShadowMap;
+
+	commandList->SetGraphicsRootSignature(shadowRootSignature->Get());
+	commandList->SetPipelineState(shadowPipelineState->GetPipelineState());
+
+	// ShadowDepthRootSignature: RP0=b0 Transform, RP1=b2 BoneBuffer。
+	commandList->SetGraphicsRootConstantBufferView(0, shadowConstBuffer[currentIndex]->GetAddress());
+
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	const auto vbView = vertexBuffer->GetView();
+
+	commandList->IASetVertexBuffers(0, 1, &vbView);
+	if (useIndex) {
+		commandList->IASetIndexBuffer(&indexBuffer->View());
+		commandList->DrawIndexedInstanced(static_cast<UINT>(indexSize), 1, 0, 0, 0);
+	}
+	else {
+		commandList->DrawInstanced(static_cast<UINT>(polygonSize), 1, 0, 0);
+	}
+	
+}
 
 void Polygon3D::Init(const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices)
 {
+	shadowConstBuffer.resize(FRAME_BUFFER_COUNT);
 	lightConstBuffer.resize(FRAME_BUFFER_COUNT);
 	fillMode = true;
 	auto vertexSize = sizeof(Vertex) * std::size(_vertices);
@@ -95,6 +155,7 @@ void Polygon3D::Init(const std::vector<Vertex>& _vertices, const std::vector<uin
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
 		constBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
+		shadowConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
 		lightConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(LightBufferData));
 		if (!constBuffer[i]->IsValid())
 		{
@@ -117,17 +178,18 @@ void Polygon3D::Init(const std::vector<Vertex>& _vertices, const std::vector<uin
 
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
-		constBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
-		if (!constBuffer[i]->IsValid())
-		{
-			OutputDebugStringW(L"変換行列用定数バッファの生成に失敗\n");
-		}
-
 		// 変換行列の登録
 		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
 		ptr->World = DirectX::XMMatrixIdentity();
 		ptr->View = DirectX::XMMatrixLookAtRH(eyePos, targetPos, upward);
 		ptr->Proj = DirectX::XMMatrixPerspectiveFovRH(fov, aspect, 0.3f, 2000.0f);
+		ptr->shadow = DirectX::XMMatrixIdentity();
+
+		auto shadowPtr = shadowConstBuffer[i]->GetPtr<MatrixTransform>();
+		shadowPtr->World = DirectX::XMMatrixIdentity();
+		shadowPtr->View = DirectX::XMMatrixLookAtRH(eyePos, targetPos, upward);
+		shadowPtr->Proj = DirectX::XMMatrixPerspectiveFovRH(fov, aspect, 0.3f, 2000.0f);
+		shadowPtr->shadow = DirectX::XMMatrixIdentity();
 	}
 
 	rootSignature = std::make_unique<RootSignature>();
@@ -136,14 +198,14 @@ void Polygon3D::Init(const std::vector<Vertex>& _vertices, const std::vector<uin
 	{
 		OutputDebugStringW(L"ルートシグネチャの生成に失敗\n");
 	}
-
+	SetShadowPipelineState();
 	uvRect = { 0.0f,0.0f,1.0f,1.0f };
 }
 
 void Polygon3D::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint)
 {
 	pipelineState = std::make_unique<PipelineState>(topology);
-	pipelineState->SetInputLayout(Vertex::InputLayout);
+	pipelineState->SetInputLayout(VertexSkinning3D::InputLayout);
 	pipelineState->SetRootSignature(rootSignature->Get());
 	pipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
 	pipelineState->SetVS(_VSfilePath, _VSentryPoint);
@@ -153,6 +215,29 @@ void Polygon3D::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::ws
 	if (!pipelineState->IsSuccess())
 	{
 		OutputDebugStringW(L"パイプラインステートの生成に失敗\n");
+	}
+}
+
+void Polygon3D::SetShadowPipelineState()
+{
+	shadowRootSignature = std::make_unique<RootSignature>();
+	shadowRootSignature->SetShadowDepthRootSignature();
+	if (!shadowRootSignature->IsSuccess())
+	{
+		OutputDebugStringW(L"Shadow用RootSignatureの生成に失敗\n");
+		return;
+	}
+
+	shadowPipelineState = std::make_unique<PipelineState>(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	shadowPipelineState->SetInputLayout(Vertex::InputLayout);
+	shadowPipelineState->SetRootSignature(shadowRootSignature->Get());
+	shadowPipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
+	shadowPipelineState->SetVS(L"Shader/3DBaseShader/Polygon3DDepthVertexShader.hlsl", "DepthVS_Polygon3D");
+	shadowPipelineState->CreateDepthOnly();
+
+	if (!shadowPipelineState->IsSuccess())
+	{
+		OutputDebugStringW(L"Shadow用PipelineStateの生成に失敗\n");
 	}
 }
 
@@ -209,6 +294,10 @@ void Polygon3D::VertexMapping(const Camera3D* _camera)
 		* Matrix::Rotation(rotation)
 		* Matrix::Translation(position);
 
+	Vector4 plane = Vector4(0, 1, 0, 0);
+	Vector3 lightVec = Light::GetInstance()->GetLightBufferData().lights[0].direction * -1.0f;
+	Matrix shadow = DirectX::XMMatrixShadow(DirectX::XMLoadFloat4(&plane), DirectX::XMLoadFloat3(&lightVec));
+
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
 		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
@@ -216,6 +305,7 @@ void Polygon3D::VertexMapping(const Camera3D* _camera)
 		ptr->View = _camera->GetViewMatrix();
 		ptr->Proj = _camera->GetProjectionMatrix();
 		ptr->uvRect = Vector4();
+		ptr->shadow = shadow;
 
 		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
 		LightBufferData l = Light::GetInstance()->GetLightBufferData();

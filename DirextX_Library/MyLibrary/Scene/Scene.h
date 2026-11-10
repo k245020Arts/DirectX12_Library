@@ -80,4 +80,5 @@ private:
 	int legIK = 0;
 
 	FBXModel* plane;
+	Box3D* planeBox;
 };

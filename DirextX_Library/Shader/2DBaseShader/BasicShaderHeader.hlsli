@@ -5,6 +5,8 @@ cbuffer Transform : register(b0)
     float4x4 Proj; // “Š‰es—ñ
     float4x4 shadow; //‰es—ñ
     Matrix lightViewProjection;
+    uint useShadow;
+    uint pad[3];
     
     float4 uvRect;
 }

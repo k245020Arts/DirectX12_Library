@@ -220,8 +220,15 @@ void RootSignature::SetModelRootSignature()
 
 	samplerDescs[2] = samplerDescs[0];
 
+	samplerDescs[2].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
 	samplerDescs[2].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-	samplerDescs[2].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;//比較情報をバイリニア補完
+
+	// シャドウマップの範囲外は「影なし(深度1.0)」として扱う
+	samplerDescs[2].AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDescs[2].AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDescs[2].AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDescs[2].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+
 	samplerDescs[2].MaxAnisotropy = 1;
 	samplerDescs[2].ShaderRegister = 2;
 
@@ -274,20 +281,8 @@ void RootSignature::Set3DRootSignature()
 	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS; // ハルシェーダーのルートシグネチャへのアクセスを拒否する
 	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS; // ジオメトリシェーダーのルートシグネチャへのアクセスを拒否する
 
-	CD3DX12_ROOT_PARAMETER rootParam[3] = {};
+	CD3DX12_ROOT_PARAMETER rootParam[4] = {};
 	rootParam[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL); // b0の定数バッファを設定、全てのシェーダーから見えるようにする
-
-	// スタティックサンプラーの設定
-	D3D12_STATIC_SAMPLER_DESC samplerDesc = {};
-	samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;//横繰り返し
-	samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;//縦繰り返し
-	samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;//奥行繰り返し
-	samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;//ボーダーの時は黒
-	samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;//補間しない(ニアレストネイバー)
-	samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;//ミップマップ最大値
-	samplerDesc.MinLOD = 0.0f;//ミップマップ最小値
-	samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;//オーバーサンプリングの際リサンプリングしない？
-	samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//ピクセルシェーダからのみ可視
 
 	// rootParam[1] : t0
 	D3D12_DESCRIPTOR_RANGE descTblRange = {};
@@ -306,13 +301,80 @@ void RootSignature::Set3DRootSignature()
 	rootParam[2].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_PIXEL);
 	//rootParam[3].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL);
 
-	// ルートシグニチャの設定（設定したいルートパラメーターとスタティックサンプラーを入れる）
+	//RootParameter 3 : t1 ShadowMap
+	D3D12_DESCRIPTOR_RANGE shadowMapRange = {};
+
+	shadowMapRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	shadowMapRange.NumDescriptors = 1;
+	shadowMapRange.BaseShaderRegister = 1;
+	shadowMapRange.RegisterSpace = 0;
+	shadowMapRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[3].InitAsDescriptorTable(1, &shadowMapRange, D3D12_SHADER_VISIBILITY_PIXEL);
+
+	//Static Sampler : s0
+	D3D12_STATIC_SAMPLER_DESC samplerDescs[3] = {};
+
+	// Sampler 0 : Material Texture (s0)
+	samplerDescs[0].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+
+	samplerDescs[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+
+	samplerDescs[0].MipLODBias = 0.0f;
+	samplerDescs[0].MaxAnisotropy = 1;
+	samplerDescs[0].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	samplerDescs[0].BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+	samplerDescs[0].MinLOD = 0.0f;
+	samplerDescs[0].MaxLOD = D3D12_FLOAT32_MAX;
+
+	samplerDescs[0].ShaderRegister = 0;
+	samplerDescs[0].RegisterSpace = 0;
+	samplerDescs[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	//Sampler 1 : ShadowMap (s1)
+	samplerDescs[1].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+
+	samplerDescs[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplerDescs[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplerDescs[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+
+	samplerDescs[1].MipLODBias = 0.0f;
+	samplerDescs[1].MaxAnisotropy = 1;
+	samplerDescs[1].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	samplerDescs[1].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+	samplerDescs[1].MinLOD = 0.0f;
+	samplerDescs[1].MaxLOD = D3D12_FLOAT32_MAX;
+
+	samplerDescs[1].ShaderRegister = 1;
+	samplerDescs[1].RegisterSpace = 0;
+	samplerDescs[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	samplerDescs[2] = samplerDescs[0];
+
+	samplerDescs[2].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	samplerDescs[2].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+	// シャドウマップの範囲外は「影なし(深度1.0)」として扱う
+	samplerDescs[2].AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDescs[2].AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDescs[2].AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDescs[2].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+
+	samplerDescs[2].MaxAnisotropy = 1;
+	samplerDescs[2].ShaderRegister = 2;
+
+
 	D3D12_ROOT_SIGNATURE_DESC desc = {};
-	desc.NumParameters = std::size(rootParam); // ルートパラメーターの個数をいれる
-	desc.NumStaticSamplers = 1; // サンプラーの個数をいれる
-	desc.pParameters = rootParam; // ルートパラメーターのポインタをいれる
-	desc.pStaticSamplers = &samplerDesc; // サンプラーのポインタを入れる
-	desc.Flags = flag; // フラグを設定
+
+	desc.NumParameters = _countof(rootParam);
+	desc.pParameters = rootParam;
+
+	desc.NumStaticSamplers = 3;
+	desc.pStaticSamplers = samplerDescs;
+
+	desc.Flags = flag;
 
 	ComPtr<ID3DBlob> pBlob;
 	ComPtr<ID3DBlob> pErrorBlob;

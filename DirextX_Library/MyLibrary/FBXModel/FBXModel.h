@@ -55,13 +55,6 @@ enum class IKSolverType
 	CCD,		// 反復法。首・背骨・尻尾など、2関節以上の鎖向け
 };
 
-static constexpr int BONE_MAX = 1024;
-
-struct BoneBuffer
-{
-	DirectX::XMFLOAT4X4 bones[BONE_MAX] = {};
-};
-
 class FBXModel : public Object3D
 {
 public:
@@ -134,6 +127,7 @@ public:
 	void SetAlpha(float _alphaValue);
 
 	void SetGroundShadow(bool _shadow) { groundShadow = _shadow; }
+	void SetShadowMap(bool _shadow) { useShadowMap = _shadow; }
 
 private:
 
@@ -187,4 +181,5 @@ private:
 
 	bool groundShadow = false;
 	DescriptorHandle* shadowMapHandle;
+	bool useShadowMap = false;
 };

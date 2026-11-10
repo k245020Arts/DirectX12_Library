@@ -104,6 +104,7 @@ Scene::Scene()
 
 	model->LoadAnimation(L"data/Idle.fbx");
 	model->LoadAnimation(L"data/Fast Run.fbx");
+	
 
 	model->PlayAnimation(2, true);
 	//Ch34_nonPBR
@@ -164,13 +165,14 @@ Scene::Scene()
 
 	model->SetBlendMode(BlendState::NO_BLEND);
 	model->SetAlpha(0.5f);
-	model->SetGroundShadow(true);
+	model->SetShadowMap(true);
 
 	plane = new FBXModel();
 	plane->Load("data/plane.fbx");
 	plane->GetTransform().position = Vector3(0, 0, 0);
 	plane->GetTransform().rotation = Vector3(DirectX::XM_PIDIV2, 0, 0);
 	plane->SetColor(WHITE);
+	plane->SetShadowMap(true);
 
 #endif // MODEL
 
@@ -228,6 +230,13 @@ Scene::Scene()
 	billboard->GetTransform().position = Vector3(170.0f, 50.0f, 250.0f);
 	billboard->SetRectUV(Vector4(0.0f, 0.0f, 0.5f, 0.5f));
 	billboard->SetBillBoardType(false);
+
+	planeBox = new Box3D();
+
+	planeBox->GetTransform().scale = Vector3(100.f, 0.1f, 100.0f);
+	planeBox->GetTransform().position = Vector3(0.0f, -50.0f, 0.0f);
+	planeBox->SetColor(WHITE);
+
 #endif // ON3D
 
 	
@@ -390,7 +399,7 @@ void Scene::Update()
 	
 
 	//sphere3D->Update();
-	sphere3D->GetTransform().rotation.x += 0.01f;
+	//sphere3D->GetTransform().rotation.x += 0.01f;
 	
 	//line3D->Update();
 
@@ -411,6 +420,38 @@ void Scene::Update()
 	Vector3 nowpos = Camera3D::GetInstance()->GetPosition();
 	Vector3 finalPos = Vector3(nowpos.x + -5.0f, nowpos.y, nowpos.z - 1.0f);
 	Camera3D::GetInstance()->SetPosition(finalPos);*/
+
+	Matrix matrix = Matrix::Rotation(sphere3D->GetTransform().rotation);
+
+	bool isMove = false;
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::W)) {
+		isMove = true;
+		sphere3D->GetTransform().position += matrix.TransformDirection(Vector3(0.0f, 0.0f, 2.0f + speedUP));
+	}
+
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::A)) {
+		isMove = true;
+		sphere3D->GetTransform().position += matrix.TransformDirection(Vector3(-2.0f - speedUP, 0.0f, 0.0f));
+	}
+
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::S)) {
+		isMove = true;
+		sphere3D->GetTransform().position += matrix.TransformDirection(Vector3(0.0f, 0.0f, -2.0f - speedUP));
+	}
+
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::D)) {
+		isMove = true;
+		sphere3D->GetTransform().position += matrix.TransformDirection(Vector3(2.0f + speedUP, 0.0f, 0.0f));
+	}
+
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::Left)) {
+		sphere3D->GetTransform().rotation.y += -0.02f;
+	}
+
+	if (InputManager::GetInstance()->GetKeyInput(KeyCode::Right)) {
+		sphere3D->GetTransform().rotation.y += 0.02f;
+	}
+
 #endif
 
 	MoveCamera();

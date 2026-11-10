@@ -35,7 +35,7 @@ void PostEffectCreater::Init()
     shadowCamera = std::make_unique<ShadowCamera>();
     debugShadow = std::make_unique<ShadowMapDebug>();
 
-    const bool shadowMapCreated = shadowMap->Create(2048, 2048);
+    const bool shadowMapCreated = shadowMap->Create(4098, 4098);
     const bool shadowDebugCreated = shadowMapCreated && debugShadow->Init();
 
     if (shadowMapCreated)

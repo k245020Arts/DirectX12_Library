@@ -682,6 +682,9 @@
     <FxCompile Include="Shader\Shadow\ShadowMapDebugPixelShader.hlsl">
       <Filter>Shader\Shadow</Filter>
     </FxCompile>
+    <FxCompile Include="Shader\3DBaseShader\Polygon3DDepthVertexShader.hlsl">
+      <Filter>Shader\3DBaseShader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\2DBaseShader\BasicShaderHeader.hlsli">

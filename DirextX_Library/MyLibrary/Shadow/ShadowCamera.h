@@ -34,8 +34,8 @@ private:
     Matrix projectionMatrix{};
 
     float distance = 500.0f;
-    float orthographicWidth = 1000.0f;
-    float orthographicHeight = 1000.0f;
+    float orthographicWidth = 5000.0f;
+    float orthographicHeight = 5000.0f;
     float nearZ = 1.0f;
     float farZ = 1500.0f;
 };

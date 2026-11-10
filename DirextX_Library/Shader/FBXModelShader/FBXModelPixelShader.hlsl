@@ -52,13 +52,13 @@ float4 BasicPS_FBX(VSOutput input) : SV_TARGET
 
     // óºï˚ÇÃÉâÉCÉgÇçáê¨
     float3 finalRGB = color.rgb * totalLight;
-    
-    float shadow = CalculateShadow(input.shadowPosition);
+    float shadow = 0.0f;
+    if (useShadow)
+    {
+        shadow = CalculateShadow(input.shadowPosition);
 
-    finalRGB.rgb *= lerp(0.3f, 1.0f, shadow);
-
+        finalRGB.rgb *= lerp(0.3f, 1.0f, shadow);
+    }
     return float4(finalRGB, color.a);
-    
-    return float4(shadow, shadow, shadow, 1.0f);
 
 }

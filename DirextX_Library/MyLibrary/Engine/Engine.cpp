@@ -111,11 +111,7 @@ void Engine::EndRender()
         auto& state = backBufferStates[currentBackBufferIndex];
         if (state != D3D12_RESOURCE_STATE_PRESENT)
         {
-            auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-                currentRenderTarget,
-                state,
-                D3D12_RESOURCE_STATE_PRESENT
-            );
+            auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentRenderTarget,state,D3D12_RESOURCE_STATE_PRESENT);
             commandList->ResourceBarrier(1, &barrier);
             state = D3D12_RESOURCE_STATE_PRESENT;
         }

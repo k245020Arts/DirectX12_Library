@@ -30,13 +30,18 @@ public:
 	void SetBlendMode(BlendState _blendState);
 
 	void SetAlpha(float _alphaValue);
+	void SetGroundShadow(bool _groundShadow) { groundShadow = _groundShadow; }
+
 
 protected:
 
 	void Update()override;
 	void Draw()override;
 
+	void DrawShadow(const ShadowCamera& _camera, const ShadowMap& _shadowMap) override;
+
 	void CreateWhiteTextureHandle();
+	void SetShadowPipelineState();
 
 	void VertexMapping(const Camera3D* _camera)override;
 	void Init(const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices);
@@ -46,11 +51,13 @@ protected:
 
 	std::unique_ptr<VertexBuffer> vertexBuffer = nullptr;
 	std::unique_ptr<RootSignature> rootSignature = nullptr;
+	std::unique_ptr<RootSignature> shadowRootSignature = nullptr;
 	std::unique_ptr<PipelineState> pipelineState = nullptr;
 	std::unique_ptr<PipelineState> wireFramePipelineState = nullptr;
 	std::unique_ptr<IndexBuffer> indexBuffer = nullptr;
 
 	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;
+	std::vector<std::shared_ptr<ConstBuffer>> shadowConstBuffer;
 	std::vector<std::shared_ptr<ConstBuffer>> lightConstBuffer;
 
 	bool useIndex = true;
@@ -72,4 +79,8 @@ protected:
 	DescriptorHandle* descriptorHandle = nullptr;
 
 	Vector3 baseColor = Vector3();
+
+	bool groundShadow = false;
+	DescriptorHandle* shadowMapHandle;
+	std::unique_ptr<PipelineState> shadowPipelineState;
 };
