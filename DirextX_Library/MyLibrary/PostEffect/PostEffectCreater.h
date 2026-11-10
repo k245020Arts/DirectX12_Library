@@ -6,6 +6,9 @@ class PostEffectPipeline;
 class GaussianBlur;
 class DistortionPostEffect;
 class ShadowMap;
+class ShadowCamera;
+class ShadowMapDebug;
+class RenderPass;
 
 class PostEffectCreater : public SingletonBase<PostEffectCreater>
 {
@@ -30,6 +33,6 @@ private:
 
 	friend class SingletonBase<PostEffectCreater>;
 
-	std::shared_ptr<ShadowMap> shadowMap;
+	bool showShadowMap = true;
 
 };

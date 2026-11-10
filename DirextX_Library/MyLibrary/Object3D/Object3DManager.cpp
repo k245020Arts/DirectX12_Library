@@ -2,6 +2,7 @@
 #include "Object3D.h"
 #include "../Camera3D/Camera3D.h"
 #include "../Shadow/ShadowMap.h"
+#include "../Shadow/ShadowCamera.h"
 
 Object3DManager::Object3DManager()
 {
@@ -77,14 +78,14 @@ void Object3DManager::Draw()
 	}
 }
 
-void Object3DManager::DrawShadow(const ShadowMap& _shadowMap)
+void Object3DManager::DrawShadow(const ShadowMap& _shadowMap,const ShadowCamera& _camera)
 {
 	for (Object3D* obj : *objects)
 	{
 		if (obj == nullptr || obj->IsDestory())
 			continue;
 
-		obj->DrawShadow(_shadowMap);
+		obj->DrawShadow(_shadowMap,_camera);
 	}
 }
 

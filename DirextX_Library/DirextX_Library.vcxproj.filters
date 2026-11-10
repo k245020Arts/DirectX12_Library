@@ -375,6 +375,12 @@
     <ClCompile Include="MyLibrary/Shadow/ShadowMap.cpp">
       <Filter>MyLibrary\Shadow</Filter>
     </ClCompile>
+    <ClCompile Include="MyLibrary\Shadow\ShadowCamera.cpp">
+      <Filter>MyLibrary\Shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\Shadow\ShadowMapDebug.cpp">
+      <Filter>MyLibrary\Shadow</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyLibrary\assimp\AssimpLoader.h">
@@ -620,6 +626,12 @@
     <ClInclude Include="MyLibrary/Shadow/ShadowMap.h">
       <Filter>MyLibrary\Shadow</Filter>
     </ClInclude>
+    <ClInclude Include="MyLibrary\Shadow\ShadowCamera.h">
+      <Filter>MyLibrary\Shadow</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Shadow\ShadowMapDebug.h">
+      <Filter>MyLibrary\Shadow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\2DBaseShader\Basic_VertexShader.hlsl">
@@ -660,12 +672,6 @@
     </FxCompile>
     <FxCompile Include="Shader\PostEffectBaseShader\DistortionShader\DistortionPixelShader.hlsl">
       <Filter>Shader\PostEffectShader\DistoritionPixelShader</Filter>
-    </FxCompile>
-    <FxCompile Include="Shader\FBXModelShader\FBXModelDepthVertexShader.hlsl">
-      <Filter>Shader\FBXModelShader</Filter>
-    </FxCompile>
-    <FxCompile Include="Shader\FBXModelShader\FBXModelDepthPixelShader.hlsl">
-      <Filter>Shader\FBXModelShader</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

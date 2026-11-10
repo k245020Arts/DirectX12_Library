@@ -195,6 +195,8 @@
     <ClCompile Include="MyLibrary\RootSignature\RootSignature.cpp" />
     <ClCompile Include="MyLibrary\Scene\Scene.cpp" />
     <ClCompile Include="MyLibrary\ShaderStruct\ShaderStruct.cpp" />
+    <ClCompile Include="MyLibrary\Shadow\ShadowCamera.cpp" />
+    <ClCompile Include="MyLibrary\Shadow\ShadowMapDebug.cpp" />
     <ClCompile Include="MyLibrary\Texture\Texture2D.cpp" />
     <ClCompile Include="MyLibrary\Texture\TextureLoader.cpp" />
     <ClCompile Include="MyLibrary\Time\DeltaTime.cpp" />
@@ -276,6 +278,8 @@
     <ClInclude Include="MyLibrary\RootSignature\RootSignature.h" />
     <ClInclude Include="MyLibrary\Scene\Scene.h" />
     <ClInclude Include="MyLibrary\ShaderStruct\ShaderStruct.h" />
+    <ClInclude Include="MyLibrary\Shadow\ShadowCamera.h" />
+    <ClInclude Include="MyLibrary\Shadow\ShadowMapDebug.h" />
     <ClInclude Include="MyLibrary\SingleTon\SingletonBase.h" />
     <ClInclude Include="MyLibrary\Texture\Texture2D.h" />
     <ClInclude Include="MyLibrary\Texture\TextureLoader.h" />
@@ -368,26 +372,6 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ErrorMain</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shader\FBXModelShader\FBXModelDepthPixelShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ShadowMapDebugPS</EntryPointName>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ShadowMapDebugPS</EntryPointName>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shader\FBXModelShader\FBXModelDepthVertexShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">DepthVS_FBX</EntryPointName>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">DepthVS_FBX</EntryPointName>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shader\FBXModelShader\FBXModelPixelShader.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BasicPS_FBX</EntryPointName>

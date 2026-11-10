@@ -8,6 +8,7 @@ class PipelineState
 {
 public:
 	PipelineState();
+	~PipelineState() {};
 	PipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE _desc); // コンストラクタである程度の設定をする
 	bool IsSuccess(); // 生成に成功したかどうかを返す
 

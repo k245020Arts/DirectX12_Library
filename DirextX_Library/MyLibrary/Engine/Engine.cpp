@@ -100,8 +100,6 @@ void Engine::BeginRender()
 
     commandList->RSSetViewports(1, &viewport);
     commandList->RSSetScissorRects(1, &scissor);
-
-    
 }
 
 
@@ -140,17 +138,17 @@ void Engine::BindBackBuffer(const Vector4& clearColor)
 {
     auto commandList = CommandList();
 
-    auto rtvHandle =pRtvHeap->GetCPUDescriptorHandleForHeapStart();
+    auto rtvHandle = pRtvHeap->GetCPUDescriptorHandleForHeapStart();
 
     rtvHandle.ptr += currentBackBufferIndex * m_RtvDescriptorSize;
 
-    auto dsvHandle =pDsvHeap->GetCPUDescriptorHandleForHeapStart();
+    auto dsvHandle = pDsvHeap->GetCPUDescriptorHandleForHeapStart();
 
-    auto barrier =CD3DX12_RESOURCE_BARRIER::Transition(currentRenderTarget,D3D12_RESOURCE_STATE_PRESENT,D3D12_RESOURCE_STATE_RENDER_TARGET);
+    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentRenderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
     commandList->ResourceBarrier(1, &barrier);
 
-    commandList->OMSetRenderTargets(1,&rtvHandle,FALSE,&dsvHandle);
+    commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 
     const float color[] =
     {
@@ -160,9 +158,15 @@ void Engine::BindBackBuffer(const Vector4& clearColor)
         clearColor.w
     };
 
-    commandList->ClearRenderTargetView(rtvHandle,color,0,nullptr);
+    commandList->ClearRenderTargetView(rtvHandle, color, 0, nullptr);
 
-    commandList->ClearDepthStencilView(dsvHandle,D3D12_CLEAR_FLAG_DEPTH,1.0f,0,0,nullptr);
+    commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+}
+
+void Engine::ResetViewport()
+{
+    commandList->RSSetViewports(1, &viewport);
+    commandList->RSSetScissorRects(1, &scissor);
 }
 
 ID3D12Device6* Engine::Device()

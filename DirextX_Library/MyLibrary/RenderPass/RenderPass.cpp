@@ -12,8 +12,7 @@ void RenderPass::Execute()
     {
         renderTarget->BeginRender(clearColor);
     }
-    else
-    {
+    else {
         Engine::GetInstance()->BindBackBuffer(clearColor);
     }
 

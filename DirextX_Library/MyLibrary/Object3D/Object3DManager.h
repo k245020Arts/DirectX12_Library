@@ -4,6 +4,7 @@
 
 class Object3D;
 class ShadowMap;
+class ShadowCamera;
 
 class Object3DManager : public SingletonBase<Object3DManager>
 {
@@ -31,7 +32,7 @@ private:
 	void Draw();
 
 	// シャドウマップ用の描画
-	void DrawShadow(const ShadowMap& _shadowMap);
+	void DrawShadow(const ShadowMap& _shadowMap,const ShadowCamera& _camera);
 
 	friend class Application;
 	friend class PostEffectCreater;

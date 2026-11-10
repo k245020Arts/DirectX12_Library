@@ -4,6 +4,7 @@
 
 class Camera3D;
 class ShadowMap;
+class ShadowCamera;
 
 class Object3D
 {
@@ -32,7 +33,7 @@ protected:
     virtual void Draw() {};
 
     // シャドウマップ用の描画
-    virtual void DrawShadow(const ShadowMap& _shadowMap) {};
+    virtual void DrawShadow(const ShadowMap& _shadowMap,const ShadowCamera& _shadowCamera) {};
 
     virtual void VertexMapping(const Camera3D* _camera) { ; }
 
