@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Windows.h>
 #include <vector>
 #include <DirectXMath.h>
@@ -10,11 +10,11 @@
 
 struct Vertex
 {
-    Vector3 position; // ˆÊ’uÀ•W
-    Vector3 normal; // –@ü
-    Vector2 uv; // uvÀ•W
-    Vector3 tangent; // Ú‹óŠÔ
-    Vector4 color; // ’¸“_F
+    Vector3 position; // ä½ç½®åº§æ¨™
+    Vector3 normal; // æ³•ç·š
+    Vector2 uv; // uvåº§æ¨™
+    Vector3 tangent; // æ¥ç©ºé–“
+    Vector4 color; // é ‚ç‚¹è‰²
 
    static const D3D12_INPUT_LAYOUT_DESC InputLayout;
 
@@ -25,12 +25,13 @@ private:
 
 struct alignas(256) MatrixTransform
 {
-    DirectX::XMMATRIX World; // ƒ[ƒ‹ƒhs—ñ
-    DirectX::XMMATRIX View; // ƒrƒ…[s—ñ
-    DirectX::XMMATRIX Proj; // “Š‰es—ñ
+    DirectX::XMMATRIX World; // ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—
+    DirectX::XMMATRIX View; // ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—
+    DirectX::XMMATRIX Proj; // æŠ•å½±è¡Œåˆ—
     Matrix shadow;
+    Matrix lightViewProjection;
 
-    DirectX::XMFLOAT4 uvRect; //Ø‚èæ‚èÀ•W(–{“–‚Í•ª‚¯‚½‚Ù‚¤‚ª—Ç‚¢‚Æv‚¤‚ªA—e—Ê“I‚É‚Í‚±‚Á‚¿‚Ì•û‚ª­‚È‚­ŠÇ—‚Å‚«‚é‚Æl‚¦‚½‚½‚ß‚Æ‚è‚ ‚¦‚¸‚±‚Á‚¿‚É)
+    DirectX::XMFLOAT4 uvRect; //åˆ‡ã‚Šå–ã‚Šåº§æ¨™(æœ¬å½“ã¯åˆ†ã‘ãŸã»ã†ãŒè‰¯ã„ã¨æ€ã†ãŒã€å®¹é‡çš„ã«ã¯ã“ã£ã¡ã®æ–¹ãŒå°‘ãªãç®¡ç†ã§ãã‚‹ã¨è€ƒãˆãŸãŸã‚ã¨ã‚Šã‚ãˆãšã“ã£ã¡ã«)
 };
 
 struct Transform
@@ -61,15 +62,15 @@ struct Transform
     };
 };
 
-//Šeƒ{[ƒ“‚ÌƒL[ƒtƒŒ[ƒ€
+//å„ãƒœãƒ¼ãƒ³ã®ã‚­ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ 
 struct BoneChannel {
     std::wstring nodeName;
     std::vector<std::pair<double, Vector3>> positionKeys;
-    std::vector<std::pair<double, Vector4>> rotationKeys; // ƒNƒH[ƒ^ƒjƒIƒ“
+    std::vector<std::pair<double, Vector4>> rotationKeys; // ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³
     std::vector<std::pair<double, Vector3>> scalingKeys;
 };
 
-//ƒ‚[ƒVƒ‡ƒ“ƒf[ƒ^i1ƒtƒ@ƒCƒ‹“à‚Ì1‚Â‚ÌƒAƒjƒ[ƒVƒ‡ƒ“j
+//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿ï¼ˆ1ãƒ•ã‚¡ã‚¤ãƒ«å†…ã®1ã¤ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ï¼‰
 struct AnimationData {
     std::wstring name;
     double duration = 0.0;
@@ -77,7 +78,7 @@ struct AnimationData {
     std::vector<BoneChannel> channels;
 };
 
-//ƒ{[ƒ“‚ÌƒIƒtƒZƒbƒgî•ñiƒƒbƒVƒ…‹óŠÔ‚©‚çƒ{[ƒ“‹óŠÔ‚Ö‚Ì•ÏŠ·s—ñj
+//ãƒœãƒ¼ãƒ³ã®ã‚ªãƒ•ã‚»ãƒƒãƒˆæƒ…å ±ï¼ˆãƒ¡ãƒƒã‚·ãƒ¥ç©ºé–“ã‹ã‚‰ãƒœãƒ¼ãƒ³ç©ºé–“ã¸ã®å¤‰æ›è¡Œåˆ—ï¼‰
 struct BoneInfo {
     int id;
     std::wstring name;
@@ -93,11 +94,11 @@ struct VertexSkinning3D {
     Vector3 tangent;
     Vector4 color;
 
-    // ƒAƒjƒ[ƒVƒ‡ƒ“—p‚ÉˆÈ‰º‚ğ’Ç‰ÁiÅ‘å4‚Â‚Ìƒ{[ƒ“‚ª‰e‹¿‚·‚éê‡j
+    // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ã«ä»¥ä¸‹ã‚’è¿½åŠ ï¼ˆæœ€å¤§4ã¤ã®ãƒœãƒ¼ãƒ³ãŒå½±éŸ¿ã™ã‚‹å ´åˆï¼‰
     uint32_t boneno[4] = { 0, 0, 0, 0 };
     float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-    // ƒEƒFƒCƒg‚ğˆÀ‘S‚É’Ç‰Á‚·‚é‚½‚ß‚Ìƒwƒ‹ƒp[
+    // ã‚¦ã‚§ã‚¤ãƒˆã‚’å®‰å…¨ã«è¿½åŠ ã™ã‚‹ãŸã‚ã®ãƒ˜ãƒ«ãƒ‘ãƒ¼
     void AddBoneData(uint32_t boneId, float _weight) {
         for (int i = 0; i < 4; ++i) {
             if (weights[i] == 0.0f) {
@@ -117,9 +118,9 @@ private:
 
 struct Mesh
 {
-    std::vector<VertexSkinning3D> Vertices; // ’¸“_ƒf[ƒ^‚Ì”z—ñ
-    std::vector<uint32_t> Indices; // ƒCƒ“ƒfƒbƒNƒX‚Ì”z—ñ
-    std::wstring DiffuseMap; // ƒeƒNƒXƒ`ƒƒ‚Ìƒtƒ@ƒCƒ‹ƒpƒX
+    std::vector<VertexSkinning3D> Vertices; // é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ã®é…åˆ—
+    std::vector<uint32_t> Indices; // ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®é…åˆ—
+    std::wstring DiffuseMap; // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹
 
     bool hasBones = false;
 };

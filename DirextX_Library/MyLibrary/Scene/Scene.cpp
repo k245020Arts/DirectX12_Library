@@ -1,4 +1,4 @@
-//#define ORIGINAL_MOUSE_POINTER
+ï»¿//#define ORIGINAL_MOUSE_POINTER
 static const float CLICK_TIME = 0.2f;
 #include "Scene.h"
 #include "../Primitives/Triangle/Triangle.h"
@@ -135,36 +135,43 @@ Scene::Scene()
 	//hand->Load("data/Sword.fbx");
 	hand->Load("data/motion.fbx");
 
-	// ƒLƒƒƒ‰ƒNƒ^[‚Ì‰Eè‚Éæ‚è•t‚¯‚é
+	// ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®å³æ‰‹ã«å–ã‚Šä»˜ã‘ã‚‹
 	hand->AttachToNode(model, L"mixamorig:LeftHand");
 
-	// è‚Ìƒm[ƒh‚©‚çŒ©‚½ƒIƒtƒZƒbƒgiˆ¬‚è‚ÌˆÊ’uEŒü‚«‚Ì’²®j
+	// æ‰‹ã®ãƒãƒ¼ãƒ‰ã‹ã‚‰è¦‹ãŸã‚ªãƒ•ã‚»ãƒƒãƒˆï¼ˆæ¡ã‚Šã®ä½ç½®ãƒ»å‘ãã®èª¿æ•´ï¼‰
 	//hand->GetTransform().position = Vector3(63.3f, -76.08f, 41.305f);
 	hand->GetTransform().position = Vector3(0.0f, -0.0f, 0.0f);
 	hand->GetTransform().rotation = Vector3(0.0f, 0.0f, 0.0f);
 	hand->GetTransform().scale = Vector3(1.0f, 1.0f, 1.0f);
 
-	// ˜r‚â‹riTwoBonej
+	// è…•ã‚„è„šï¼ˆTwoBoneï¼‰
 	legIK = model->AddIK(L"leftLeg", IKSolverType::TwoBone,
 		{ L"mixamorig:LeftUpLeg", L"mixamorig:LeftLeg", L"mixamorig:LeftFoot" });
 
-	model->SetIKTarget(legIK, Vector3(100, 0, 50), 1.0f);    // ƒ[ƒ‹ƒhÀ•W‚Ì–Ú•W‚Ö
-	model->SetIKPole(legIK, Vector3(100, 50, 200));          // •G‚ğŒü‚¯‚é‘¤i”CˆÓj
-	model->SetIKWeight(legIK, 0.0f);                          // FK‚Ì‚Ü‚Ü‚Ö–ß‚·
+	model->SetIKTarget(legIK, Vector3(100, 0, 50), 1.0f);    // ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã®ç›®æ¨™ã¸
+	model->SetIKPole(legIK, Vector3(100, 50, 200));          // è†ã‚’å‘ã‘ã‚‹å´ï¼ˆä»»æ„ï¼‰
+	model->SetIKWeight(legIK, 0.0f);                          // FKã®ã¾ã¾ã¸æˆ»ã™
 
-	// ñ‚âK”öiCCDj
+	// é¦–ã‚„å°»å°¾ï¼ˆCCDï¼‰
 	//int tailIK = model->AddIK(L"tail", IKSolverType::CCD, { L"tail_1", L"tail_2", L"tail_3", L"tail_4" });
-	//model->SetIKTargetNode(tailIK, L"IK_Target_Kopf", 1.0f);  // •Ê‚Ìƒm[ƒh‚ÌˆÊ’u‚ğ–Ú•W‚É
-	//model->GetIK(tailIK)->iterations = 15;                    // ×‚©‚¢İ’è
+	//model->SetIKTargetNode(tailIK, L"IK_Target_Kopf", 1.0f);  // åˆ¥ã®ãƒãƒ¼ãƒ‰ã®ä½ç½®ã‚’ç›®æ¨™ã«
+	//model->GetIK(tailIK)->iterations = 15;                    // ç´°ã‹ã„è¨­å®š
 
-	// ’±”Ô‚Ì§ŒÀi—á: •Gj
+	// è¶ç•ªã®åˆ¶é™ï¼ˆä¾‹: è†ï¼‰
 	model->SetIKHinge(legIK, 1, Vector3(1, 0, 0), 0.0f, DirectX::XMConvertToRadians(130.0f));
 
-	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Color::RGBToVector3(WHITE)));
+	//Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Color::RGBToVector3(WHITE)));
 
 	model->SetBlendMode(BlendState::NO_BLEND);
 	model->SetAlpha(0.5f);
 	model->SetGroundShadow(true);
+
+	plane = new FBXModel();
+	plane->Load("data/plane.fbx");
+	plane->GetTransform().position = Vector3(0, 0, 0);
+	plane->GetTransform().rotation = Vector3(DirectX::XM_PIDIV2, 0, 0);
+	plane->SetColor(WHITE);
+
 #endif // MODEL
 
 	
@@ -429,30 +436,30 @@ void Scene::Update()
 
 	auto* camera = Camera3D::GetInstance();
 
-	// ƒrƒ‹ƒ{[ƒh‚ğ’‹‚·‚é
+	// ãƒ“ãƒ«ãƒœãƒ¼ãƒ‰ã‚’æ³¨è¦–ã™ã‚‹
 	Vector3 target = billboard->GetTransform().position;
 	camera->SetTarget(target);
 
-	// ‰ñ“]‘¬“xi1•b‚Å1üj
+	// å›è»¢é€Ÿåº¦ï¼ˆ1ç§’ã§1å‘¨ï¼‰
 	constexpr float ROTATION_SPEED =
-		DirectX::XM_2PI / 6.0f; // 3•b‚Å1ü
+		DirectX::XM_2PI / 6.0f; // 3ç§’ã§1å‘¨
 
-	// Œo‰ßŠÔ‚ğ“n‚¹‚é‚È‚ç deltaTime ‚ğg‚¤
+	// çµŒéæ™‚é–“ã‚’æ¸¡ã›ã‚‹ãªã‚‰ deltaTime ã‚’ä½¿ã†
 	cameraAngle += ROTATION_SPEED * DeltaTime::GetInstance()->GetDeltaTime();
 
-	// 1ü‚µ‚½‚çŠp“x‚ğ–ß‚·
+	// 1å‘¨ã—ãŸã‚‰è§’åº¦ã‚’æˆ»ã™
 	if (cameraAngle >= DirectX::XM_2PI)
 	{
 		cameraAngle -= DirectX::XM_2PI;
 	}
 
-	// ’‹“_‚©‚ç‚Ì‹——£
+	// æ³¨è¦–ç‚¹ã‹ã‚‰ã®è·é›¢
 	constexpr float RADIUS = 100.0f;
 	constexpr float HEIGHT = 50.0f;
 
 	const Vector3 nowPos = { 0.0f, 150.0f, -200.0f };
 
-	// ‰~‹O“¹ã‚ÌƒJƒƒ‰ˆÊ’ui¶èÀ•WŒn‚Å‚à‚±‚ÌˆÊ’uŒvZ‚ÅOKj
+	// å††è»Œé“ä¸Šã®ã‚«ãƒ¡ãƒ©ä½ç½®ï¼ˆå·¦æ‰‹åº§æ¨™ç³»ã§ã‚‚ã“ã®ä½ç½®è¨ˆç®—ã§OKï¼‰
 	Vector3 finalPos(
 		nowPos.x + std::sin(cameraAngle) * RADIUS,
 		nowPos.y + HEIGHT,
@@ -483,25 +490,25 @@ void Scene::Update()
 
 #ifdef IMGUI
 
-	// ƒfƒ‚ƒEƒBƒ“ƒhƒE‚Ì•\¦ƒtƒ‰ƒOistatic•Ï”‚Åó‘Ô‚ğ•Ûj
+	// ãƒ‡ãƒ¢ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®è¡¨ç¤ºãƒ•ãƒ©ã‚°ï¼ˆstaticå¤‰æ•°ã§çŠ¶æ…‹ã‚’ä¿æŒï¼‰
 	static bool show_demo_window = false;
 
-	// 1. ƒtƒ‰ƒO‚ªtrue‚Ìê‡‚Ì‚İAŒö®‚Ìƒfƒ‚ƒEƒBƒ“ƒhƒE‚ğ•\¦
-	// ˆø”‚ÉƒAƒhƒŒƒX‚ğ“n‚·‚±‚Æ‚ÅAƒEƒBƒ“ƒhƒE‰Eã‚©‰E‰º‚Ìu~vƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚Æ‚«‚É©“®‚Åƒtƒ‰ƒO‚ªfalse‚É‚È‚è‚Ü‚·
+	// 1. ãƒ•ãƒ©ã‚°ãŒtrueã®å ´åˆã®ã¿ã€å…¬å¼ã®ãƒ‡ãƒ¢ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’è¡¨ç¤º
+	// å¼•æ•°ã«ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’æ¸¡ã™ã“ã¨ã§ã€ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å³ä¸Šã‹å³ä¸‹ã®ã€ŒÃ—ã€ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸã¨ãã«è‡ªå‹•ã§ãƒ•ãƒ©ã‚°ãŒfalseã«ãªã‚Šã¾ã™
 	if (show_demo_window)
 	{
 		ImGui::ShowDemoWindow(&show_demo_window);
 	}
 
-	// 2. ©ì‚ÌƒRƒ“ƒgƒ[ƒ‹—pƒEƒBƒ“ƒhƒEiƒfƒ‚‚ÌŠJ•ÂƒeƒXƒg—pj
-	ImGui::Begin("Control Panel"); // ƒEƒBƒ“ƒhƒE‚ÌŠJn
+	// 2. è‡ªä½œã®ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ç”¨ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ï¼ˆãƒ‡ãƒ¢ã®é–‹é–‰ãƒ†ã‚¹ãƒˆç”¨ï¼‰
+	ImGui::Begin("Control Panel"); // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®é–‹å§‹
 
 	ImGui::Text("Dear ImGui Demo Controller");
 
-	// ƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚Åƒfƒ‚ƒEƒBƒ“ƒhƒE‚Ì•\¦/”ñ•\¦‚ğØ‚è‘Ö‚¦
+	// ãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã§ãƒ‡ãƒ¢ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®è¡¨ç¤º/éè¡¨ç¤ºã‚’åˆ‡ã‚Šæ›¿ãˆ
 	ImGui::Checkbox("Show ImGui Demo Window", &show_demo_window);
 
-	ImGui::End(); // ƒEƒBƒ“ƒhƒE‚ÌI—¹
+	ImGui::End(); // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®çµ‚äº†
 #endif // IMGUI
 
 	//lightRotation += 0.1f;
@@ -529,17 +536,17 @@ void Scene::MoveCamera()
 	Vector3 camPos = camera->GetPosition();
 	Vector3 target = camera->GetTarget();
 
-	// ƒJƒƒ‰‚©‚ç’‹“_‚Ü‚Å‚Ì‹——£
+	// ã‚«ãƒ¡ãƒ©ã‹ã‚‰æ³¨è¦–ç‚¹ã¾ã§ã®è·é›¢
 	Vector3 toTarget = target - camPos;
 	float distance = toTarget.Size();
 
-	// ‹——£‚ª0‚¾‚Æ•ûŒü‚ğŒvZ‚Å‚«‚È‚¢‚½‚ß•â³
+	// è·é›¢ãŒ0ã ã¨æ–¹å‘ã‚’è¨ˆç®—ã§ããªã„ãŸã‚è£œæ­£
 	distance = (std::max)(distance, 0.1f);
 
-	// ƒ}ƒEƒXƒzƒC[ƒ‹‚ÅƒY[ƒ€
+	// ãƒã‚¦ã‚¹ãƒ›ã‚¤ãƒ¼ãƒ«ã§ã‚ºãƒ¼ãƒ 
 	float wheel = static_cast<float>(input->GetMouseWheelDelta());
 
-	// WM_MOUSEWHEEL ‚Ì’l‚ª120’PˆÊ‚Ìê‡
+	// WM_MOUSEWHEEL ã®å€¤ãŒ120å˜ä½ã®å ´åˆ
 	wheel /= 60.0f;
 
 	const float zoomSpeed = 10.0f;
@@ -548,10 +555,10 @@ void Scene::MoveCamera()
 	{
 		Vector3 forward = toTarget.Normalize();
 
-		// ’‹“_‚ÉŒü‚©‚Á‚ÄˆÚ“®
+		// æ³¨è¦–ç‚¹ã«å‘ã‹ã£ã¦ç§»å‹•
 		camPos += forward * (wheel * zoomSpeed);
 
-		// ’‹“_‚ğ’Ê‚è‰z‚³‚È‚¢‚æ‚¤‚É‹——£‚ğ§ŒÀ
+		// æ³¨è¦–ç‚¹ã‚’é€šã‚Šè¶Šã•ãªã„ã‚ˆã†ã«è·é›¢ã‚’åˆ¶é™
 		Vector3 remaining = target - camPos;
 		float newDistance = remaining.Size();
 
@@ -563,7 +570,7 @@ void Scene::MoveCamera()
 		distance = (target - camPos).Size();
 	}
 
-	// ‰Eƒ{ƒ^ƒ“F’‹“_‚ğ’†S‚É‰ñ“]
+	// å³ãƒœã‚¿ãƒ³ï¼šæ³¨è¦–ç‚¹ã‚’ä¸­å¿ƒã«å›è»¢
 	if (input->GetMouseInput(MouseCode::Right))
 	{
 		Vector2 mouseDelta =
@@ -574,7 +581,7 @@ void Scene::MoveCamera()
 		cameraYaw += mouseDelta.x * rotateSpeed;
 		cameraPitch -= mouseDelta.y * rotateSpeed;
 
-		// ^ãE^‰º‚Å‚Ì”½“]‚ğ–h‚®
+		// çœŸä¸Šãƒ»çœŸä¸‹ã§ã®åè»¢ã‚’é˜²ã
 		constexpr float LIMIT =
 			DirectX::XM_PIDIV2 - 0.01f;
 
@@ -583,7 +590,7 @@ void Scene::MoveCamera()
 		);
 	}
 
-	// ÅV‚ÌYawEPitch‚©‚ç‘O•ûŒü‚ğÄŒvZ
+	// æœ€æ–°ã®Yawãƒ»Pitchã‹ã‚‰å‰æ–¹å‘ã‚’å†è¨ˆç®—
 	Vector3 forward;
 	forward.x = std::sin(cameraYaw) * std::cos(cameraPitch);
 	forward.y = std::sin(cameraPitch);
@@ -591,15 +598,15 @@ void Scene::MoveCamera()
 
 	forward = forward.Normalize();
 
-	// ’†ƒ{ƒ^ƒ“FƒJƒƒ‰‚Æ’‹“_‚ğˆê‚É•½sˆÚ“®
+	// ä¸­ãƒœã‚¿ãƒ³ï¼šã‚«ãƒ¡ãƒ©ã¨æ³¨è¦–ç‚¹ã‚’ä¸€ç·’ã«å¹³è¡Œç§»å‹•
 	if (input->GetMouseInput(MouseCode::Middle))
 	{
 		Vector2 mouseDelta = input->GetMouseDeltaPosition();
 
-		// ƒJƒƒ‰‚Ì‰E•ûŒü
+		// ã‚«ãƒ¡ãƒ©ã®å³æ–¹å‘
 		Vector3 right( std::cos(cameraYaw),0.0f,-std::sin(cameraYaw));
 
-		// ƒJƒƒ‰‚Ìã•ûŒü
+		// ã‚«ãƒ¡ãƒ©ã®ä¸Šæ–¹å‘
 		Vector3 up(-std::sin(cameraYaw) * std::sin(cameraPitch),std::cos(cameraPitch),-std::cos(cameraYaw) * std::sin(cameraPitch));
 
 		const float panSpeed = distance * 0.002f;
@@ -610,8 +617,8 @@ void Scene::MoveCamera()
 		target += pan;
 	}
 
-	// ’‹“_‚ğ’†S‚ÉƒJƒƒ‰ˆÊ’u‚ğÄŒvZ
-	// ‰ñ“]’†‚Í’‹“_‚Ü‚Å‚Ì‹——£‚ğˆÛ‚·‚é
+	// æ³¨è¦–ç‚¹ã‚’ä¸­å¿ƒã«ã‚«ãƒ¡ãƒ©ä½ç½®ã‚’å†è¨ˆç®—
+	// å›è»¢ä¸­ã¯æ³¨è¦–ç‚¹ã¾ã§ã®è·é›¢ã‚’ç¶­æŒã™ã‚‹
 	if (input->GetMouseInput(MouseCode::Right))
 	{
 		camPos = target - forward * distance;

@@ -1,4 +1,4 @@
-#include "FBXModel.h"
+ï»¿#include "FBXModel.h"
 #include "../ShaderStruct/ShaderStruct.h"
 #include "../VertexBuffer/VertexBuffer.h"
 #include "../Engine/Engine.h"
@@ -12,7 +12,6 @@
 #include "../Animator/Animator.h"
 #include "../Time/DeltaTime.h"
 #include <filesystem>
-#include "../Shadow/ShadowMap.h"
 #include "../Shadow/ShadowCamera.h"
 
 namespace fs = std::filesystem;
@@ -23,7 +22,7 @@ namespace {
 		return p.replace_extension(ext).c_str();
 	}
 
-	// VertexMapping ‚Æ“¯‚¶®‚Ìƒ[ƒ‹ƒhs—ñ
+	// VertexMapping ã¨åŒã˜å¼ã®ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—
 	Matrix MakeWorldMatrix(const Transform& t)
 	{
 		return Matrix::Scale(t.scale)
@@ -45,9 +44,9 @@ namespace {
 
 FBXModel::FBXModel()
 {
-	Detach();                                    // ©•ª‚ª’N‚©‚É•t‚¢‚Ä‚¢‚é‚È‚çŠO‚ê‚é
+	Detach();                                    // è‡ªåˆ†ãŒèª°ã‹ã«ä»˜ã„ã¦ã„ã‚‹ãªã‚‰å¤–ã‚Œã‚‹
 
-	for (FBXModel* child : attachedChildren)     // ©•ª‚É•t‚¢‚Ä‚¢‚é‚à‚Ì‚ğAæ‚èŠO‚·
+	for (FBXModel* child : attachedChildren)     // è‡ªåˆ†ã«ä»˜ã„ã¦ã„ã‚‹ã‚‚ã®ã‚’ã€å–ã‚Šå¤–ã™
 	{
 		if (child)
 		{
@@ -89,7 +88,7 @@ ResultErrorHandle FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, boo
 		return handle;
 	}
 
-	ImportSettings importSetting = // ‚±‚ê©‘Ì‚Í©ì‚Ì“Ç‚İ‚İİ’è\‘¢‘Ì
+	ImportSettings importSetting = // ã“ã‚Œè‡ªä½“ã¯è‡ªä½œã®èª­ã¿è¾¼ã¿è¨­å®šæ§‹é€ ä½“
 	{
 		_modelFilePath,
 		_uflip,
@@ -159,18 +158,21 @@ void FBXModel::Draw()
 	auto currentIndex = Engine::GetInstance()->CurrentBackBufferIndex();
 	auto commandList = Engine::GetInstance()->CommandList();
 
-	// ƒƒbƒVƒ…‚Ì”‚¾‚¯ƒCƒ“ƒfƒbƒNƒX•ª‚Ì•`‰æ‚ğs‚¤ˆ—‚ğ‰ñ‚·
+	// ãƒ¡ãƒƒã‚·ãƒ¥ã®æ•°ã ã‘ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹åˆ†ã®æç”»ã‚’è¡Œã†å‡¦ç†ã‚’å›ã™
 	for (size_t i = 0; i < modelData.meshes.size(); i++)
 	{
-		auto vbView = vertexBuffer[i]->GetView(); // ‚»‚ÌƒƒbƒVƒ…‚É‘Î‰‚·‚é’¸“_ƒoƒbƒtƒ@
-		auto ibView = indexBuffer[i]->View(); // ‚»‚ÌƒƒbƒVƒ…‚É‘Î‰‚·‚é’¸“_ƒoƒbƒtƒ@
+		auto vbView = vertexBuffer[i]->GetView(); // ãã®ãƒ¡ãƒƒã‚·ãƒ¥ã«å¯¾å¿œã™ã‚‹é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡
+		auto ibView = indexBuffer[i]->View(); // ãã®ãƒ¡ãƒƒã‚·ãƒ¥ã«å¯¾å¿œã™ã‚‹é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡
 		auto materialHeap = DescriptorHeap::GetInstance()->GetHeap().Get();
 
 		commandList->SetGraphicsRootSignature(rootSignature->Get());
 		commandList->SetPipelineState(pipelineState->GetPipelineState());
-		commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // ’è”ƒoƒbƒtƒ@‚ğƒZƒbƒg
-		commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // ’è”ƒoƒbƒtƒ@‚ğƒZƒbƒg
-		commandList->SetGraphicsRootConstantBufferView(3, boneConstBuffer[currentIndex]->GetAddress()); // ’è”ƒoƒbƒtƒ@‚ğƒZƒbƒg
+		commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚’ã‚»ãƒƒãƒˆ
+		commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚’ã‚»ãƒƒãƒˆ
+		commandList->SetGraphicsRootConstantBufferView(3, boneConstBuffer[currentIndex]->GetAddress()); // å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚’ã‚»ãƒƒãƒˆ
+		if (shadowMapHandle != nullptr) {
+			commandList->SetGraphicsRootDescriptorTable(4, shadowMapHandle->handleGPU);
+		}
 
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &vbView);
@@ -178,14 +180,15 @@ void FBXModel::Draw()
 
 		commandList->SetDescriptorHeaps(1, DescriptorHeap::GetInstance()->GetHeap().GetAddressOf());
 
-		commandList->SetGraphicsRootDescriptorTable(1, materialHandles[i]->handleGPU); // ‚»‚ÌƒƒbƒVƒ…‚É‘Î‰‚·‚éƒfƒBƒXƒNƒŠƒvƒ^ƒe[ƒuƒ‹‚ğƒZƒbƒg
-		//’n–Ê‰e‚ğ•`‰æ‚·‚éê‡‚ÍƒCƒ“ƒVƒ^ƒ“ƒVƒ“ƒO‚ğ2‚É‚·‚éB
+		commandList->SetGraphicsRootDescriptorTable(1, materialHandles[i]->handleGPU); // ãã®ãƒ¡ãƒƒã‚·ãƒ¥ã«å¯¾å¿œã™ã‚‹ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’ã‚»ãƒƒãƒˆ
+		//åœ°é¢å½±ã‚’æç”»ã™ã‚‹å ´åˆã¯ã‚¤ãƒ³ã‚·ã‚¿ãƒ³ã‚·ãƒ³ã‚°ã‚’2ã«ã™ã‚‹ã€‚
 		if (groundShadow) {
-			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 2, 0, 0, 0); // ƒCƒ“ƒfƒbƒNƒX‚Ì”•ª•`‰æ‚·‚é
+			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 2, 0, 0, 0); // ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®æ•°åˆ†æç”»ã™ã‚‹
 		}
 		else {
-			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 1, 0, 0, 0); // ƒCƒ“ƒfƒbƒNƒX‚Ì”•ª•`‰æ‚·‚é
+			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 1, 0, 0, 0); // ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®æ•°åˆ†æç”»ã™ã‚‹
 		}
+
 		
 	}
 }
@@ -216,7 +219,7 @@ Matrix FBXModel::GetNodeWorldMatrix(const std::wstring& nodeName) const
 	if (!animator)
 		return BuildWorldMatrix();
 
-	// ƒ‚ƒfƒ‹‚Ìƒ[ƒJƒ‹ ¨ ƒ[ƒ‹ƒhisƒxƒNƒgƒ‹: ƒ[ƒJƒ‹ ~ ƒ[ƒ‹ƒhs—ñj
+	// ãƒ¢ãƒ‡ãƒ«ã®ãƒ­ãƒ¼ã‚«ãƒ« â†’ ãƒ¯ãƒ¼ãƒ«ãƒ‰ï¼ˆè¡Œãƒ™ã‚¯ãƒˆãƒ«: ãƒ­ãƒ¼ã‚«ãƒ« Ã— ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ï¼‰
 	return animator->GetNodeModelMatrix(nodeName) * BuildWorldMatrix();
 }
 
@@ -316,6 +319,7 @@ void FBXModel::Init()
 {
 	lightConstBuffer.resize(FRAME_BUFFER_COUNT);
 	boneConstBuffer.resize(FRAME_BUFFER_COUNT);
+	shadowConstBuffer.resize(FRAME_BUFFER_COUNT);
 	vertexBuffer.reserve(modelData.meshes.size());
 
 	for (size_t i = 0; i < modelData.meshes.size(); i++)
@@ -326,7 +330,7 @@ void FBXModel::Init()
 		auto pVB = new VertexBuffer(size, stride, vertices);
 		if (!pVB->IsSuccess())
 		{
-			OutputDebugStringW(L"’¸“_ƒoƒbƒtƒ@‚Ì¶¬‚É¸”s\n");
+			OutputDebugStringW(L"é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®ç”Ÿæˆã«å¤±æ•—\n");
 		}
 
 		vertexBuffer.emplace_back(pVB);
@@ -335,7 +339,7 @@ void FBXModel::Init()
 	useIndex = false;
 	polygonSize = (UINT)vertices.size();
 
-	// ƒƒbƒVƒ…‚Ì”‚¾‚¯ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@‚ğ—pˆÓ‚·‚é
+	// ãƒ¡ãƒƒã‚·ãƒ¥ã®æ•°ã ã‘ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡ã‚’ç”¨æ„ã™ã‚‹
 	indexBuffer.reserve(modelData.meshes.size());
 	for (size_t i = 0; i < modelData.meshes.size(); i++)
 	{
@@ -344,7 +348,7 @@ void FBXModel::Init()
 		auto pIB = new IndexBuffer(size, indices);
 		if (!pIB->IsSuccess())
 		{
-			printf("ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@‚Ì¶¬‚É¸”s\n");
+			printf("ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡ã®ç”Ÿæˆã«å¤±æ•—\n");
 		}
 
 		indexBuffer.emplace_back(pIB);
@@ -355,32 +359,44 @@ void FBXModel::Init()
 	auto targetPos = DirectX::XMVectorSet(0.0f, 120.0, 0.0, 0.0f);
 	auto upward = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	constexpr float fov = DirectX::XMConvertToRadians(60);
-	auto aspect = static_cast<float>(Engine::GetInstance()->GetWindowSize().width) / static_cast<float>(Engine::GetInstance()->GetWindowSize().height); // ƒAƒXƒyƒNƒg”ä
+	auto aspect = static_cast<float>(Engine::GetInstance()->GetWindowSize().width) / static_cast<float>(Engine::GetInstance()->GetWindowSize().height); // ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”
 
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
 		constBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
 		if (!constBuffer[i]->IsValid())
 		{
-			OutputDebugStringW(L"•ÏŠ·s—ñ—p’è”ƒoƒbƒtƒ@‚Ì¶¬‚É¸”s\n");
+			OutputDebugStringW(L"å¤‰æ›è¡Œåˆ—ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ç”Ÿæˆã«å¤±æ•—\n");
 		}
 		lightConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(LightBufferData));
 		if (!lightConstBuffer[i]->IsValid())
 		{
-			OutputDebugStringW(L"ƒ‰ƒCƒg—p’è”ƒoƒbƒtƒ@‚Ì¶¬‚É¸”s\n");
+			OutputDebugStringW(L"ãƒ©ã‚¤ãƒˆç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ç”Ÿæˆã«å¤±æ•—\n");
 		}
 		boneConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(BoneBuffer));
 		if (!boneConstBuffer[i]->IsValid())
 		{
-			OutputDebugStringW(L"ƒ{[ƒ“—pƒoƒbƒtƒ@‚Ì¶¬‚É¸”s\n");
+			OutputDebugStringW(L"ãƒœãƒ¼ãƒ³ç”¨ãƒãƒƒãƒ•ã‚¡ã®ç”Ÿæˆã«å¤±æ•—\n");
+		}
+
+		shadowConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
+		if (!shadowConstBuffer[i]->IsValid())
+		{
+			OutputDebugStringW(L"Shadowç”¨å¤‰æ›å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ç”Ÿæˆã«å¤±æ•—\n");
 		}
 		
-		// •ÏŠ·s—ñ‚Ì“o˜^
+		// å¤‰æ›è¡Œåˆ—ã®ç™»éŒ²
 		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
 		ptr->World = DirectX::XMMatrixIdentity();
 		ptr->View = DirectX::XMMatrixLookAtRH(eyePos, targetPos, upward);
 		ptr->Proj = DirectX::XMMatrixPerspectiveFovRH(fov, aspect, 0.3f, 1000.0f);
 		ptr->shadow = DirectX::XMMatrixIdentity();
+
+		auto shadowPtr = shadowConstBuffer[i]->GetPtr<MatrixTransform>();
+		shadowPtr->World = DirectX::XMMatrixIdentity();
+		shadowPtr->View = DirectX::XMMatrixIdentity();
+		shadowPtr->Proj = DirectX::XMMatrixIdentity();
+		shadowPtr->uvRect = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 
 		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
 		LightBufferData l = Light::GetInstance()->GetLightBufferData();
@@ -404,7 +420,7 @@ void FBXModel::Init()
 		auto texPath = modelData.meshes[i].DiffuseMap;
 		if (!modelData.meshes[i].DiffuseMap.empty()) {
 			if (GetExtension(modelData.meshes[i].DiffuseMap) == TexExtension::PSD) {
-				texPath = ReplaceExtension(modelData.meshes[i].DiffuseMap, "png"); //psd‚Ìê‡‚Ítga‚Æ‚µ‚Äˆµ‚¤
+				texPath = ReplaceExtension(modelData.meshes[i].DiffuseMap, "png"); //psdã®å ´åˆã¯tgaã¨ã—ã¦æ‰±ã†
 			}
 		}
 		ResultErrorHandle::ErrorCode errorHandle = TextureLoader::GetInstance()->Load(texPath);
@@ -417,9 +433,10 @@ void FBXModel::Init()
 	rootSignature->SetModelRootSignature();
 	if (!rootSignature->IsSuccess())
 	{
-		OutputDebugStringW(L"ƒ‹[ƒgƒVƒOƒlƒ`ƒƒ‚Ì¶¬‚É¸”s\n");
+		OutputDebugStringW(L"ãƒ«ãƒ¼ãƒˆã‚·ã‚°ãƒãƒãƒ£ã®ç”Ÿæˆã«å¤±æ•—\n");
 	}
-	//uvRect = { 0.0f,0.0f,1.0f,1.0f };
+
+	SetShadowPipelineState();
 }
 
 void FBXModel::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint)
@@ -434,13 +451,85 @@ void FBXModel::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wst
 
 	if (!pipelineState->IsSuccess())
 	{
-		OutputDebugStringW(L"ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ì¶¬‚É¸”s\n");
+		OutputDebugStringW(L"ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã®ç”Ÿæˆã«å¤±æ•—\n");
 	}
 }
 
-void FBXModel::DrawShadow(const ShadowMap& _shadowMap,const ShadowCamera& _camera)
+void FBXModel::SetShadowPipelineState()
 {
-	
+    shadowRootSignature = std::make_unique<RootSignature>();
+    shadowRootSignature->SetShadowDepthRootSignature();
+    if (!shadowRootSignature->IsSuccess())
+    {
+        OutputDebugStringW(L"Shadowç”¨RootSignatureã®ç”Ÿæˆã«å¤±æ•—\n");
+        return;
+    }
+
+    shadowPipelineState = std::make_unique<PipelineState>(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+    shadowPipelineState->SetInputLayout(VertexSkinning3D::InputLayout);
+    shadowPipelineState->SetRootSignature(shadowRootSignature->Get());
+    shadowPipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
+    shadowPipelineState->SetVS(L"Shader/FBXModelShader/FBXModelDepthVertexShader.hlsl","DepthVS_FBX");
+    shadowPipelineState->CreateDepthOnly();
+
+    if (!shadowPipelineState->IsSuccess())
+    {
+        OutputDebugStringW(L"Shadowç”¨PipelineStateã®ç”Ÿæˆã«å¤±æ•—\n");
+    }
+}
+
+void FBXModel::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMap)
+{
+	shadowMapHandle = _shadowMap.GetSRV();
+    if (shadowPipelineState == nullptr || !shadowPipelineState->IsSuccess() ||
+        shadowConstBuffer.empty() || boneConstBuffer.empty() || modelData.meshes.empty())
+    {
+        return;
+    }
+
+    const UINT currentIndex = Engine::GetInstance()->CurrentBackBufferIndex();
+    if (currentIndex >= shadowConstBuffer.size() || currentIndex >= boneConstBuffer.size())
+    {
+        return;
+    }
+
+    auto* commandList = Engine::GetInstance()->CommandList();
+
+    auto* transformData = shadowConstBuffer[currentIndex]->GetPtr<MatrixTransform>();
+    transformData->World = BuildWorldMatrix();
+    transformData->View = camera.GetViewMatrix();
+    transformData->Proj = camera.GetProjectionMatrix();
+    transformData->uvRect = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	Matrix lightViewProjection =camera.GetViewMatrix() * camera.GetProjectionMatrix();
+
+	transformData->lightViewProjection = lightViewProjection;
+
+	auto* constBuff = constBuffer[currentIndex]->GetPtr<MatrixTransform>();
+	constBuff->lightViewProjection = lightViewProjection;
+
+    commandList->SetGraphicsRootSignature(shadowRootSignature->Get());
+    commandList->SetPipelineState(shadowPipelineState->GetPipelineState());
+
+    // ShadowDepthRootSignature: RP0=b0 Transform, RP1=b2 BoneBufferã€‚
+    commandList->SetGraphicsRootConstantBufferView(0,shadowConstBuffer[currentIndex]->GetAddress());
+    commandList->SetGraphicsRootConstantBufferView(1,boneConstBuffer[currentIndex]->GetAddress());
+
+    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    for (size_t i = 0; i < modelData.meshes.size(); ++i)
+    {
+        if (i >= vertexBuffer.size() || i >= indexBuffer.size())
+        {
+            continue;
+        }
+
+        const auto vbView = vertexBuffer[i]->GetView();
+        const auto ibView = indexBuffer[i]->View();
+
+        commandList->IASetVertexBuffers(0, 1, &vbView);
+        commandList->IASetIndexBuffer(&ibView);
+        commandList->DrawIndexedInstanced(static_cast<UINT>(modelData.meshes[i].Indices.size()),1, 0, 0, 0);
+    }
 }
 
 void FBXModel::VertexMapping(const Camera3D* _camera)
@@ -451,17 +540,12 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 
 	Matrix world = BuildWorldMatrix();
 	
-	Vector4 plane = Vector4(0, 1, 0, 0);
-	Vector3 lightVec = Light::GetInstance()->GetLightBufferData().lights[0].direction * -1.0f;
-	Matrix shadow = DirectX::XMMatrixShadow(DirectX::XMLoadFloat4(&plane), DirectX::XMLoadFloat3(&lightVec));
-
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
 		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
 		ptr->World = world;
 		ptr->View = _camera->GetViewMatrix();
 		ptr->Proj = _camera->GetProjectionMatrix();
-		ptr->shadow = shadow;
 		ptr->uvRect = Vector4();
 
 		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
@@ -484,7 +568,7 @@ Matrix FBXModel::BuildWorldMatrix() const
 {
 	Matrix world = Matrix::Scale(transform.scale) * Matrix::Rotation(transform.rotation) * Matrix::Translation(transform.position);
 
-	// æ‚è•t‚¯‚ç‚ê‚Ä‚¢‚é‚È‚çAe‚Ìƒm[ƒh‚Ìp¨‚ğŠ|‚¯‚é
+	// å–ã‚Šä»˜ã‘ã‚‰ã‚Œã¦ã„ã‚‹ãªã‚‰ã€è¦ªã®ãƒãƒ¼ãƒ‰ã®å§¿å‹¢ã‚’æ›ã‘ã‚‹
 	if (attachParent)
 		world = world * attachParent->GetSocketMatrix(attachNode);
 
@@ -498,7 +582,7 @@ Matrix FBXModel::GetSocketMatrix(int nodeIndex) const
 
 	const Matrix model = animator->GetNodeModelMatrix(nodeIndex);
 
-	// ƒXƒP[ƒ‹‚ğæ‚èœ‚­iŒ•‚ªƒ{[ƒ“‚ÌƒXƒP[ƒ‹‚ÅL‚Ñk‚İ‚µ‚È‚¢‚æ‚¤‚Éj
+	// ã‚¹ã‚±ãƒ¼ãƒ«ã‚’å–ã‚Šé™¤ãï¼ˆå‰£ãŒãƒœãƒ¼ãƒ³ã®ã‚¹ã‚±ãƒ¼ãƒ«ã§ä¼¸ã³ç¸®ã¿ã—ãªã„ã‚ˆã†ã«ï¼‰
 	Matrix rigid = model;
 	DirectX::XMVECTOR s, r, t;
 	if (DirectX::XMMatrixDecompose(&s, &r, &t, model))
@@ -506,7 +590,7 @@ Matrix FBXModel::GetSocketMatrix(int nodeIndex) const
 		rigid = DirectX::XMMatrixRotationQuaternion(r) * DirectX::XMMatrixTranslationFromVector(t);
 	}
 
-	// e©g‚Ìƒ[ƒ‹ƒhs—ñie‚ÌƒXƒP[ƒ‹‚ÍA‚»‚Ì‚Ü‚Ü•Ší‚É‚àŠ|‚©‚éj
+	// è¦ªè‡ªèº«ã®ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ï¼ˆè¦ªã®ã‚¹ã‚±ãƒ¼ãƒ«ã¯ã€ãã®ã¾ã¾æ­¦å™¨ã«ã‚‚æ›ã‹ã‚‹ï¼‰
 	return rigid * BuildWorldMatrix();
 }
 
@@ -517,7 +601,7 @@ void FBXModel::AttachToNode(FBXModel* parent, const std::wstring& nodeName)
 	if (!parent || parent == this)
 		return;
 
-	// zŠÂiA‚ªB‚ÉAB‚ªA‚Éæ‚è•t‚­j‚ğ–h‚®
+	// å¾ªç’°ï¼ˆAãŒBã«ã€BãŒAã«å–ã‚Šä»˜ãï¼‰ã‚’é˜²ã
 	for (const FBXModel* p = parent; p; p = p->attachParent) {
 		if (p == this)
 			return;
@@ -526,7 +610,7 @@ void FBXModel::AttachToNode(FBXModel* parent, const std::wstring& nodeName)
 	const int node = parent->GetNodeIndex(nodeName);
 	if (node < 0)
 	{
-		OutputDebugStringW((L"AttachToNode: ƒm[ƒh‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ: " + nodeName + L"\n").c_str());
+		OutputDebugStringW((L"AttachToNode: ãƒãƒ¼ãƒ‰ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“: " + nodeName + L"\n").c_str());
 		return;
 	}
 
@@ -554,7 +638,7 @@ void FBXModel::SetBlendMode(BlendState _blendState)
 void FBXModel::SetAlpha(float _alphaValue)
 {
 	const float alpha = _alphaValue >= 1.0f ? 1.0f : _alphaValue;
-	// ƒƒbƒVƒ…‚²‚Æ‚É’¸“_ƒJƒ‰[‚ğ•ÏX
+	// ãƒ¡ãƒƒã‚·ãƒ¥ã”ã¨ã«é ‚ç‚¹ã‚«ãƒ©ãƒ¼ã‚’å¤‰æ›´
 	for (size_t i = 0; i < modelData.meshes.size(); ++i)
 	{
 		auto& meshVertices = modelData.meshes[i].Vertices;
@@ -564,7 +648,7 @@ void FBXModel::SetAlpha(float _alphaValue)
 			vertex.color.w = alpha;
 		}
 
-		// ‘Î‰‚·‚é’¸“_ƒoƒbƒtƒ@‚Ö”½‰f
+		// å¯¾å¿œã™ã‚‹é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã¸åæ˜ 
 		if (i < vertexBuffer.size() && vertexBuffer[i])
 		{
 			vertexBuffer[i]->BufferMapping(meshVertices.data());
@@ -579,20 +663,20 @@ void FBXModel::SetColor(const Rgb& _rgb)
 
 void FBXModel::SetColor(const Vector3& _color)
 {
-	// ƒƒbƒVƒ…‚²‚Æ‚É’¸“_ƒJƒ‰[‚ğ•ÏX
+	// ãƒ¡ãƒƒã‚·ãƒ¥ã”ã¨ã«é ‚ç‚¹ã‚«ãƒ©ãƒ¼ã‚’å¤‰æ›´
 	for (size_t i = 0; i < modelData.meshes.size(); ++i)
 	{
 		auto& meshVertices = modelData.meshes[i].Vertices;
 
 		for (auto& vertex : meshVertices)
 		{
-			// RGB‚Ì‚İ•ÏX‚µ‚ÄƒAƒ‹ƒtƒ@’l‚ÍˆÛ‚·‚é
+			// RGBã®ã¿å¤‰æ›´ã—ã¦ã‚¢ãƒ«ãƒ•ã‚¡å€¤ã¯ç¶­æŒã™ã‚‹
 			vertex.color.x = _color.x;
 			vertex.color.y = _color.y;
 			vertex.color.z = _color.z;
 		}
 
-		// ‘Î‰‚·‚é’¸“_ƒoƒbƒtƒ@‚Ö”½‰f
+		// å¯¾å¿œã™ã‚‹é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã¸åæ˜ 
 		if (i < vertexBuffer.size() && vertexBuffer[i])
 		{
 			vertexBuffer[i]->BufferMapping(meshVertices.data());

@@ -4,8 +4,9 @@ cbuffer Transform : register(b0)
     float4x4 View; // ビュー行列
     float4x4 Proj; // 投影行列
     float4x4 shadow; //影行列
+    Matrix lightViewProjection;
+    
     float4 uvRect;
-
 }
 
 #define MAX_LIGHT_COUNT 12
@@ -57,4 +58,5 @@ struct VSOutput
     float2 uv : TEXCOORD; //uv座標
     float4 normal : NORMAL; // 法線
     uint instNo : SV_InstanceID;//インスタンシング番号
+    float4 shadowPosition : TEXCOORD1;
 };

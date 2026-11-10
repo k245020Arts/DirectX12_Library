@@ -50,5 +50,8 @@ VSOutput BasicVS_FBX(ModelVSInput input, uint instNo : SV_InstanceID)
     output.normal = float4(n, 0.0f);
     output.instNo = instNo;
     
+    // ライトカメラから見た座標
+    output.shadowPosition = mul(lightViewProjection, worldPos);
+    
     return output;
 }

@@ -1,4 +1,4 @@
-#include "RenderTarget.h"
+Ôªø#include "RenderTarget.h"
 #include "../Engine/Engine.h"
 #include "../../DirectX12_Library/d3dx12.h"
 
@@ -19,7 +19,7 @@ bool RenderTarget::Create(UINT _width,UINT _height,DXGI_FORMAT _format)
     width = _width;
     height = _height;
 
-    // RTVópHeap
+    // RTVÁî®Heap
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
 
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
@@ -45,7 +45,7 @@ bool RenderTarget::Create(UINT _width,UINT _height,DXGI_FORMAT _format)
     clearValue.Color[2] = 0.25f;
     clearValue.Color[3] = 1.0f;
 
-    //ÉNÉäÉAÉoÉäÉÖÅ[Ç…ä÷Ç∑ÇÈê›íËÇì¸ÇÍÇÈ
+    //„ÇØ„É™„Ç¢„Éê„É™„É•„Éº„Å´Èñ¢„Åô„ÇãË®≠ÂÆö„ÇíÂÖ•„Çå„Çã
     HRESULT hr = device->CreateCommittedResource(&heapProperties,D3D12_HEAP_FLAG_NONE,&resourceDesc,currentState,&clearValue,IID_PPV_ARGS(resource.ReleaseAndGetAddressOf()));
 
     if (FAILED(hr))
@@ -53,12 +53,12 @@ bool RenderTarget::Create(UINT _width,UINT _height,DXGI_FORMAT _format)
         return false;
     }
 
-    // RTVçÏê¨
+    // RTV‰ΩúÊàê
     auto rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
 
     device->CreateRenderTargetView(resource.Get(), nullptr,rtvHandle);
 
-    // SRVçÏê¨
+    // SRV‰ΩúÊàê
     srvHandle = DescriptorHeap::GetInstance()->Allocate();
 
     if (srvHandle == nullptr)
@@ -101,6 +101,23 @@ void RenderTarget::BeginRender(const Vector4& clearColor)
 
     auto commandList = Engine::GetInstance()->CommandList();
 
+    D3D12_VIEWPORT viewport{};
+    viewport.TopLeftX = 0.0f;
+    viewport.TopLeftY = 0.0f;
+    viewport.Width = static_cast<float>(width);
+    viewport.Height = static_cast<float>(height);
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+
+    D3D12_RECT scissor{};
+    scissor.left = 0;
+    scissor.top = 0;
+    scissor.right = static_cast<LONG>(width);
+    scissor.bottom = static_cast<LONG>(height);
+
+    commandList->RSSetViewports(1, &viewport);
+    commandList->RSSetScissorRects(1, &scissor);
+
     auto rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
 
     auto dsvHandle =Engine::GetInstance()->GetDSVHandle();
@@ -123,10 +140,11 @@ void RenderTarget::BeginRender(const Vector4& clearColor)
 void RenderTarget::EndRender()
 {
     Transition(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    Engine::GetInstance()->ResetViewport();
 }
 
 void RenderTarget::SetShaderResource()
 {
-    // Ç±ÇÃéûì_Ç≈PIXEL_SHADER_RESOURCEÇ≈Ç†ÇÈÇ±Ç∆
+    // „Åì„ÅÆÊôÇÁÇπ„ÅßPIXEL_SHADER_RESOURCE„Åß„ÅÇ„Çã„Åì„Å®
     assert(currentState ==D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }

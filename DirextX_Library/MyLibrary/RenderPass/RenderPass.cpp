@@ -1,4 +1,4 @@
-#include "RenderPass.h"
+﻿#include "RenderPass.h"
 #include "../Engine/Engine.h"
 
 void RenderPass::Execute()
@@ -8,11 +8,17 @@ void RenderPass::Execute()
         return;
     }
 
-    if (renderTarget != nullptr)
+    // 独自Beginがあれば優先する（ShadowMapなどの非カラー描画先用）。
+    if (beginFunction)
+    {
+        beginFunction();
+    }
+    else if (renderTarget != nullptr)
     {
         renderTarget->BeginRender(clearColor);
     }
-    else {
+    else
+    {
         Engine::GetInstance()->BindBackBuffer(clearColor);
     }
 
@@ -21,7 +27,11 @@ void RenderPass::Execute()
         executeFunction();
     }
 
-    if (renderTarget != nullptr)
+    if (endFunction)
+    {
+        endFunction();
+    }
+    else if (renderTarget != nullptr)
     {
         renderTarget->EndRender();
     }

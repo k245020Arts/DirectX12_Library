@@ -1,6 +1,6 @@
-#pragma once
-#pragma once
+ï»¿#pragma once
 #include <string>
+#include <vector>
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
@@ -8,7 +8,7 @@
 #include <DirectXTex.h>
 #include "../../DirectX12_Library/d3dx12.h"
 
-//ƒ‰ƒCƒuƒ‰ƒŠ‚ÌƒŠƒ“ƒN
+//ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã®ãƒªãƒ³ã‚¯
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"d3dcompiler.lib")
@@ -28,7 +28,7 @@ public:
 
 	~Engine();
 
-	bool Init(const HWND _hwnd, const Size& _size); // ƒGƒ“ƒWƒ“‰Šú‰»
+	bool Init(const HWND _hwnd, const Size& _size); // ã‚¨ãƒ³ã‚¸ãƒ³åˆæœŸåŒ–
 
 	void BeginRender();
 	void EndRender();
@@ -47,15 +47,15 @@ public:
 
 private:
 
-	void CreateDebugLayer(); //ƒfƒoƒbƒNƒŒƒCƒ„[‚Ì¶¬
-	bool CreateDevice(); // ƒfƒoƒCƒX‚ğ¶¬
-	bool CreateAdapter(); //ƒAƒ_ƒvƒ^[‚Ì¶¬
-	bool CreateCommandQueue(); // ƒRƒ}ƒ“ƒhƒLƒ…[‚ğ¶¬
-	bool CreateSwapChain(); // ƒXƒƒbƒvƒ`ƒFƒCƒ“‚ğ¶¬
-	bool CreateCommandList(); // ƒRƒ}ƒ“ƒhƒŠƒXƒg‚ÆƒRƒ}ƒ“ƒhƒAƒƒP[ƒ^[‚ğ¶¬
-	bool CreateFence(); // ƒtƒFƒ“ƒX‚ğ¶¬
-	void CreateViewPort(); // ƒrƒ…[ƒ|[ƒg‚ğ¶¬
-	void CreateScissorRect(); // ƒVƒU[‹éŒ`‚ğ¶¬
+	void CreateDebugLayer(); //ãƒ‡ãƒãƒƒã‚¯ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç”Ÿæˆ
+	bool CreateDevice(); // ãƒ‡ãƒã‚¤ã‚¹ã‚’ç”Ÿæˆ
+	bool CreateAdapter(); //ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã®ç”Ÿæˆ
+	bool CreateCommandQueue(); // ã‚³ãƒãƒ³ãƒ‰ã‚­ãƒ¥ãƒ¼ã‚’ç”Ÿæˆ
+	bool CreateSwapChain(); // ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ã‚¤ãƒ³ã‚’ç”Ÿæˆ
+	bool CreateCommandList(); // ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆã¨ã‚³ãƒãƒ³ãƒ‰ã‚¢ãƒ­ã‚±ãƒ¼ã‚¿ãƒ¼ã‚’ç”Ÿæˆ
+	bool CreateFence(); // ãƒ•ã‚§ãƒ³ã‚¹ã‚’ç”Ÿæˆ
+	void CreateViewPort(); // ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã‚’ç”Ÿæˆ
+	void CreateScissorRect(); // ã‚·ã‚¶ãƒ¼çŸ©å½¢ã‚’ç”Ÿæˆ
 
 	HWND hwnd;
 	Size windowSize = Size();
@@ -64,7 +64,7 @@ private:
 	ComPtr<ID3D12Debug> debugController = nullptr;
 	ComPtr<ID3D12Device6> pDevice = nullptr; 
 	ComPtr<IDXGIAdapter> tmpAdapter = nullptr;
-	ComPtr<IDXGIFactory6> dxgiFactory = nullptr; //ƒAƒ_ƒvƒ^[‚Ì—ñ‹“‚ğ‚·‚é‚½‚ß‚ÌƒIƒuƒWƒFƒNƒg1
+	ComPtr<IDXGIFactory6> dxgiFactory = nullptr; //ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã®åˆ—æŒ™ã‚’ã™ã‚‹ãŸã‚ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ1
 	ComPtr<ID3D12CommandQueue> commandQueue = nullptr; 
 	ComPtr<IDXGISwapChain3> swapChain = nullptr; 
 	std::vector<ComPtr<ID3D12CommandAllocator>> commandAllocator = { nullptr };
@@ -83,6 +83,7 @@ private:
 	UINT m_RtvDescriptorSize = 0;
 	ComPtr<ID3D12DescriptorHeap> pRtvHeap = nullptr;
 	std::vector<ComPtr<ID3D12Resource>> pRenderTargets = { nullptr };
+	std::vector<D3D12_RESOURCE_STATES> backBufferStates;
 
 	UINT m_DsvDescriptorSize = 0;
 	ComPtr<ID3D12DescriptorHeap> pDsvHeap = nullptr;

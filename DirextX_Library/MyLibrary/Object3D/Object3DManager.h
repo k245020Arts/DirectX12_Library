@@ -1,10 +1,10 @@
-#pragma once
+ï»¿#pragma once
 #include "../SingleTon/SingletonBase.h"
 #include <list>
 
 class Object3D;
-class ShadowMap;
 class ShadowCamera;
+class ShadowMap;
 
 class Object3DManager : public SingletonBase<Object3DManager>
 {
@@ -31,8 +31,8 @@ private:
 	void Update();
 	void Draw();
 
-	// ƒVƒƒƒhƒEƒ}ƒbƒv—p‚Ì•`‰æ
-	void DrawShadow(const ShadowMap& _shadowMap,const ShadowCamera& _camera);
+	// ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”¨ã®æç”»
+	void DrawShadow(const ShadowCamera& _camera, const ShadowMap& _shadowMap);
 
 	friend class Application;
 	friend class PostEffectCreater;

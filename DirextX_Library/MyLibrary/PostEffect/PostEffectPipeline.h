@@ -35,12 +35,9 @@ class PostEffectPipeline
 {
 public:
 
-    PostEffectPipeline() = default;
+    PostEffectPipeline() {};
 
-    ~PostEffectPipeline() = default;
-
-    PostEffectPipeline(const PostEffectPipeline&) = delete;
-    PostEffectPipeline& operator=(const PostEffectPipeline&) = delete;
+    ~PostEffectPipeline() {};
 
     //èâä˙âª
     bool Init(UINT _width, UINT _height);

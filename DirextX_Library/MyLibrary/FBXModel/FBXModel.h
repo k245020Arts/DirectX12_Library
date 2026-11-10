@@ -1,9 +1,10 @@
-#pragma once
+ï»¿#pragma once
 #include "../assimp/AssimpLoader.h"
 #include <memory>
 #include "../Object3D/Object3D.h"
 #include "../Light/Light.h"
 #include <unordered_map>
+#include "../Shadow/ShadowMap.h"
 
 class VertexBuffer;
 class ConstBuffer;
@@ -11,6 +12,7 @@ class PipelineState;
 class RootSignature;
 class IndexBuffer;
 class Animator;
+class ShadowCamera;
 
 struct IKChain;
 
@@ -25,7 +27,7 @@ struct NodeData
 	int parentIndex = -1;
 	std::vector<uint32_t> children;
 
-	// ‚±‚Ìƒm[ƒh‚ÉŠ‘®‚·‚éƒƒbƒVƒ…‚ÌƒCƒ“ƒfƒbƒNƒX
+	// ã“ã®ãƒãƒ¼ãƒ‰ã«æ‰€å±ã™ã‚‹ãƒ¡ãƒƒã‚·ãƒ¥ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 	std::vector<uint32_t> meshIndices;
 };
 
@@ -34,23 +36,23 @@ struct ModelData
 	std::vector<Mesh> meshes;
 	std::vector<AnimationData> animations;
 
-	// ƒXƒLƒjƒ“ƒO—p
+	// ã‚¹ã‚­ãƒ‹ãƒ³ã‚°ç”¨
 	std::vector<BoneInfo> bones;
 	std::unordered_map<std::wstring, uint32_t> boneMap;
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“—p‚Ìƒm[ƒhŠK‘w
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ã®ãƒãƒ¼ãƒ‰éšå±¤
 	std::vector<NodeData> nodes;
 	int rootNodeIndex = -1;
 
-	// ƒ‹[ƒgƒm[ƒh‚Ì‹ts—ñ
+	// ãƒ«ãƒ¼ãƒˆãƒãƒ¼ãƒ‰ã®é€†è¡Œåˆ—
 	Matrix globalInverseTransform;
 };
 
-// IKƒ\ƒ‹ƒo[‚Ìí—Ş
+// IKã‚½ãƒ«ãƒãƒ¼ã®ç¨®é¡
 enum class IKSolverType
 {
-	TwoBone,	// —]Œ·’è—B˜rE‹rŒü‚¯iƒm[ƒh‚ğ‚¿‚å‚¤‚Ç3‚Âw’è‚·‚éj
-	CCD,		// ”½•œ–@BñE”wœEK”ö‚È‚ÇA2ŠÖßˆÈã‚Ì½Œü‚¯
+	TwoBone,	// ä½™å¼¦å®šç†ã€‚è…•ãƒ»è„šå‘ã‘ï¼ˆãƒãƒ¼ãƒ‰ã‚’ã¡ã‚‡ã†ã©3ã¤æŒ‡å®šã™ã‚‹ï¼‰
+	CCD,		// åå¾©æ³•ã€‚é¦–ãƒ»èƒŒéª¨ãƒ»å°»å°¾ãªã©ã€2é–¢ç¯€ä»¥ä¸Šã®é–å‘ã‘
 };
 
 static constexpr int BONE_MAX = 1024;
@@ -88,8 +90,8 @@ public:
 	int GetAnimationIndex();
 	bool GetAnimationPlaying();
 
-	// ---- ƒm[ƒhî•ñiƒ[ƒ‹ƒh‹óŠÔj----
-	// ’¼‹ß‚Ì Update ‚ÌŒ‹‰ÊB‘¼‚Ìƒ‚ƒfƒ‹‚Ìƒm[ƒh‚ğ–Ú•W‚É‚·‚é‚È‚çA‚»‚Ìƒ‚ƒfƒ‹‚Ì Update ‚ğæ‚ÉÏ‚Ü‚¹‚Ä‚¨‚­‚±‚Æ
+	// ---- ãƒãƒ¼ãƒ‰æƒ…å ±ï¼ˆãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ï¼‰----
+	// ç›´è¿‘ã® Update ã®çµæœã€‚ä»–ã®ãƒ¢ãƒ‡ãƒ«ã®ãƒãƒ¼ãƒ‰ã‚’ç›®æ¨™ã«ã™ã‚‹ãªã‚‰ã€ãã®ãƒ¢ãƒ‡ãƒ«ã® Update ã‚’å…ˆã«æ¸ˆã¾ã›ã¦ãŠãã“ã¨
 	Matrix  GetNodeWorldMatrix(const std::wstring& nodeName) const;
 	Vector3 GetNodeWorldPosition(const std::wstring& nodeName) const;
 	int     GetNodeIndex(const std::wstring& nodeName) const;
@@ -97,30 +99,30 @@ public:
 	int     GetNodeCount() const;
 
 	// ---------------- IK ----------------
-	// nodeNames: •t‚¯ª ¨ æ’[ ‚Ì‡‚Ìƒm[ƒh–¼iTwoBone ‚Í3‚ÂACCD ‚Í2‚ÂˆÈãj
-	// –ß‚è’l‚Í IK ‚Ì IDB¸”s‚µ‚½‚ç -1
+	// nodeNames: ä»˜ã‘æ ¹ â†’ å…ˆç«¯ ã®é †ã®ãƒãƒ¼ãƒ‰åï¼ˆTwoBone ã¯3ã¤ã€CCD ã¯2ã¤ä»¥ä¸Šï¼‰
+	// æˆ»ã‚Šå€¤ã¯ IK ã® IDã€‚å¤±æ•—ã—ãŸã‚‰ -1
 	int  AddIK(const std::wstring& name, IKSolverType type, const std::vector<std::wstring>& nodeNames);
 	int  FindIK(const std::wstring& name) const;
 
-	// –Ú•W‚ğƒ[ƒ‹ƒhÀ•W‚Åw’è‚·‚éBweight: 0 = FK‚Ì‚Ü‚ÜA1 = Š®‘S‚ÉIK
+	// ç›®æ¨™ã‚’ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã§æŒ‡å®šã™ã‚‹ã€‚weight: 0 = FKã®ã¾ã¾ã€1 = å®Œå…¨ã«IK
 	void SetIKTarget(int ikId, const Vector3& worldPos, float weight);
-	// •Ê‚Ìƒm[ƒhiIKƒ{[ƒ“‚È‚Çj‚ÌˆÊ’u‚ğ–Ú•W‚É‚·‚éiMMD‚ÌIKƒ{[ƒ“•û®j
+	// åˆ¥ã®ãƒãƒ¼ãƒ‰ï¼ˆIKãƒœãƒ¼ãƒ³ãªã©ï¼‰ã®ä½ç½®ã‚’ç›®æ¨™ã«ã™ã‚‹ï¼ˆMMDã®IKãƒœãƒ¼ãƒ³æ–¹å¼ï¼‰
 	void SetIKTargetNode(int ikId, const std::wstring& nodeName, float weight);
-	// •IE•G‚ªo‚é‘¤‚Ì–ÚˆÀiTwoBone ‚Ì‚İj
+	// è‚˜ãƒ»è†ãŒå‡ºã‚‹å´ã®ç›®å®‰ï¼ˆTwoBone ã®ã¿ï¼‰
 	void SetIKPole(int ikId, const Vector3& worldPos);
 	void SetIKPoleNode(int ikId, const std::wstring& nodeName);
 	void ClearIKPole(int ikId);
-	// linkIndex ”Ô–Ú‚ÌŠÖß‚ğ’±”Ô‚É‚·‚éi²‚Íƒ{[ƒ“‚Ìƒ[ƒJƒ‹²BŠp“x‚ÍƒoƒCƒ“ƒhp¨‚©‚ç‚Ì’l‚ÅAƒ‰ƒWƒAƒ“j
+	// linkIndex ç•ªç›®ã®é–¢ç¯€ã‚’è¶ç•ªã«ã™ã‚‹ï¼ˆè»¸ã¯ãƒœãƒ¼ãƒ³ã®ãƒ­ãƒ¼ã‚«ãƒ«è»¸ã€‚è§’åº¦ã¯ãƒã‚¤ãƒ³ãƒ‰å§¿å‹¢ã‹ã‚‰ã®å€¤ã§ã€ãƒ©ã‚¸ã‚¢ãƒ³ï¼‰
 	void SetIKHinge(int ikId, int linkIndex, const Vector3& boneLocalAxis, float minAngle, float maxAngle);
 	void SetIKWeight(int ikId, float weight);
 	void SetIKEnabled(int ikId, bool enabled);
-	// ’±”Ô‚ÌŒ»İ‚ÌŠp“xiƒ‰ƒWƒAƒ“jB‰Â“®”ÍˆÍ‚ğŒˆ‚ß‚é‚Æ‚«‚ÌŠm”F—p
+	// è¶ç•ªã®ç¾åœ¨ã®è§’åº¦ï¼ˆãƒ©ã‚¸ã‚¢ãƒ³ï¼‰ã€‚å¯å‹•ç¯„å›²ã‚’æ±ºã‚ã‚‹ã¨ãã®ç¢ºèªç”¨
 	float GetIKHingeAngle(int ikId, int linkIndex) const;
-	// CCD ‚Ì iterations ‚È‚ÇA×‚©‚¢İ’è‚ª•K—v‚È‚Æ‚«iAnimator.h ‚Ì IKChain ‚ğQÆj
+	// CCD ã® iterations ãªã©ã€ç´°ã‹ã„è¨­å®šãŒå¿…è¦ãªã¨ãï¼ˆAnimator.h ã® IKChain ã‚’å‚ç…§ï¼‰
 	IKChain* GetIK(int ikId);
 
-	// •Ê‚ÌFBXModel‚Ìƒm[ƒhiè‚È‚Çj‚Éæ‚è•t‚¯‚éB
-	// ‚±‚Ìƒ‚ƒfƒ‹‚Ì transform ‚ÍA‚»‚Ìƒm[ƒh‚©‚çŒ©‚½ƒIƒtƒZƒbƒg‚É‚È‚é
+	// åˆ¥ã®FBXModelã®ãƒãƒ¼ãƒ‰ï¼ˆæ‰‹ãªã©ï¼‰ã«å–ã‚Šä»˜ã‘ã‚‹ã€‚
+	// ã“ã®ãƒ¢ãƒ‡ãƒ«ã® transform ã¯ã€ãã®ãƒãƒ¼ãƒ‰ã‹ã‚‰è¦‹ãŸã‚ªãƒ•ã‚»ãƒƒãƒˆã«ãªã‚‹
 	void AttachToNode(FBXModel* parent, const std::wstring& nodeName);
 	void Detach();
 
@@ -130,6 +132,7 @@ public:
 	void SetBlendMode(BlendState _blendState);
 
 	void SetAlpha(float _alphaValue);
+
 	void SetGroundShadow(bool _shadow) { groundShadow = _shadow; }
 
 private:
@@ -139,7 +142,8 @@ private:
 	void SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint);
 
 	
-	void DrawShadow(const ShadowMap& _shadowMap, const ShadowCamera& _camera);
+	void DrawShadow(const ShadowCamera& _camera,const ShadowMap& _shadowMap) override;
+	void SetShadowPipelineState();
 	ModelData modelData;
 
 	std::unique_ptr<Animator> animator;
@@ -153,6 +157,9 @@ private:
 	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;
 	std::vector<std::shared_ptr<ConstBuffer>> lightConstBuffer;
 	std::vector<std::shared_ptr<ConstBuffer>> boneConstBuffer;
+	std::vector<std::shared_ptr<ConstBuffer>> shadowConstBuffer;
+	std::unique_ptr<RootSignature> shadowRootSignature;
+	std::unique_ptr<PipelineState> shadowPipelineState;
 
 	bool useIndex;
 
@@ -163,20 +170,21 @@ private:
 
 	D3D12_PRIMITIVE_TOPOLOGY drawType;
 
-	std::vector<DescriptorHandle*> materialHandles; // ƒeƒNƒXƒ`ƒƒ—p‚Ìƒnƒ“ƒhƒ‹ˆê——
+	std::vector<DescriptorHandle*> materialHandles; // ãƒ†ã‚¯ã‚¹ãƒãƒ£ç”¨ã®ãƒãƒ³ãƒ‰ãƒ«ä¸€è¦§
 
 	void VertexMapping(const Camera3D* _camera)override;
 
-	// æ‚è•t‚¯‚àŠÜ‚ß‚½Aƒ[ƒ‹ƒhs—ñ
+	// å–ã‚Šä»˜ã‘ã‚‚å«ã‚ãŸã€ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—
 	Matrix BuildWorldMatrix() const;
-	// ƒm[ƒh‚Ìƒ[ƒ‹ƒh‹óŠÔ‚Å‚Ìp¨iƒXƒP[ƒ‹‚È‚µj
+	// ãƒãƒ¼ãƒ‰ã®ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã§ã®å§¿å‹¢ï¼ˆã‚¹ã‚±ãƒ¼ãƒ«ãªã—ï¼‰
 	Matrix GetSocketMatrix(int nodeIndex) const;
 
 	FBXModel* attachParent = nullptr;
 	int       attachNode = -1;
-	std::vector<FBXModel*> attachedChildren;     // ©•ª‚Éæ‚è•t‚¢‚Ä‚¢‚éƒ‚ƒfƒ‹
+	std::vector<FBXModel*> attachedChildren;     // è‡ªåˆ†ã«å–ã‚Šä»˜ã„ã¦ã„ã‚‹ãƒ¢ãƒ‡ãƒ«
 
 	Vector3 baseColor;
 
 	bool groundShadow = false;
+	DescriptorHandle* shadowMapHandle;
 };

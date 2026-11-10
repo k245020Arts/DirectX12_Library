@@ -169,6 +169,9 @@
     <Filter Include="Shader\PostEffectShader\DistoritionPixelShader">
       <UniqueIdentifier>{3d250229-d576-4b3a-accf-d28382c54a30}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\Shadow">
+      <UniqueIdentifier>{59dc3a2b-a2e7-4635-8753-b1fab207ae87}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp">
@@ -672,6 +675,12 @@
     </FxCompile>
     <FxCompile Include="Shader\PostEffectBaseShader\DistortionShader\DistortionPixelShader.hlsl">
       <Filter>Shader\PostEffectShader\DistoritionPixelShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\FBXModelShader\FBXModelDepthVertexShader.hlsl">
+      <Filter>Shader\FBXModelShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\Shadow\ShadowMapDebugPixelShader.hlsl">
+      <Filter>Shader\Shadow</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

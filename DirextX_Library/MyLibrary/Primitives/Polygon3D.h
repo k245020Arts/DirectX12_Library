@@ -12,7 +12,6 @@ class PipelineState;
 class RootSignature;
 class IndexBuffer;
 
-
 class Polygon3D : public Object3D
 {
 public:

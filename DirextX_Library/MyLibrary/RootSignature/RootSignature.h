@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "../ComPtr.h"
 #include "../../DirectX12_Library/d3dx12.h"
 
@@ -7,9 +7,9 @@ struct ID3D12RootSignature;
 class RootSignature
 {
 public:
-	RootSignature(); // ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Åƒ‹[ƒgƒVƒOƒlƒ`ƒƒ‚ğ¶¬
-	bool IsSuccess(); // ƒ‹[ƒgƒVƒOƒlƒ`ƒƒ‚Ì¶¬‚É¬Œ÷‚µ‚½‚©‚Ç‚¤‚©‚ğ•Ô‚·
-	ID3D12RootSignature* Get(); // ƒ‹[ƒgƒVƒOƒlƒ`ƒƒ‚ğ•Ô‚·
+	RootSignature(); // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ãƒ«ãƒ¼ãƒˆã‚·ã‚°ãƒãƒãƒ£ã‚’ç”Ÿæˆ
+	bool IsSuccess(); // ãƒ«ãƒ¼ãƒˆã‚·ã‚°ãƒãƒãƒ£ã®ç”Ÿæˆã«æˆåŠŸã—ãŸã‹ã©ã†ã‹ã‚’è¿”ã™
+	ID3D12RootSignature* Get(); // ãƒ«ãƒ¼ãƒˆã‚·ã‚°ãƒãƒãƒ£ã‚’è¿”ã™
 
 	void SetTextureRootSampler();
 	void SetNormalRootSignature();
@@ -17,10 +17,12 @@ public:
 	void Set3DRootSignature();
 	void SetPostEffectRootSignature();
 	void SetDistortionRootSignature();
+	void SetShadowDepthRootSignature();
+	void SetShadowDebugRootSignature();
 
 private:
-	bool success = false; // ƒ‹[ƒgƒVƒOƒlƒ`ƒƒ‚Ì¶¬‚É¬Œ÷‚µ‚½‚©‚Ç‚¤‚©
-	ComPtr<ID3D12RootSignature> pRootSignature = nullptr; // ƒ‹[ƒgƒVƒOƒlƒ`ƒƒ
+	bool success = false; // ãƒ«ãƒ¼ãƒˆã‚·ã‚°ãƒãƒãƒ£ã®ç”Ÿæˆã«æˆåŠŸã—ãŸã‹ã©ã†ã‹
+	ComPtr<ID3D12RootSignature> pRootSignature = nullptr; // ãƒ«ãƒ¼ãƒˆã‚·ã‚°ãƒãƒãƒ£
 };
 
 

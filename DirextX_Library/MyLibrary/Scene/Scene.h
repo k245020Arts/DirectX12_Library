@@ -78,4 +78,6 @@ private:
 
 	float speedUP;
 	int legIK = 0;
+
+	FBXModel* plane;
 };

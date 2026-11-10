@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "../SingleTon/SingletonBase.h"
 #include <memory>
 
@@ -24,15 +24,21 @@ public:
 
 private:
 
-	// ƒ|ƒXƒgƒGƒtƒFƒNƒg(RenderTarget / RenderPass ‚à“à•”‚Å©“®ŠÇ—)
+	// ãƒã‚¹ãƒˆã‚¨ãƒ•ã‚§ã‚¯ãƒˆ(RenderTarget / RenderPass ã‚‚å†…éƒ¨ã§è‡ªå‹•ç®¡ç†)
 	std::unique_ptr<PostEffectPipeline> postEffectPipeline;
 
-	// ŒÂ•Ê‚É‘€ì‚µ‚½‚¢ƒGƒtƒFƒNƒg(Š—LŒ ‚Í postEffectPipeline ‚ª‚Â‚Ì‚Å delete ‚µ‚È‚¢)
+	// å€‹åˆ¥ã«æ“ä½œã—ãŸã„ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ(æ‰€æœ‰æ¨©ã¯ postEffectPipeline ãŒæŒã¤ã®ã§ delete ã—ãªã„)
 	GaussianBlur* gaussianBlur = nullptr;
 	DistortionPostEffect* distortion = nullptr;
 
 	friend class SingletonBase<PostEffectCreater>;
 
 	bool showShadowMap = true;
+
+	std::unique_ptr<ShadowMap> shadowMap;
+	std::unique_ptr<ShadowCamera> shadowCamera;
+	std::unique_ptr<ShadowMapDebug> debugShadow;
+	std::shared_ptr<RenderPass> shadowRenderPass;
+	std::shared_ptr<RenderPass> debugShadowPass;
 
 };

@@ -1,19 +1,10 @@
-#include "PostEffectCreater.h"
+ï»¿#include "PostEffectCreater.h"
 #include "../Window/Window.h"
 #include "../Engine/Engine.h"
 #include "../Object3D/Object3DManager.h"
-#include "../Time/DeltaTime.h"
-#include "../Texture/TextureLoader.h"
 #include "../DirectX12Imgui/DirectX12Imgui.h"
-#include "../Camera3D/Camera3D.h"
-#include <vector>
-#include "../../ImGui/imgui.h"
-#include "../../ImGui/imgui_impl_win32.h"
-#include "../../ImGui/imgui_impl_dx12.h"
-#include "../Input/InputManager.h"
 #include "../RenderPass/RenderPass.h"
 #include "../RenderPass/RenderPassManager.h"
-#include "../RenderTarget/RenderTarget.h"
 #include "../PostEffect/PostEffectPipeline.h"
 #include "../PostEffect/GaussianBlur/GaussianBlur.h"
 #include "../PostEffect/NormalMapPostEffect/DistortionPostEffect.h"
@@ -21,118 +12,218 @@
 #include "../Shadow/ShadowCamera.h"
 #include "../Shadow/ShadowMapDebug.h"
 #include "../Light/Light.h"
-
+#include <algorithm>
+#include <vector>
+#include "../../ImGui/imgui.h"
 
 PostEffectCreater::PostEffectCreater()
 {
-
 }
 
 PostEffectCreater::~PostEffectCreater()
 {
-
 }
 
 void PostEffectCreater::Init()
 {
-	auto size = Engine::GetInstance()->GetWindowSize();
+    const auto size = Engine::GetInstance()->GetWindowSize();
 
-	postEffectPipeline = std::make_unique<PostEffectPipeline>();
+    // ---------------------------------------------------------------------
+    // 1) ShadowMapã¨ãƒ©ã‚¤ãƒˆã‚«ãƒ¡ãƒ©ã‚’ä½œã‚Šã€ã‚·ãƒ¼ãƒ³æç”»ã‚ˆã‚Šå‰ã®RenderPassã«ç™»éŒ²ã™ã‚‹ã€‚
+    // ---------------------------------------------------------------------
+    shadowMap = std::make_unique<ShadowMap>();
+    shadowCamera = std::make_unique<ShadowCamera>();
+    debugShadow = std::make_unique<ShadowMapDebug>();
 
-	postEffectPipeline->Init(size.width, size.height);
+    const bool shadowMapCreated = shadowMap->Create(2048, 2048);
+    const bool shadowDebugCreated = shadowMapCreated && debugShadow->Init();
 
-	// ƒV[ƒ“•`‰æ
-	postEffectPipeline->SetSceneFunction([]()
-		{
-			Object3DManager::GetInstance()->Draw();
-		});
+    if (shadowMapCreated)
+    {
+        shadowRenderPass = std::make_shared<RenderPass>();
+        shadowRenderPass->SetBeginFunction([this]()
+        {
+            shadowMap->BeginRender();
+        });
 
-	// g‚¢‚½‚¢ƒGƒtƒFƒNƒg‚ğA‚©‚¯‚½‚¢‡‚É’Ç‰Á‚·‚é‚¾‚¯
-	// •Ô‚Á‚Ä‚«‚½ƒ|ƒCƒ“ƒ^‚ÅAƒpƒ‰ƒ[ƒ^‚Ì•ÏX‚â SetEnabled(true/false) ‚É‚æ‚éŒÂ•Ê‚ÌON/OFF‚ª‚Å‚«‚é
-	gaussianBlur = postEffectPipeline->AddEffect<GaussianBlur>();
+        shadowRenderPass->SetExecuteFunction([this]()
+        {
+            const auto& lightData = Light::GetInstance()->GetLightBufferData();
+            if (lightData.lightCount == 0)
+            {
+                return;
+            }
 
-	distortion = postEffectPipeline->AddEffect<DistortionPostEffect>();
+            // ç¾åœ¨ã®å…ˆé ­ãƒ©ã‚¤ãƒˆã‚’ãƒ‡ã‚£ãƒ¬ã‚¯ã‚·ãƒ§ãƒŠãƒ«ãƒ©ã‚¤ãƒˆã¨ã—ã¦ä½¿ç”¨ã™ã‚‹ã€‚
+            shadowCamera->Update(lightData.lights[0].direction);
+            Object3DManager::GetInstance()->DrawShadow(*shadowCamera,*shadowMap.get());
+        });
 
-	if (distortion != nullptr)
-	{
-		distortion->Load("data/testDist.png");
-	}
+        shadowRenderPass->SetEndFunction([this]()
+        {
+            shadowMap->EndRender();
+        });
 
-	// Å‰‚Í‘S•”OFF (‰½‚à—LŒø‚Å‚È‚¯‚ê‚Î BackBuffer ‚Ö’¼Ú•`‰æ)
-	if (gaussianBlur != nullptr)
-	{
-		gaussianBlur->SetEnabled(false);
-	}
+        // å¿…ãšSceneRenderPassã‚ˆã‚Šå…ˆã«ç™»éŒ²ã™ã‚‹ã€‚
+        RenderPassManager::GetInstance()->AddPass(shadowRenderPass);
+    }
+    else
+    {
+        OutputDebugStringW(L"ShadowMapã®åˆæœŸåŒ–ã«å¤±æ•—ã—ãŸãŸã‚ã€ShadowPassã‚’ç„¡åŠ¹ã«ã—ã¾ã™\n");
+        debugShadow.reset();
+        shadowCamera.reset();
+        shadowMap.reset();
+    }
 
-	if (distortion != nullptr)
-	{
-		distortion->SetEnabled(false);
-	}
+    if (shadowMapCreated && !shadowDebugCreated)
+    {
+        OutputDebugStringW(L"ShadowMapDebugã®åˆæœŸåŒ–ã«å¤±æ•—ã—ã¾ã—ãŸã€‚æ·±åº¦ç”Ÿæˆã®ã¿æœ‰åŠ¹ã§ã™\n");
+        debugShadow.reset();
+    }
 
-	// RenderTarget ‚Æ RenderPass ‚ğ\’z‚µ‚Ä RenderPassManager ‚Ö“o˜^
-	postEffectPipeline->Build();
+    // ---------------------------------------------------------------------
+    // 2) æ—¢å­˜ã®ãƒã‚¹ãƒˆã‚¨ãƒ•ã‚§ã‚¯ãƒˆãƒã‚§ãƒ¼ãƒ³ã‚’æ§‹ç¯‰ã™ã‚‹ã€‚
+    // ---------------------------------------------------------------------
+    postEffectPipeline = std::make_unique<PostEffectPipeline>();
+    if (!postEffectPipeline->Init(size.width, size.height))
+    {
+        OutputDebugStringW(L"PostEffectPipelineã®åˆæœŸåŒ–ã«å¤±æ•—\n");
+        return;
+    }
+
+    postEffectPipeline->SetSceneFunction([]()
+    {
+        Object3DManager::GetInstance()->Draw();
+    });
+
+    gaussianBlur = postEffectPipeline->AddEffect<GaussianBlur>();
+    distortion = postEffectPipeline->AddEffect<DistortionPostEffect>();
+
+    if (distortion != nullptr)
+    {
+        distortion->Load("data/testDist.png");
+    }
+
+    if (gaussianBlur != nullptr)
+    {
+        gaussianBlur->SetEnabled(false);
+    }
+    if (distortion != nullptr)
+    {
+        distortion->SetEnabled(false);
+    }
+
+    // Scene -> PostEffectã®é †ã§ç™»éŒ²ã•ã‚Œã‚‹ã€‚ShadowPassã¯ãã®å‰ã«ç™»éŒ²æ¸ˆã¿ã€‚
+    if (!postEffectPipeline->Build())
+    {
+        OutputDebugStringW(L"PostEffectPipelineã®Buildã«å¤±æ•—\n");
+        return;
+    }
+
+    // ---------------------------------------------------------------------
+    // 3) æ·±åº¦Debugã¯å…¨ãƒã‚¹ãƒˆã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®å¾Œã§BackBufferã¸æç”»ã™ã‚‹ã€‚
+    // ---------------------------------------------------------------------
+    if (shadowDebugCreated)
+    {
+        debugShadowPass = std::make_shared<RenderPass>();
+        debugShadowPass->SetExecuteFunction([this]()
+        {
+            if (shadowMap != nullptr && debugShadow != nullptr)
+            {
+                debugShadow->Draw(*shadowMap);
+            }
+        });
+        debugShadowPass->SetEnabled(false);
+        RenderPassManager::GetInstance()->AddPass(debugShadowPass);
+    }
 }
 
 void PostEffectCreater::Update()
 {
 #ifdef IMGUI
-	// ƒ|ƒXƒgƒGƒtƒFƒNƒg‚Ì‘€ìƒpƒlƒ‹ (ON/OFF ‚Æƒpƒ‰ƒ[ƒ^)
-	if (gaussianBlur != nullptr || distortion != nullptr)
-	{
-		ImGui::Begin("PostEffect");
+    ImGui::Begin("PostEffect");
 
-		if (gaussianBlur != nullptr)
-		{
-			bool enabled = gaussianBlur->IsEnabled();
+    if (gaussianBlur != nullptr)
+    {
+        bool enabled = gaussianBlur->IsEnabled();
+        if (ImGui::Checkbox("GaussianBlur", &enabled))
+        {
+            gaussianBlur->SetEnabled(enabled);
+        }
 
-			if (ImGui::Checkbox("GaussianBlur", &enabled))
-			{
-				gaussianBlur->SetEnabled(enabled);
-			}
+        float sigma = gaussianBlur->GetSigma();
+        if (ImGui::SliderFloat("Blur Sigma", &sigma, 0.1f, 10.0f))
+        {
+            gaussianBlur->SetSigma(sigma);
+        }
 
-			float sigma = gaussianBlur->GetSigma();
+        float spread = gaussianBlur->GetSpread();
+        if (ImGui::SliderFloat("Blur Spread", &spread, 0.0f, 4.0f))
+        {
+            gaussianBlur->SetSpread(spread);
+        }
+    }
 
-			if (ImGui::SliderFloat("Blur Sigma", &sigma, 0.1f, 10.0f))
-			{
-				gaussianBlur->SetSigma(sigma);
-			}
+    if (distortion != nullptr)
+    {
+        bool enabled = distortion->IsEnabled();
+        if (ImGui::Checkbox("Distortion", &enabled))
+        {
+            distortion->SetEnabled(enabled);
+        }
 
-			float spread = gaussianBlur->GetSpread();
+        float strength = distortion->GetStrength();
+        if (ImGui::SliderFloat("Distortion Strength", &strength, 0.0f, 0.5f))
+        {
+            distortion->SetStrength(strength);
+        }
+    }
 
-			if (ImGui::SliderFloat("Blur Spread", &spread, 0.0f, 4.0f))
-			{
-				gaussianBlur->SetSpread(spread);
-			}
-		}
+    if (debugShadowPass != nullptr)
+    {
+        if (ImGui::Checkbox("Show ShadowMap Depth", &showShadowMap))
+        {
+            debugShadowPass->SetEnabled(showShadowMap);
+        }
 
-		if (distortion != nullptr)
-		{
-			bool enabled = distortion->IsEnabled();
+        if (shadowCamera != nullptr)
+        {
+            const auto& currentTarget = shadowCamera->GetTarget();
+            float target[3] = { currentTarget.x, currentTarget.y, currentTarget.z };
+            if (ImGui::DragFloat3("Shadow Target", target, 1.0f))
+            {
+                shadowCamera->SetTarget(Vector3(target[0], target[1], target[2]));
+            }
 
-			if (ImGui::Checkbox("Distortion", &enabled))
-			{
-				distortion->SetEnabled(enabled);
-			}
+            float orthoWidth = shadowCamera->GetOrthographicWidth();
+            float orthoHeight = shadowCamera->GetOrthographicHeight();
+            if (ImGui::SliderFloat("Shadow Ortho Width", &orthoWidth, 100.0f, 3000.0f))
+            {
+                shadowCamera->SetOrthographicSize(orthoWidth, orthoHeight);
+            }
+            if (ImGui::SliderFloat("Shadow Ortho Height", &orthoHeight, 100.0f, 3000.0f))
+            {
+                shadowCamera->SetOrthographicSize(orthoWidth, orthoHeight);
+            }
+        }
+    }
 
-			float strength = distortion->GetStrength();
-
-			if (ImGui::SliderFloat("Distortion Strength", &strength, 0.0f, 0.5f))
-			{
-				distortion->SetStrength(strength);
-			}
-		}
-		ImGui::End();
-	}
+    ImGui::End();
 #endif // IMGUI
 }
 
 void PostEffectCreater::EnableGaussainBlur(bool _enable)
 {
-	gaussianBlur->SetEnabled(_enable);
+    if (gaussianBlur != nullptr)
+    {
+        gaussianBlur->SetEnabled(_enable);
+    }
 }
 
 void PostEffectCreater::EnableDistortion(bool _enable)
 {
-	distortion->SetEnabled(_enable);
+    if (distortion != nullptr)
+    {
+        distortion->SetEnabled(_enable);
+    }
 }
-

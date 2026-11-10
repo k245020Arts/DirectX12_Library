@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <functional>
 #include <memory>
 #include "../RenderTarget/RenderTarget.h"
@@ -18,12 +18,22 @@ public:
         clearColor = color;
     }
 
+    void SetBeginFunction(std::function<void()> function)
+    {
+        beginFunction = function;
+    }
+
     void SetExecuteFunction(std::function<void()> function)
     {
         executeFunction = function;
     }
 
-    //–³Œø‚ÌŠÔ‚Í Execute() ‚Å‰½‚às‚í‚È‚¢(RenderTarget‚ÌØ‚è‘Ö‚¦‚às‚í‚È‚¢)
+    void SetEndFunction(std::function<void()> function)
+    {
+        endFunction = function;
+    }
+
+    //ç„¡åŠ¹ã®é–“ã¯ Execute() ã§ä½•ã‚‚è¡Œã‚ãªã„(RenderTargetã®åˆ‡ã‚Šæ›¿ãˆã‚‚è¡Œã‚ãªã„)
     void SetEnabled(bool _enabled)
     {
         enabled = _enabled;
@@ -44,6 +54,8 @@ private:
 
     Vector4 clearColor = {0.25f,0.25f,0.25f, 1.0f };
 
+    std::function<void()> beginFunction;
     std::function<void()> executeFunction;
+    std::function<void()> endFunction;
 };
 

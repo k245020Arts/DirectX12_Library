@@ -1,4 +1,4 @@
-#include "Engine.h"
+ï»¿#include "Engine.h"
 
 Engine::~Engine()
 {
@@ -22,13 +22,13 @@ bool Engine::Init(HWND _hwnd, const Size& _size)
 
     CreateDebugLayer();
 
-    // 1. DRED‚ğ—LŒø‰»
+    // 1. DREDã‚’æœ‰åŠ¹åŒ–
     EnableDRED();
 
     bool deviceCreate = CreateDevice();
 
     if (!deviceCreate) {
-        OutputDebugStringW(L"ƒfƒoƒCƒX‚Ìo—Í‚É¸”s‚µ‚Ü‚µ‚½");
+        OutputDebugStringW(L"ãƒ‡ãƒã‚¤ã‚¹ã®å‡ºåŠ›ã«å¤±æ•—ã—ã¾ã—ãŸ");
         return false;
     }
 
@@ -37,28 +37,28 @@ bool Engine::Init(HWND _hwnd, const Size& _size)
     bool commandQueueCreate = CreateCommandQueue();
     if (!commandQueueCreate)
     {
-        OutputDebugStringW(L"ƒRƒ}ƒ“ƒhƒLƒ…[‚Ì¶¬‚É¸”s");
+        OutputDebugStringW(L"ã‚³ãƒãƒ³ãƒ‰ã‚­ãƒ¥ãƒ¼ã®ç”Ÿæˆã«å¤±æ•—");
         return false;
     }
 
     bool swapChainCreate = CreateSwapChain();
     if (!swapChainCreate)
     {
-        OutputDebugStringW(L"ƒXƒƒbƒvƒ`ƒFƒCƒ“‚Ì¶¬‚É¸”s");
+        OutputDebugStringW(L"ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ã‚¤ãƒ³ã®ç”Ÿæˆã«å¤±æ•—");
         return false;
     }
 
     bool commandListCreate = CreateCommandList();
     if (!commandListCreate)
     {
-        OutputDebugStringW(L"ƒRƒ}ƒ“ƒhƒŠƒXƒg‚Ì¶¬‚É¸”s");
+        OutputDebugStringW(L"ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆã®ç”Ÿæˆã«å¤±æ•—");
         return false;
     }
     
     bool fenceCreate = CreateFence();
     if (!fenceCreate)
     {
-        OutputDebugStringW(L"ƒtƒFƒ“ƒX‚Ì¶¬‚É¸”s");
+        OutputDebugStringW(L"ãƒ•ã‚§ãƒ³ã‚¹ã®ç”Ÿæˆã«å¤±æ•—");
         return false;
     }
 
@@ -69,14 +69,14 @@ bool Engine::Init(HWND _hwnd, const Size& _size)
 
     if (!renderTargetCreate)
     {
-        OutputDebugStringW(L"ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚Ì¶¬‚É¸”s");
+        OutputDebugStringW(L"ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®ç”Ÿæˆã«å¤±æ•—");
         return false;
     }
 
     bool depthBuffer =  CreateDepthBuffer();
     if (!depthBuffer)
     {
-        OutputDebugStringW(L"ƒfƒvƒXƒXƒeƒ“ƒVƒ‹ƒoƒbƒtƒ@‚Ì¶¬‚É¸”s\n");
+        OutputDebugStringW(L"ãƒ‡ãƒ—ã‚¹ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ãƒãƒƒãƒ•ã‚¡ã®ç”Ÿæˆã«å¤±æ•—\n");
         return false;
     }
 
@@ -88,12 +88,12 @@ bool Engine::Init(HWND _hwnd, const Size& _size)
 void Engine::BeginRender()
 {
 
-    // •K‚¸ƒtƒŒ[ƒ€ŠJn‚ÉŒ»İ‚ÌƒoƒbƒNƒoƒbƒtƒ@‚ğæ“¾
+    // å¿…ãšãƒ•ãƒ¬ãƒ¼ãƒ é–‹å§‹æ™‚ã«ç¾åœ¨ã®ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã‚’å–å¾—
     currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
     currentRenderTarget = pRenderTargets[currentBackBufferIndex].Get();
 
-    // Œ»İ‚ÌƒoƒbƒNƒoƒbƒtƒ@‚É‘Î‰‚·‚éAllocator‚ğg—p
+    // ç¾åœ¨ã®ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã«å¯¾å¿œã™ã‚‹Allocatorã‚’ä½¿ç”¨
     commandAllocator[currentBackBufferIndex]->Reset();
 
     commandList->Reset(commandAllocator[currentBackBufferIndex].Get(),nullptr);
@@ -105,18 +105,30 @@ void Engine::BeginRender()
 
 void Engine::EndRender()
 {
-    // ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚É‘‚«‚İI‚í‚é‚Ü‚Å‘Ò‚Â
-    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentRenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-    commandList->ResourceBarrier(1, &barrier);
+    // ã“ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã§BackBufferã‚’æç”»å…ˆã«ã—ãŸå ´åˆã ã‘PRESENTã¸æˆ»ã™ã€‚
+    if (currentRenderTarget != nullptr && currentBackBufferIndex < backBufferStates.size())
+    {
+        auto& state = backBufferStates[currentBackBufferIndex];
+        if (state != D3D12_RESOURCE_STATE_PRESENT)
+        {
+            auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+                currentRenderTarget,
+                state,
+                D3D12_RESOURCE_STATE_PRESENT
+            );
+            commandList->ResourceBarrier(1, &barrier);
+            state = D3D12_RESOURCE_STATE_PRESENT;
+        }
+    }
 
-    // ƒRƒ}ƒ“ƒh‚Ì‹L˜^‚ğI—¹
+    // ã‚³ãƒãƒ³ãƒ‰ã®è¨˜éŒ²ã‚’çµ‚äº†
     commandList->Close();
 
-    // ƒRƒ}ƒ“ƒh‚ğÀs
+    // ã‚³ãƒãƒ³ãƒ‰ã‚’å®Ÿè¡Œ
     ID3D12CommandList* ppCmdLists[] = { commandList.Get() };
     commandQueue->ExecuteCommandLists(1, ppCmdLists);
 
-    // ƒXƒƒbƒvƒ`ƒF[ƒ“‚ğØ‚è‘Ö‚¦
+    // ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³ã‚’åˆ‡ã‚Šæ›¿ãˆ
     HRESULT hr = swapChain->Present(1, 0);
 
     if (FAILED(hr))
@@ -125,10 +137,10 @@ void Engine::EndRender()
             static_cast<unsigned int>(hr));
 
         PrintDRED(pDevice.Get());
-        assert(false && "ƒXƒƒbƒvƒ`ƒF[ƒ“‚ÉƒGƒ‰[");
+        assert(false && "ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³æ™‚ã«ã‚¨ãƒ©ãƒ¼");
     }
 
-    // •`‰æŠ®—¹‚ğ‘Ò‚Â
+    // æç”»å®Œäº†ã‚’å¾…ã¤
     WaitRender();
 
     
@@ -144,9 +156,26 @@ void Engine::BindBackBuffer(const Vector4& clearColor)
 
     auto dsvHandle = pDsvHeap->GetCPUDescriptorHandleForHeapStart();
 
-    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentRenderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    if (currentRenderTarget == nullptr || currentBackBufferIndex >= backBufferStates.size())
+    {
+        return;
+    }
 
-    commandList->ResourceBarrier(1, &barrier);
+    auto& state = backBufferStates[currentBackBufferIndex];
+    if (state != D3D12_RESOURCE_STATE_RENDER_TARGET)
+    {
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            currentRenderTarget,
+            state,
+            D3D12_RESOURCE_STATE_RENDER_TARGET
+        );
+        commandList->ResourceBarrier(1, &barrier);
+        state = D3D12_RESOURCE_STATE_RENDER_TARGET;
+    }
+
+    // ç›´å‰ã®RenderPassã§ShadowMapã‚„å°ã•ã„RenderTargetã‚’ä½¿ã£ã¦ã„ã¦ã‚‚ç”»é¢ã‚µã‚¤ã‚ºã«æˆ»ã™ã€‚
+    commandList->RSSetViewports(1, &viewport);
+    commandList->RSSetScissorRects(1, &scissor);
 
     commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 
@@ -264,7 +293,7 @@ bool Engine::CreateDevice()
 
     };
 
-    //“KØ‚ÈƒtƒB[ƒ`ƒƒ[ƒŒƒxƒ‹‚Ì‘I‘ğ
+    //é©åˆ‡ãªãƒ•ã‚£ãƒ¼ãƒãƒ£ãƒ¼ãƒ¬ãƒ™ãƒ«ã®é¸æŠ
     for (auto lv : levels)
     {
         if (D3D12CreateDevice(nullptr, lv, IID_PPV_ARGS(&pDevice)) == S_OK) {
@@ -286,7 +315,7 @@ bool Engine::CreateAdapter()
 #endif // _DEBUG
 
     if (result != S_OK) {
-        assert(false && "ƒAƒ_ƒvƒ^[‚Ìæ“¾ƒ~ƒX");
+        assert(false && "ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã®å–å¾—ãƒŸã‚¹");
         return false;
     }
 
@@ -300,13 +329,13 @@ bool Engine::CreateAdapter()
 
     for (auto adpt : adapters) {
         DXGI_ADAPTER_DESC adesc = {};
-        adpt->GetDesc(&adesc); //ƒAƒ_ƒvƒ^[‚Ìà–¾ƒIƒuƒWƒFƒNƒg‚Ìæ“¾
+        adpt->GetDesc(&adesc); //ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã®èª¬æ˜ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å–å¾—
 
         std::wstring strDesc = adesc.Description;
 
-        //’T‚µ‚½‚¢ƒAƒ_ƒvƒ^[‚Ì–¼‘O‚ğŠm”F
+        //æ¢ã—ãŸã„ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã®åå‰ã‚’ç¢ºèª
         if (strDesc.find(L"NVDIA") != std::string::npos) {
-            tmpAdapter = adpt; //TODO‚Ü‚¾“ü‚ç‚È‚¢
+            tmpAdapter = adpt; //TODOã¾ã å…¥ã‚‰ãªã„
             break;
         }
     }
@@ -318,11 +347,11 @@ bool Engine::CreateCommandQueue()
 {
     D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = {};
 
-    cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;//D3D12_COMMAND_QUEUE_FLAG_DISABLE_GPU_TIMEOUT; //ƒ^ƒCƒ€ƒAƒEƒg‚È‚µ
+    cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;//D3D12_COMMAND_QUEUE_FLAG_DISABLE_GPU_TIMEOUT; //ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆãªã—
 
-    cmdQueueDesc.NodeMask = 0; //ƒAƒ_ƒvƒ^[‚ğˆê‚Â‚µ‚©g—p‚µ‚È‚¢‚Æ‚«‚Í0
+    cmdQueueDesc.NodeMask = 0; //ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã‚’ä¸€ã¤ã—ã‹ä½¿ç”¨ã—ãªã„ã¨ãã¯0
 
-    cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL; //ƒvƒ‰ƒCƒIƒŠƒeƒB[‚É“Á‚É•ÏX‚È‚µ
+    cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL; //ãƒ—ãƒ©ã‚¤ã‚ªãƒªãƒ†ã‚£ãƒ¼ã«ç‰¹ã«å¤‰æ›´ãªã—
 
     cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
@@ -337,28 +366,28 @@ bool Engine::CreateCommandQueue()
 
 bool Engine::CreateSwapChain()
 {
-    //ƒXƒƒbƒvƒ`ƒF[ƒ“
+    //ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 
-    swapChainDesc.Width = windowSize.width; //‰æ–Ê‚Ì•
-    swapChainDesc.Height = windowSize.height; //‰æ–Ê‚Ì‚‚³
-    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //ƒsƒNƒZƒ‹ƒtƒH[ƒ}ƒbƒg
-    swapChainDesc.Stereo = false; //ƒXƒeƒŒƒI•\¦ƒtƒ‰ƒO
-    swapChainDesc.SampleDesc.Count = 1; //ƒ}ƒ‹ƒ`ƒTƒ“ƒvƒ‹‚Ìw’è
-    swapChainDesc.SampleDesc.Quality = 0; //ƒ}ƒ‹ƒ`ƒTƒ“ƒvƒ‹‚Ìw’è
+    swapChainDesc.Width = windowSize.width; //ç”»é¢ã®å¹…
+    swapChainDesc.Height = windowSize.height; //ç”»é¢ã®é«˜ã•
+    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //ãƒ”ã‚¯ã‚»ãƒ«ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ
+    swapChainDesc.Stereo = false; //ã‚¹ãƒ†ãƒ¬ã‚ªè¡¨ç¤ºãƒ•ãƒ©ã‚°
+    swapChainDesc.SampleDesc.Count = 1; //ãƒãƒ«ãƒã‚µãƒ³ãƒ—ãƒ«ã®æŒ‡å®š
+    swapChainDesc.SampleDesc.Quality = 0; //ãƒãƒ«ãƒã‚µãƒ³ãƒ—ãƒ«ã®æŒ‡å®š
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.BufferCount = 2; //ƒ_ƒuƒ‹ƒoƒbƒtƒ@[‚È‚ç2‚Å—Ç‚¢
+    swapChainDesc.BufferCount = 2; //ãƒ€ãƒ–ãƒ«ãƒãƒƒãƒ•ã‚¡ãƒ¼ãªã‚‰2ã§è‰¯ã„
 
-    //ƒoƒbƒNƒoƒbƒtƒ@[‚ÍL‚Ñk‚İŠ®—¹
+    //ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ãƒ¼ã¯ä¼¸ã³ç¸®ã¿å®Œäº†
     swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
 
-    //ƒtƒŠƒbƒvŒã‚Í‘f‘‚­”jŠü
+    //ãƒ•ãƒªãƒƒãƒ—å¾Œã¯ç´ æ—©ãç ´æ£„
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
-    //“Á‚Éw’è‚È‚µ
+    //ç‰¹ã«æŒ‡å®šãªã—
     swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 
-    //ƒEƒBƒ“ƒhƒEƒtƒ‹ƒXƒNƒŠ[ƒ“Ø‚è‘Ö‚¦‰Â”\
+    //ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ•ãƒ«ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆå¯èƒ½
     swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
     ComPtr<IDXGISwapChain1> swapChain1;
@@ -385,7 +414,7 @@ bool Engine::CreateSwapChain()
 bool Engine::CreateCommandList()
 {
 
-    // ƒRƒ}ƒ“ƒhƒAƒƒP[ƒ^[‚Ìì¬
+    // ã‚³ãƒãƒ³ãƒ‰ã‚¢ãƒ­ã‚±ãƒ¼ã‚¿ãƒ¼ã®ä½œæˆ
     HRESULT hr;
     commandAllocator.resize(FRAME_BUFFER_COUNT);
     for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
@@ -405,7 +434,7 @@ bool Engine::CreateCommandList()
         return false;
     }
 
-    // ƒRƒ}ƒ“ƒhƒŠƒXƒg‚Ì¶¬
+    // ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆã®ç”Ÿæˆ
     hr = pDevice->CreateCommandList(0,D3D12_COMMAND_LIST_TYPE_DIRECT,commandAllocator[currentBackBufferIndex].Get(), nullptr,IID_PPV_ARGS(&commandList));
 
     if (FAILED(hr))
@@ -420,7 +449,7 @@ bool Engine::CreateCommandList()
         return false;
     }
 
-    //ƒRƒ}ƒ“ƒhƒŠƒXƒg‚ÍŠJ‚©‚ê‚Ä‚¢‚éó‘Ô‚Åì¬‚³‚ê‚é‚Ì‚ÅA‚¢‚Á‚½‚ñ•Â‚¶‚éB
+    //ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆã¯é–‹ã‹ã‚Œã¦ã„ã‚‹çŠ¶æ…‹ã§ä½œæˆã•ã‚Œã‚‹ã®ã§ã€ã„ã£ãŸã‚“é–‰ã˜ã‚‹ã€‚
     commandList->Close();
     uploadCommandList->Close();
     return true;
@@ -466,15 +495,15 @@ void Engine::CreateScissorRect()
 
 bool Engine::CreateRenderTarget()
 {
-    //ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[‚Ìİ’è
-    //ƒfƒBƒXƒNƒŠƒvƒ^ƒq[ƒv‚Ìì¬
+    //ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ã®è¨­å®š
+    //ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒ’ãƒ¼ãƒ—ã®ä½œæˆ
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 
-    heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; //ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[‚È‚Ì‚ÅRTV
+    heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; //ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ãªã®ã§RTV
 
-    heapDesc.NodeMask = 0; //GPU‚ª2‚ÂˆÈã‚ ‚éê‡‚Ì¯•Ê‚Ég‚í‚ê‚éBˆê‚Â‚È‚ç0‚Å—Ç‚µ
-    heapDesc.NumDescriptors = 2; //•\— ‚Ì2‚Â
-    heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;//w’è‚È‚µ
+    heapDesc.NodeMask = 0; //GPUãŒ2ã¤ä»¥ä¸Šã‚ã‚‹å ´åˆã®è­˜åˆ¥ã«ä½¿ã‚ã‚Œã‚‹ã€‚ä¸€ã¤ãªã‚‰0ã§è‰¯ã—
+    heapDesc.NumDescriptors = 2; //è¡¨è£ã®2ã¤
+    heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;//æŒ‡å®šãªã—
 
 
     auto hr = pDevice->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&pRtvHeap));
@@ -483,17 +512,18 @@ bool Engine::CreateRenderTarget()
         return false;
     }
 
-    //ƒXƒƒbƒvƒ`ƒF[ƒ“ã‚ÌƒoƒbƒNƒoƒbƒtƒ@[‚ÆƒfƒBƒXƒNƒvƒŠƒ^‚Ì•R‚Ã‚¯‚ğs‚¤
+    //ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³ä¸Šã®ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ãƒ¼ã¨ãƒ‡ã‚£ã‚¹ã‚¯ãƒ—ãƒªã‚¿ã®ç´ã¥ã‘ã‚’è¡Œã†
     DXGI_SWAP_CHAIN_DESC swcDesc = {};
 
     hr = swapChain->GetDesc(&swcDesc);
 
     pRenderTargets.resize(swcDesc.BufferCount);
+    backBufferStates.assign(swcDesc.BufferCount, D3D12_RESOURCE_STATE_PRESENT);
 
-    //SRGB—p‚ÌƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[İ’è‚ğs‚¤
+    //SRGBç”¨ã®ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼è¨­å®šã‚’è¡Œã†
     D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 
-    rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //ƒKƒ“ƒ}•â³‚ ‚è
+    rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //ã‚¬ãƒ³ãƒè£œæ­£ã‚ã‚Š
     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
     for (unsigned int idx = 0; idx < swcDesc.BufferCount; ++idx) {
@@ -503,17 +533,17 @@ bool Engine::CreateRenderTarget()
             return false;
         }
 
-        //ƒfƒBƒXƒNƒvƒŠƒ^ƒq[ƒv‚Ìæ“ª‚ÌƒAƒhƒŒƒX(ƒnƒ“ƒhƒ‹)‚ğæ“¾‚µA‚»‚ê‚ğæ‚Ù‚Çæ“¾‚µ‚½ƒoƒbƒtƒ@‚ğg—p‚µƒ^[ƒQƒbƒgƒrƒ…[‚ğ¶¬‚·‚é
+        //ãƒ‡ã‚£ã‚¹ã‚¯ãƒ—ãƒªã‚¿ãƒ’ãƒ¼ãƒ—ã®å…ˆé ­ã®ã‚¢ãƒ‰ãƒ¬ã‚¹(ãƒãƒ³ãƒ‰ãƒ«)ã‚’å–å¾—ã—ã€ãã‚Œã‚’å…ˆã»ã©å–å¾—ã—ãŸãƒãƒƒãƒ•ã‚¡ã‚’ä½¿ç”¨ã—ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ã‚’ç”Ÿæˆã™ã‚‹
 
         D3D12_CPU_DESCRIPTOR_HANDLE handle = pRtvHeap->GetCPUDescriptorHandleForHeapStart();
 
-        //GetCPUDescriptorHandleForHeapStart()‚Ìƒƒ\ƒbƒh‚Å‚Æ‚ê‚é‚Ì‚Íæ“ªƒAƒhƒŒƒX‚È‚Ì‚Å1”Ô–ÚˆÈ~‚Ì
-        //ƒfƒBƒXƒNƒŠƒvƒ^‚ğæ“¾‚·‚é‚½‚ß‚É‚Íˆê‚Â•ª‚¸‚ç‚µ‚Ä‚ ‚°‚È‚¯‚ê‚Î‚¢‚¯‚È‚¢‚Ì‚Å‰º‚Ìˆ—‚ğs‚¤
-        //’Êí‚Ìƒ|ƒCƒ“ƒ^‚İ‚½‚¢‚É++‚Ío—ˆ‚È‚¢
+        //GetCPUDescriptorHandleForHeapStart()ã®ãƒ¡ã‚½ãƒƒãƒ‰ã§ã¨ã‚Œã‚‹ã®ã¯å…ˆé ­ã‚¢ãƒ‰ãƒ¬ã‚¹ãªã®ã§1ç•ªç›®ä»¥é™ã®
+        //ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ã‚’å–å¾—ã™ã‚‹ãŸã‚ã«ã¯ä¸€ã¤åˆ†ãšã‚‰ã—ã¦ã‚ã’ãªã‘ã‚Œã°ã„ã‘ãªã„ã®ã§ä¸‹ã®å‡¦ç†ã‚’è¡Œã†
+        //é€šå¸¸ã®ãƒã‚¤ãƒ³ã‚¿ã¿ãŸã„ã«++ã¯å‡ºæ¥ãªã„
 
         handle.ptr += idx * pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-        pDevice->CreateRenderTargetView(pRenderTargets[idx].Get(), &rtvDesc, handle); //‘æ“ñˆø”‚ğnullptr‚É‚·‚é‚ÆƒtƒH[ƒ}ƒbƒg‚ğƒXƒƒbƒvƒ`ƒF[ƒ“‚É€‹’‚·‚é‚Æ‚¢‚¤‚±‚Æ‚ğˆÓ–¡‚·‚é
+        pDevice->CreateRenderTargetView(pRenderTargets[idx].Get(), &rtvDesc, handle); //ç¬¬äºŒå¼•æ•°ã‚’nullptrã«ã™ã‚‹ã¨ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³ã«æº–æ‹ ã™ã‚‹ã¨ã„ã†ã“ã¨ã‚’æ„å‘³ã™ã‚‹
 
 
     }
@@ -524,28 +554,28 @@ bool Engine::CreateRenderTarget()
 bool Engine::CreateDepthBuffer()
 {
 
-    //[“xƒoƒbƒtƒ@‚Ìì¬
+    //æ·±åº¦ãƒãƒƒãƒ•ã‚¡ã®ä½œæˆ
     D3D12_RESOURCE_DESC depthResDesc = {};
-    depthResDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; //2DƒeƒNƒXƒ`ƒƒ—p
-    depthResDesc.Width = (UINT64)windowSize.width; //ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚Æ“¯‚¶’l
+    depthResDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; //2Dãƒ†ã‚¯ã‚¹ãƒãƒ£ç”¨
+    depthResDesc.Width = (UINT64)windowSize.width; //ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã¨åŒã˜å€¤
     depthResDesc.Height = (UINT64)windowSize.height;
-    depthResDesc.DepthOrArraySize = 1; //ƒeƒNƒXƒ`ƒƒ”z—ñ‚Å‚àA3DƒeƒNƒXƒ`ƒƒ‚Å‚à‚È‚¢
-    depthResDesc.Format = DXGI_FORMAT_D32_FLOAT; //[“x‘‚«‚İ—pƒtƒH[ƒ}ƒbƒg
-    depthResDesc.SampleDesc.Count = 1; //ƒTƒ“ƒvƒ‹‚ÍˆêƒsƒNƒZƒ‹‚ ‚½‚èˆê‚Â
+    depthResDesc.DepthOrArraySize = 1; //ãƒ†ã‚¯ã‚¹ãƒãƒ£é…åˆ—ã§ã‚‚ã€3Dãƒ†ã‚¯ã‚¹ãƒãƒ£ã§ã‚‚ãªã„
+    depthResDesc.Format = DXGI_FORMAT_D32_FLOAT; //æ·±åº¦æ›¸ãè¾¼ã¿ç”¨ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆ
+    depthResDesc.SampleDesc.Count = 1; //ã‚µãƒ³ãƒ—ãƒ«ã¯ä¸€ãƒ”ã‚¯ã‚»ãƒ«ã‚ãŸã‚Šä¸€ã¤
 
-    depthResDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL; //ƒfƒvƒXƒXƒeƒ“ƒVƒ‹‚Æ‚µ‚ÄŠˆ—p
+    depthResDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL; //ãƒ‡ãƒ—ã‚¹ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã¨ã—ã¦æ´»ç”¨
 
-    //[“x’n—pƒq[ƒvƒvƒƒpƒeƒB
+    //æ·±åº¦åœ°ç”¨ãƒ’ãƒ¼ãƒ—ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£
     D3D12_HEAP_PROPERTIES depthHeapProp = {};
-    depthHeapProp.Type = D3D12_HEAP_TYPE_DEFAULT; // ƒfƒtƒHƒ‹ƒg‚È‚Ì‚ÅŒã‚Íunknown‚Å—Ç‚¢
+    depthHeapProp.Type = D3D12_HEAP_TYPE_DEFAULT; // ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãªã®ã§å¾Œã¯unknownã§è‰¯ã„
     depthHeapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
     depthHeapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 
-    //ƒNƒŠƒAƒoƒŠƒ…[‚Ì¶¬(‘å–)
+    //ã‚¯ãƒªã‚¢ãƒãƒªãƒ¥ãƒ¼ã®ç”Ÿæˆ(å¤§äº‹)
     D3D12_CLEAR_VALUE depthClearValue = {};
 
-    depthClearValue.DepthStencil.Depth = 1.0f; //[‚³1.0f (Å‘å’l)‚ÅƒNƒŠƒA
-    depthClearValue.Format = DXGI_FORMAT_D32_FLOAT; //32ƒrƒbƒgfloat‚Æ‚µ‚Ä’è‹`
+    depthClearValue.DepthStencil.Depth = 1.0f; //æ·±ã•1.0f (æœ€å¤§å€¤)ã§ã‚¯ãƒªã‚¢
+    depthClearValue.Format = DXGI_FORMAT_D32_FLOAT; //32ãƒ“ãƒƒãƒˆfloatã¨ã—ã¦å®šç¾©
 
     auto hr = pDevice->CreateCommittedResource(&depthHeapProp, D3D12_HEAP_FLAG_NONE, &depthResDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthClearValue, IID_PPV_ARGS(&pDepthStencilBuffer));
 
@@ -554,8 +584,8 @@ bool Engine::CreateDepthBuffer()
     }
 
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-    dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV; //ƒfƒvƒXƒXƒeƒ“ƒVƒ‹ƒrƒ…[‚Æ‚µ‚Äˆµ‚¤
-    dsvHeapDesc.NumDescriptors = 1; //[“xƒrƒ…[‚Íˆê‚Â
+    dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV; //ãƒ‡ãƒ—ã‚¹ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ãƒ“ãƒ¥ãƒ¼ã¨ã—ã¦æ‰±ã†
+    dsvHeapDesc.NumDescriptors = 1; //æ·±åº¦ãƒ“ãƒ¥ãƒ¼ã¯ä¸€ã¤
 
     hr = pDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&pDsvHeap));
 
@@ -565,8 +595,8 @@ bool Engine::CreateDepthBuffer()
 
     D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
     dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-    dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;//2DƒeƒNƒXƒ`ƒƒ
-    dsvDesc.Flags = D3D12_DSV_FLAG_NONE; //ƒtƒ‰ƒO‚È‚µ
+    dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;//2Dãƒ†ã‚¯ã‚¹ãƒãƒ£
+    dsvDesc.Flags = D3D12_DSV_FLAG_NONE; //ãƒ•ãƒ©ã‚°ãªã—
 
     pDevice->CreateDepthStencilView(pDepthStencilBuffer.Get(), &dsvDesc, pDsvHeap->GetCPUDescriptorHandleForHeapStart());
 
@@ -575,22 +605,22 @@ bool Engine::CreateDepthBuffer()
 
 void Engine::WaitRender()
 {
-    //•`‰æI—¹‘Ò‚¿
+    //æç”»çµ‚äº†å¾…ã¡
     const UINT64 fenceValue = ++m_fenceValue;
 
     HRESULT hr = commandQueue->Signal(fence.Get(),fenceValue);
 
-    // Ÿ‚ÌƒtƒŒ[ƒ€‚Ì•`‰æ€”õ‚ª‚Ü‚¾‚Å‚ ‚ê‚Î‘Ò‹@‚·‚é.
+    // æ¬¡ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã®æç”»æº–å‚™ãŒã¾ã ã§ã‚ã‚Œã°å¾…æ©Ÿã™ã‚‹.
     if (fence->GetCompletedValue() < fenceValue)
     {
-        // Š®—¹‚ÉƒCƒxƒ“ƒg‚ğİ’è.
+        // å®Œäº†æ™‚ã«ã‚¤ãƒ™ãƒ³ãƒˆã‚’è¨­å®š.
         auto hr = fence->SetEventOnCompletion(fenceValue, m_fenceEvent);
         if (FAILED(hr))
         {
             return;
         }
 
-        // ‘Ò‹@ˆ—.
+        // å¾…æ©Ÿå‡¦ç†.
         if (WAIT_OBJECT_0 != WaitForSingleObjectEx(m_fenceEvent, INFINITE, FALSE))
         {
             return;
@@ -608,15 +638,15 @@ void Engine::EnableDRED()
     if (FAILED(hr))
     {
         OutputDebugStringA(
-            "DRED settings interfaceæ“¾¸”s\n");
+            "DRED settings interfaceå–å¾—å¤±æ•—\n");
         return;
     }
 
-    // GPUƒRƒ}ƒ“ƒh‚Ìisó‹µ‚ğ‹L˜^
+    // GPUã‚³ãƒãƒ³ãƒ‰ã®é€²è¡ŒçŠ¶æ³ã‚’è¨˜éŒ²
     dredSettings->SetAutoBreadcrumbsEnablement(
         D3D12_DRED_ENABLEMENT_FORCED_ON);
 
-    // GPUƒƒ‚ƒŠ‚Ìƒy[ƒWƒtƒH[ƒ‹ƒgî•ñ‚ğ‹L˜^
+    // GPUãƒ¡ãƒ¢ãƒªã®ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ¼ãƒ«ãƒˆæƒ…å ±ã‚’è¨˜éŒ²
     dredSettings->SetPageFaultEnablement(
         D3D12_DRED_ENABLEMENT_FORCED_ON);
 }
@@ -635,12 +665,12 @@ void Engine::PrintDRED(ID3D12Device* device)
 
     if (FAILED(hr))
     {
-        printf("DRED interfaceæ“¾¸”s: 0x%08X\n",
+        printf("DRED interfaceå–å¾—å¤±æ•—: 0x%08X\n",
             static_cast<unsigned int>(hr));
         return;
     }
 
-    // GPUƒRƒ}ƒ“ƒh‚Ìisó‹µ
+    // GPUã‚³ãƒãƒ³ãƒ‰ã®é€²è¡ŒçŠ¶æ³
     D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT breadcrumbs{};
 
     hr = dred->GetAutoBreadcrumbsOutput(&breadcrumbs);
@@ -672,7 +702,7 @@ void Engine::PrintDRED(ID3D12Device* device)
                         static_cast<int>(node->pCommandHistory[i]),
                         (node->pLastBreadcrumbValue != nullptr &&
                             i == *node->pLastBreadcrumbValue)
-                        ? " <-- Ÿ‚É’²‚×‚é‘€ì"
+                        ? " <-- æ¬¡ã«èª¿ã¹ã‚‹æ“ä½œ"
                         : "");
                 }
             }
@@ -681,7 +711,7 @@ void Engine::PrintDRED(ID3D12Device* device)
         }
     }
 
-    // GPUƒƒ‚ƒŠ‚Ìƒy[ƒWƒtƒH[ƒ‹ƒgî•ñ
+    // GPUãƒ¡ãƒ¢ãƒªã®ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ¼ãƒ«ãƒˆæƒ…å ±
     D3D12_DRED_PAGE_FAULT_OUTPUT pageFault{};
 
     hr = dred->GetPageFaultAllocationOutput(&pageFault);

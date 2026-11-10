@@ -1,10 +1,10 @@
-#pragma once
+ï»¿#pragma once
 #include "../ShaderStruct/ShaderStruct.h"
 #include "Object3DManager.h"
 
 class Camera3D;
-class ShadowMap;
 class ShadowCamera;
+class ShadowMap;
 
 class Object3D
 {
@@ -32,8 +32,8 @@ protected:
     virtual void Update() {};
     virtual void Draw() {};
 
-    // ƒVƒƒƒhƒEƒ}ƒbƒv—p‚Ì•`‰æ
-    virtual void DrawShadow(const ShadowMap& _shadowMap,const ShadowCamera& _shadowCamera) {};
+    // ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç”¨ã®æç”»
+    virtual void DrawShadow(const ShadowCamera& _shadowCamera, const ShadowMap& _shadowMap) {};
 
     virtual void VertexMapping(const Camera3D* _camera) { ; }
 
