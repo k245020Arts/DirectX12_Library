@@ -20,6 +20,7 @@
 #include "../PostEffect/GaussianBlur/GaussianBlur.h"
 #include "../PostEffect/NormalMapPostEffect/DistortionPostEffect.h"
 #include "../PostEffect/PostEffectCreater.h"
+#include "../Shadow/ShadowMapCreater.h"
 
 Application::Application()
 {
@@ -100,6 +101,7 @@ void Application::ApplicationRelease()
 	
 	//”jŠüˆ—
 	PostEffectCreater::Destroy();
+	ShadowMapCreater::Destroy();
 	RenderPassManager::GetInstance()->Destroy();
 	Engine::GetInstance()->Destroy();
 	TextureLoader::GetInstance()->Destroy();

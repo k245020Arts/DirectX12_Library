@@ -81,6 +81,6 @@ protected:
 	Vector3 baseColor = Vector3();
 
 	bool groundShadow = false;
-	DescriptorHandle* shadowMapHandle;
+	DescriptorHandle* shadowMapHandle = nullptr;
 	std::unique_ptr<PipelineState> shadowPipelineState;
 };

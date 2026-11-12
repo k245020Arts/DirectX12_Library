@@ -384,6 +384,9 @@
     <ClCompile Include="MyLibrary\Shadow\ShadowMapDebug.cpp">
       <Filter>MyLibrary\Shadow</Filter>
     </ClCompile>
+    <ClCompile Include="MyLibrary\Shadow\ShadowMapCreater.cpp">
+      <Filter>MyLibrary\Shadow</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyLibrary\assimp\AssimpLoader.h">
@@ -633,6 +636,9 @@
       <Filter>MyLibrary\Shadow</Filter>
     </ClInclude>
     <ClInclude Include="MyLibrary\Shadow\ShadowMapDebug.h">
+      <Filter>MyLibrary\Shadow</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\Shadow\ShadowMapCreater.h">
       <Filter>MyLibrary\Shadow</Filter>
     </ClInclude>
   </ItemGroup>

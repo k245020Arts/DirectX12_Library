@@ -36,4 +36,5 @@ private:
 
 	friend class Application;
 	friend class PostEffectCreater;
+	friend class ShadowMapCreater;
 };

@@ -13,6 +13,7 @@
 #include "../Time/DeltaTime.h"
 #include <filesystem>
 #include "../Shadow/ShadowCamera.h"
+#include "../Shadow/ShadowMapCreater.h"
 
 namespace fs = std::filesystem;
 namespace {
@@ -480,6 +481,10 @@ void FBXModel::SetShadowPipelineState()
 
 void FBXModel::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMap)
 {
+	if (!ShadowMapCreater::GetInstance()->GetUseShadowMap()) {
+		shadowMapHandle = nullptr;
+		return;
+	}
 	shadowMapHandle = _shadowMap.GetSRV();
     if (shadowPipelineState == nullptr || !shadowPipelineState->IsSuccess() ||
         shadowConstBuffer.empty() || boneConstBuffer.empty() || modelData.meshes.empty())
@@ -506,7 +511,6 @@ void FBXModel::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMa
 
 	auto* constBuff = constBuffer[currentIndex]->GetPtr<MatrixTransform>();
 	constBuff->lightViewProjection = lightViewProjection;
-	constBuff->useShadow = useShadowMap;
 
     commandList->SetGraphicsRootSignature(shadowRootSignature->Get());
     commandList->SetPipelineState(shadowPipelineState->GetPipelineState());

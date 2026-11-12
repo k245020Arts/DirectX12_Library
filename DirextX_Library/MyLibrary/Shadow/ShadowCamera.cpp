@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cmath>
 
-void ShadowCamera::Update(const Vector3& lightDirection)
+void ShadowCamera::Update()
 {
     Vector3 direction = lightDirection.Normalize();
 
@@ -50,4 +50,9 @@ void ShadowCamera::SetNearFar(float nearValue, float farValue)
     {
         distance = nearZ + 0.01f;
     }
+}
+
+void ShadowCamera::SetDirection(const Vector3& _direction)
+{
+    lightDirection = _direction;
 }

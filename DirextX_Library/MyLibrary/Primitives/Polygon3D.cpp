@@ -10,6 +10,7 @@
 #include "../Camera3D/Camera3D.h"
 #include "../Shadow/ShadowCamera.h"
 #include "../Shadow/ShadowMap.h"
+#include "../Shadow/ShadowMapCreater.h"
 
 Polygon3D::Polygon3D()
 {
@@ -70,6 +71,11 @@ void Polygon3D::Draw()
 
 void Polygon3D::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMap)
 {
+	if (!ShadowMapCreater::GetInstance()->GetUseShadowMap()) {
+		shadowMapHandle = nullptr;
+		return;
+	}
+		
 	shadowMapHandle = _shadowMap.GetSRV();
 	if (shadowPipelineState == nullptr || !shadowPipelineState->IsSuccess() || shadowConstBuffer.empty())
 	{

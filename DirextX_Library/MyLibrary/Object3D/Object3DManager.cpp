@@ -3,6 +3,7 @@
 #include "../Camera3D/Camera3D.h"
 #include "../Shadow/ShadowCamera.h"
 #include "../Shadow/ShadowMap.h"
+#include "../Shadow/ShadowMapCreater.h"
 
 Object3DManager::Object3DManager()
 {

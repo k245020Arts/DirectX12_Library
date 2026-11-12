@@ -33,12 +33,4 @@ private:
 
 	friend class SingletonBase<PostEffectCreater>;
 
-	bool showShadowMap = true;
-
-	std::unique_ptr<ShadowMap> shadowMap;
-	std::unique_ptr<ShadowCamera> shadowCamera;
-	std::unique_ptr<ShadowMapDebug> debugShadow;
-	std::shared_ptr<RenderPass> shadowRenderPass;
-	std::shared_ptr<RenderPass> debugShadowPass;
-
 };

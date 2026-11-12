@@ -196,6 +196,7 @@
     <ClCompile Include="MyLibrary\Scene\Scene.cpp" />
     <ClCompile Include="MyLibrary\ShaderStruct\ShaderStruct.cpp" />
     <ClCompile Include="MyLibrary\Shadow\ShadowCamera.cpp" />
+    <ClCompile Include="MyLibrary\Shadow\ShadowMapCreater.cpp" />
     <ClCompile Include="MyLibrary\Shadow\ShadowMapDebug.cpp" />
     <ClCompile Include="MyLibrary\Texture\Texture2D.cpp" />
     <ClCompile Include="MyLibrary\Texture\TextureLoader.cpp" />
@@ -279,6 +280,7 @@
     <ClInclude Include="MyLibrary\Scene\Scene.h" />
     <ClInclude Include="MyLibrary\ShaderStruct\ShaderStruct.h" />
     <ClInclude Include="MyLibrary\Shadow\ShadowCamera.h" />
+    <ClInclude Include="MyLibrary\Shadow\ShadowMapCreater.h" />
     <ClInclude Include="MyLibrary\Shadow\ShadowMapDebug.h" />
     <ClInclude Include="MyLibrary\SingleTon\SingletonBase.h" />
     <ClInclude Include="MyLibrary\Texture\Texture2D.h" />

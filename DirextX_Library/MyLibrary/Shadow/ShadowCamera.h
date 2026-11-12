@@ -9,12 +9,14 @@ public:
     ShadowCamera() = default;
 
     // LightData::direction（光が進む向き）からカメラ行列を更新する。
-    void Update(const Vector3& lightDirection);
+    void Update();
 
     void SetTarget(const Vector3& value) { target = value; }
     void SetDistance(float value);
     void SetOrthographicSize(float width, float height);
     void SetNearFar(float nearValue, float farValue);
+
+    void SetDirection(const Vector3& _direction);
 
     const Vector3& GetPosition() const { return position; }
     const Vector3& GetTarget() const { return target; }
@@ -38,4 +40,6 @@ private:
     float orthographicHeight = 5000.0f;
     float nearZ = 1.0f;
     float farZ = 1500.0f;
+
+    Vector3 lightDirection;
 };

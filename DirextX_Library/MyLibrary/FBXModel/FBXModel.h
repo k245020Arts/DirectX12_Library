@@ -127,7 +127,6 @@ public:
 	void SetAlpha(float _alphaValue);
 
 	void SetGroundShadow(bool _shadow) { groundShadow = _shadow; }
-	void SetShadowMap(bool _shadow) { useShadowMap = _shadow; }
 
 private:
 
@@ -180,6 +179,5 @@ private:
 	Vector3 baseColor;
 
 	bool groundShadow = false;
-	DescriptorHandle* shadowMapHandle;
-	bool useShadowMap = false;
+	DescriptorHandle* shadowMapHandle = nullptr;
 };

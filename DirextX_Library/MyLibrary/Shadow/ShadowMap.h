@@ -21,6 +21,8 @@ public:
     void BeginRender(float clearDepth = 1.0f);
     void EndRender();
 
+    void SetSize(int _w, int _h);
+
     ID3D12Resource* GetResource() const { return resource.Get(); }
     DescriptorHandle* GetSRV() const { return srvHandle; }
     D3D12_CPU_DESCRIPTOR_HANDLE GetDSV() const { return dsvHandle; }

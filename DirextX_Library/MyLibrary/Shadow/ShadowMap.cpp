@@ -116,6 +116,12 @@ void ShadowMap::Transition(D3D12_RESOURCE_STATES nextState)
     currentState = nextState;
 }
 
+void ShadowMap::SetSize(int _w, int _h)
+{
+    width = _w;
+    height = _h;
+}
+
 void ShadowMap::BeginRender(float clearDepth)
 {
     if (!IsValid())

@@ -23,6 +23,7 @@ static const float CLICK_TIME = 0.2f;
 #include "../Input/InputManager.h"
 #include <algorithm>
 #include "../Animator/Animator.h"
+#include "../Shadow/ShadowMapCreater.h"
 
 
 //#define ON2D
@@ -165,14 +166,14 @@ Scene::Scene()
 
 	model->SetBlendMode(BlendState::NO_BLEND);
 	model->SetAlpha(0.5f);
-	model->SetShadowMap(true);
 
 	plane = new FBXModel();
 	plane->Load("data/plane.fbx");
 	plane->GetTransform().position = Vector3(0, 0, 0);
 	plane->GetTransform().rotation = Vector3(DirectX::XM_PIDIV2, 0, 0);
 	plane->SetColor(WHITE);
-	plane->SetShadowMap(true);
+
+	ShadowMapCreater::GetInstance()->SetUseShadowMap(true, 2048, 2048);
 
 #endif // MODEL
 
@@ -267,7 +268,7 @@ Scene::~Scene()
 }
 
 //#define CAMERA_TEST
-
+float testCounter;
 void Scene::Update()
 {
 #ifdef  ON2D

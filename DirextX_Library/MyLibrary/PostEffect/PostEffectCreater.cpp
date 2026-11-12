@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <vector>
 #include "../../ImGui/imgui.h"
+#include "../Shadow/ShadowMapCreater.h"
 
 PostEffectCreater::PostEffectCreater()
 {
@@ -31,55 +32,7 @@ void PostEffectCreater::Init()
     // ---------------------------------------------------------------------
     // 1) ShadowMapとライトカメラを作り、シーン描画より前のRenderPassに登録する。
     // ---------------------------------------------------------------------
-    shadowMap = std::make_unique<ShadowMap>();
-    shadowCamera = std::make_unique<ShadowCamera>();
-    debugShadow = std::make_unique<ShadowMapDebug>();
-
-    const bool shadowMapCreated = shadowMap->Create(4098, 4098);
-    const bool shadowDebugCreated = shadowMapCreated && debugShadow->Init();
-
-    if (shadowMapCreated)
-    {
-        shadowRenderPass = std::make_shared<RenderPass>();
-        shadowRenderPass->SetBeginFunction([this]()
-        {
-            shadowMap->BeginRender();
-        });
-
-        shadowRenderPass->SetExecuteFunction([this]()
-        {
-            const auto& lightData = Light::GetInstance()->GetLightBufferData();
-            if (lightData.lightCount == 0)
-            {
-                return;
-            }
-
-            // 現在の先頭ライトをディレクショナルライトとして使用する。
-            shadowCamera->Update(lightData.lights[0].direction);
-            Object3DManager::GetInstance()->DrawShadow(*shadowCamera,*shadowMap.get());
-        });
-
-        shadowRenderPass->SetEndFunction([this]()
-        {
-            shadowMap->EndRender();
-        });
-
-        // 必ずSceneRenderPassより先に登録する。
-        RenderPassManager::GetInstance()->AddPass(shadowRenderPass);
-    }
-    else
-    {
-        OutputDebugStringW(L"ShadowMapの初期化に失敗したため、ShadowPassを無効にします\n");
-        debugShadow.reset();
-        shadowCamera.reset();
-        shadowMap.reset();
-    }
-
-    if (shadowMapCreated && !shadowDebugCreated)
-    {
-        OutputDebugStringW(L"ShadowMapDebugの初期化に失敗しました。深度生成のみ有効です\n");
-        debugShadow.reset();
-    }
+    ShadowMapCreater::GetInstance()->Init();
 
     // ---------------------------------------------------------------------
     // 2) 既存のポストエフェクトチェーンを構築する。
@@ -123,19 +76,7 @@ void PostEffectCreater::Init()
     // ---------------------------------------------------------------------
     // 3) 深度Debugは全ポストエフェクトの後でBackBufferへ描画する。
     // ---------------------------------------------------------------------
-    if (shadowDebugCreated)
-    {
-        debugShadowPass = std::make_shared<RenderPass>();
-        debugShadowPass->SetExecuteFunction([this]()
-        {
-            if (shadowMap != nullptr && debugShadow != nullptr)
-            {
-                debugShadow->Draw(*shadowMap);
-            }
-        });
-        debugShadowPass->SetEnabled(false);
-        RenderPassManager::GetInstance()->AddPass(debugShadowPass);
-    }
+    ShadowMapCreater::GetInstance()->DebugDrawInit();
 }
 
 void PostEffectCreater::Update()
@@ -179,34 +120,7 @@ void PostEffectCreater::Update()
         }
     }
 
-    if (debugShadowPass != nullptr)
-    {
-        if (ImGui::Checkbox("Show ShadowMap Depth", &showShadowMap))
-        {
-            debugShadowPass->SetEnabled(showShadowMap);
-        }
-
-        if (shadowCamera != nullptr)
-        {
-            const auto& currentTarget = shadowCamera->GetTarget();
-            float target[3] = { currentTarget.x, currentTarget.y, currentTarget.z };
-            if (ImGui::DragFloat3("Shadow Target", target, 1.0f))
-            {
-                shadowCamera->SetTarget(Vector3(target[0], target[1], target[2]));
-            }
-
-            float orthoWidth = shadowCamera->GetOrthographicWidth();
-            float orthoHeight = shadowCamera->GetOrthographicHeight();
-            if (ImGui::SliderFloat("Shadow Ortho Width", &orthoWidth, 100.0f, 3000.0f))
-            {
-                shadowCamera->SetOrthographicSize(orthoWidth, orthoHeight);
-            }
-            if (ImGui::SliderFloat("Shadow Ortho Height", &orthoHeight, 100.0f, 3000.0f))
-            {
-                shadowCamera->SetOrthographicSize(orthoWidth, orthoHeight);
-            }
-        }
-    }
+    ShadowMapCreater::GetInstance()->Update();
 
     ImGui::End();
 #endif // IMGUI
