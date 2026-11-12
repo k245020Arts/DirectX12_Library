@@ -48,6 +48,13 @@ struct ModelData
 	Matrix globalInverseTransform;
 };
 
+struct TextureSRVData
+{
+	DescriptorHandle* diffuseMap;
+	DescriptorHandle* normalMap;
+
+};
+
 // IKソルバーの種類
 enum class IKSolverType
 {
@@ -163,7 +170,7 @@ private:
 
 	D3D12_PRIMITIVE_TOPOLOGY drawType;
 
-	std::vector<DescriptorHandle*> materialHandles; // テクスチャ用のハンドル一覧
+	std::vector<TextureSRVData> materialHandles; // テクスチャ用のハンドル一覧
 
 	void VertexMapping(const Camera3D* _camera)override;
 

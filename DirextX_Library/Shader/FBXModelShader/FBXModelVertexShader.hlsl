@@ -20,8 +20,6 @@ VSOutput BasicVS_FBX(ModelVSInput input, uint instNo : SV_InstanceID)
 
     //ボーンを持たないメッシュ(ウェイト合計0)は頂点が消えるのでフォールバック
     float wsum = input.weights[0] + input.weights[1] + input.weights[2] + input.weights[3];
-    if (wsum < 0.001f)
-        bonePos = localPos;
 
     //法線も同様に変換
     float3 skinNormal =
@@ -30,6 +28,19 @@ VSOutput BasicVS_FBX(ModelVSInput input, uint instNo : SV_InstanceID)
     mul((float3x3) bones[input.boneno[2]], input.normal) * input.weights[2] +
     mul((float3x3) bones[input.boneno[3]], input.normal) * input.weights[3];
     
+    float3 skinTangent =
+        mul((float3x3) bones[input.boneno[0]], input.tangent.xyz) * input.weights[0] +
+        mul((float3x3) bones[input.boneno[1]], input.tangent.xyz) * input.weights[1] +
+        mul((float3x3) bones[input.boneno[2]], input.tangent.xyz) * input.weights[2] +
+        mul((float3x3) bones[input.boneno[3]], input.tangent.xyz) * input.weights[3];
+    
+    if (wsum < 0.001f)
+    {
+        bonePos = localPos;
+        skinNormal = input.normal;
+        skinTangent = input.tangent.xyz;
+    }
+        
     //float4 bonePos = float4(input.pos, 1.0f);
     
     float4 worldPos = mul(World, bonePos);
@@ -45,13 +56,20 @@ VSOutput BasicVS_FBX(ModelVSInput input, uint instNo : SV_InstanceID)
     
     output.svpos = projPos;
     output.color = input.color;
-    output.uv = input.uv; // ここが変更点。入力からuvを渡す
+    output.uv = input.uv;
+    
     float3 n = normalize(mul((float4x3) World, skinNormal).xyz);
     output.normal = float4(n, 0.0f);
     output.instNo = instNo;
+    float3 wTangent = normalize(mul((float3x3) World, skinTangent));
+    output.worldTangent = float4(wTangent, 0.0f);
     
+    // 従法線（Bitangent / Binormal）を外積で計算
+    float3 wBinormal = cross(output.normal.xyz, wTangent.xyz) * input.tangent.w;
+    output.worldBinormal = wBinormal;
     // ライトカメラから見た座標
     output.shadowPosition = mul(lightViewProjection, worldPos);
+    output.worldPosition = worldPos;
     
     return output;
 }

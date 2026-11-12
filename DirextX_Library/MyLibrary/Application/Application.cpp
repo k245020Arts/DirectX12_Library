@@ -21,6 +21,7 @@
 #include "../PostEffect/NormalMapPostEffect/DistortionPostEffect.h"
 #include "../PostEffect/PostEffectCreater.h"
 #include "../Shadow/ShadowMapCreater.h"
+#include "../Light/Light.h"
 
 Application::Application()
 {
@@ -71,6 +72,7 @@ void Application::ApplicationUpdate()
 	Object2DManager::GetInstance()->Update(); //オブジェクト2Dの更新処理(スクリーン座標に置き換え等をしてる)
 	Object3DManager::GetInstance()->Update(); //オブジェクト3Dの更新処理(カメラの設定ライトの設定等)
 	InputManager::GetInstance()->Update();
+	Light::GetInstance()->Update();
 	Engine::GetInstance()->BeginRender();	  //描画をする前の処理
 }
 
@@ -102,6 +104,7 @@ void Application::ApplicationRelease()
 	//破棄処理
 	PostEffectCreater::Destroy();
 	ShadowMapCreater::Destroy();
+	Light::Destroy();
 	RenderPassManager::GetInstance()->Destroy();
 	Engine::GetInstance()->Destroy();
 	TextureLoader::GetInstance()->Destroy();

@@ -46,7 +46,7 @@ bool ShadowMap::Create(UINT _width, UINT _height)
 
     HRESULT hr = device->CreateCommittedResource(&heapProperties,D3D12_HEAP_FLAG_NONE,&resourceDesc,D3D12_RESOURCE_STATE_DEPTH_WRITE,&clearValue,IID_PPV_ARGS(resource.ReleaseAndGetAddressOf())
     );
-
+    
     if (FAILED(hr))
     {
         resource.Reset();
@@ -120,6 +120,12 @@ void ShadowMap::SetSize(int _w, int _h)
 {
     width = _w;
     height = _h;
+
+    resource.Reset();
+    dsvHeap.Reset();
+    dsvHandle = {};
+    srvHandle = nullptr;
+    Create(_w, _h);
 }
 
 void ShadowMap::BeginRender(float clearDepth)

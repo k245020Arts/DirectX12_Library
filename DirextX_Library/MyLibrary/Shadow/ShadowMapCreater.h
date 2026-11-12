@@ -23,6 +23,9 @@ public:
 
 	bool GetUseShadowMap() { return useShadowMap; }
 
+	void SetShadowTarget(const Vector3& _target);
+	void SetFollowCamera(bool _follow) { followCamera = _follow; }
+
 private:
 
 	friend class SingletonBase<ShadowMapCreater>;
@@ -36,5 +39,5 @@ private:
 	std::unique_ptr<ShadowMapDebug> debugShadow;
 	std::shared_ptr<RenderPass> shadowRenderPass;
 	std::shared_ptr<RenderPass> debugShadowPass;
-
+	bool followCamera = false;
 };

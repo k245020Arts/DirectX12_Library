@@ -1,6 +1,6 @@
 ﻿#pragma once
-
 #include "../Helper/Helper.h"
+#include "../ShaderStruct/ShaderStruct.h"
 
 // ディレクショナルライトから見た深度を書き込むための直交投影カメラ。
 class ShadowCamera
@@ -17,6 +17,8 @@ public:
     void SetNearFar(float nearValue, float farValue);
 
     void SetDirection(const Vector3& _direction);
+    void SetMapSize(UINT _w, UINT _h) { mapWidth = _w; mapHeight = _h; }
+    void SetTexelSnap(bool _enable) { texelSnap = _enable; }
 
     const Vector3& GetPosition() const { return position; }
     const Vector3& GetTarget() const { return target; }
@@ -36,10 +38,14 @@ private:
     Matrix projectionMatrix{};
 
     float distance = 500.0f;
-    float orthographicWidth = 5000.0f;
-    float orthographicHeight = 5000.0f;
+    float orthographicWidth = 1500.0f;
+    float orthographicHeight = 1500.0f;
     float nearZ = 1.0f;
     float farZ = 1500.0f;
+
+    UINT mapWidth = 2048;
+    UINT mapHeight = 2048;
+    bool texelSnap = true;
 
     Vector3 lightDirection;
 };

@@ -1,4 +1,4 @@
-#include "PipelineState.h"
+ï»¿#include "PipelineState.h"
 #include "../Engine/Engine.h"
 #include <d3dcompiler.h>
 
@@ -11,18 +11,18 @@ PipelineState::PipelineState() : PipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRI
 
 PipelineState::PipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE _desc)
 {
-	// ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ìİ’è
-	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT); // ƒ‰ƒXƒ^ƒ‰ƒCƒU[‚ÍƒfƒtƒHƒ‹ƒg
-	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; // ƒJƒŠƒ“ƒO‚Í‚È‚µ
-	desc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID; // “h‚è‚Â‚Ô‚µ
-	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT); // ƒuƒŒƒ“ƒhƒXƒe[ƒg‚àƒfƒtƒHƒ‹ƒg
-	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // [“xƒXƒeƒ“ƒVƒ‹‚ÍƒfƒtƒHƒ‹ƒg‚ğg‚¤
+	// ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã®è¨­å®š
+	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT); // ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ãƒ¼ã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ
+	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; // ã‚«ãƒªãƒ³ã‚°ã¯ãªã—
+	desc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID; // å¡—ã‚Šã¤ã¶ã—
+	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT); // ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚¹ãƒ†ãƒ¼ãƒˆã‚‚ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ
+	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚’ä½¿ã†
 	desc.SampleMask = UINT_MAX;
-	desc.PrimitiveTopologyType = _desc; //w’è‚µ‚½Œ`‚ğ•`‰æ
-	desc.NumRenderTargets = 1; // •`‰æ‘ÎÛ‚Í1
+	desc.PrimitiveTopologyType = _desc; //æŒ‡å®šã—ãŸå½¢ã‚’æç”»
+	desc.NumRenderTargets = 1; // æç”»å¯¾è±¡ã¯1
 	desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-	desc.SampleDesc.Count = 1; // ƒTƒ“ƒvƒ‰[‚Í1
+	desc.SampleDesc.Count = 1; // ã‚µãƒ³ãƒ—ãƒ©ãƒ¼ã¯1
 	desc.SampleDesc.Quality = 0;
 
 	blendState = BlendState::NO_BLEND;
@@ -45,13 +45,13 @@ void PipelineState::SetRootSignature(ID3D12RootSignature* rootSignature)
 
 void PipelineState::SetVS(std::wstring filePath, std::string _entryPoint)
 {
-	// ’¸“_ƒVƒF[ƒ_[“Ç‚İ‚İ
+	// é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼èª­ã¿è¾¼ã¿
 	auto hr = D3DCompileFromFile(filePath.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		_entryPoint.c_str(), "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pVSBlob, &errorBlob);
 
 	if (FAILED(hr))
 	{
-		printf("’¸“_ƒVƒF[ƒ_[‚Ì“Ç‚İ‚İ‚É¸”s");
+		printf("é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®èª­ã¿è¾¼ã¿ã«å¤±æ•—");
 		return;
 	}
 
@@ -60,13 +60,13 @@ void PipelineState::SetVS(std::wstring filePath, std::string _entryPoint)
 
 void PipelineState::SetPS(std::wstring filePath, std::string _entryPoint)
 {
-	// ƒsƒNƒZƒ‹ƒVƒF[ƒ_[“Ç‚İ‚İ
+	// ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼èª­ã¿è¾¼ã¿
 	auto hr = D3DCompileFromFile(filePath.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		_entryPoint.c_str(), "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pPSBlob, &errorBlob);
 
 	if (FAILED(hr))
 	{
-		OutputDebugStringW(L"ƒsƒNƒZƒ‹ƒVƒF[ƒ_[‚Ì“Ç‚İ‚İ‚É¸”s");
+		OutputDebugStringW(L"ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®èª­ã¿è¾¼ã¿ã«å¤±æ•—");
 		return;
 	}
 
@@ -75,11 +75,11 @@ void PipelineState::SetPS(std::wstring filePath, std::string _entryPoint)
 
 void PipelineState::Create()
 {
-	// ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚ğ¶¬
+	// ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã‚’ç”Ÿæˆ
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(defalutPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
 	{
-		OutputDebugStringW(L"ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ì¶¬‚É¸”s");
+		OutputDebugStringW(L"ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã®ç”Ÿæˆã«å¤±æ•—");
 		return;
 	}
 
@@ -95,11 +95,11 @@ void PipelineState::Create()
 
 void PipelineState::PostEffectPipelineCreate()
 {
-	// ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚ğ¶¬
+	// ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã‚’ç”Ÿæˆ
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(defalutPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
 	{
-		OutputDebugStringW(L"ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ì¶¬‚É¸”s");
+		OutputDebugStringW(L"ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã®ç”Ÿæˆã«å¤±æ•—");
 		return;
 	}
 
@@ -109,27 +109,31 @@ void PipelineState::PostEffectPipelineCreate()
 
 void PipelineState::CreateDepthOnly()
 {
-	// ƒJƒ‰[ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ğg—p‚µ‚È‚¢
+	// ã‚«ãƒ©ãƒ¼ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚’ä½¿ç”¨ã—ãªã„
 	desc.NumRenderTargets = 0;
 	desc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
 
-	// [“xƒoƒbƒtƒ@‚Ö‚Ì‘‚«‚İ‚ğ—LŒø‰»
+	// æ·±åº¦ãƒãƒƒãƒ•ã‚¡ã¸ã®æ›¸ãè¾¼ã¿ã‚’æœ‰åŠ¹åŒ–
 	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
 	desc.DepthStencilState.DepthEnable = TRUE;
 	desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 
+	desc.RasterizerState.DepthBias = 0;
+	desc.RasterizerState.SlopeScaledDepthBias = 2.0f;   // 1.5ã€œ3.0ã§èª¿æ•´
+	desc.RasterizerState.DepthBiasClamp = 0.0f;
+
 	desc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 
-	// ƒsƒNƒZƒ‹ƒVƒF[ƒ_[‚Íg—p‚µ‚È‚¢
+	// ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã¯ä½¿ç”¨ã—ãªã„
 	desc.PS = {};
 
-	// [“xê—pPSO‚ğ¶¬
+	// æ·±åº¦å°‚ç”¨PSOã‚’ç”Ÿæˆ
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc,IID_PPV_ARGS(defalutPipelineState.ReleaseAndGetAddressOf()));
 
 	if (FAILED(hr))
 	{
-		OutputDebugStringW(L"[“xê—pƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ì¶¬‚É¸”s\n");
+		OutputDebugStringW(L"æ·±åº¦å°‚ç”¨ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã®ç”Ÿæˆã«å¤±æ•—\n");
 		return;
 	}
 
@@ -167,7 +171,7 @@ void PipelineState::SetBlendMode(BlendState _state)
 		currentPipelineState = mulPipelineState;
 		break;
 	default:
-		assert(false && "‚±‚¿‚ç‚ÌƒuƒŒƒ“ƒh‚Í‚ ‚è‚Ü‚¹‚ñ");
+		assert(false && "ã“ã¡ã‚‰ã®ãƒ–ãƒ¬ãƒ³ãƒ‰ã¯ã‚ã‚Šã¾ã›ã‚“");
 		break;
 	}
 
@@ -204,7 +208,7 @@ void PipelineState::CreateAlphaPipelineState()
 	renderTargetBlendDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	renderTargetBlendDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 
-	//Alphag‘¤‚àİ’è‚µ‚È‚¢‚Æ³í‚ÉƒpƒCƒvƒ‰ƒCƒ“‚ªCreateo—ˆ‚È‚¢‚½‚ßˆê‰‘‚­
+	//Alphagå´ã‚‚è¨­å®šã—ãªã„ã¨æ­£å¸¸ã«ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ãŒCreateå‡ºæ¥ãªã„ãŸã‚ä¸€å¿œæ›¸ã
 	renderTargetBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
 	renderTargetBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
 	renderTargetBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
@@ -215,14 +219,14 @@ void PipelineState::CreateAlphaPipelineState()
 	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
 	desc.BlendState.IndependentBlendEnable = false;
 	desc.BlendState.AlphaToCoverageEnable = false;
-	//”¼“§–¾—p‚ÉA[“xƒoƒbƒtƒ@‚Ö‚Ì‘‚«‚İ‚¾‚¯‚ğu‹Ö~iZEROjv‚É‚·‚é
+	//åŠé€æ˜ç”¨ã«ã€æ·±åº¦ãƒãƒƒãƒ•ã‚¡ã¸ã®æ›¸ãè¾¼ã¿ã ã‘ã‚’ã€Œç¦æ­¢ï¼ˆZEROï¼‰ã€ã«ã™ã‚‹
 	desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	desc.DepthStencilState.DepthEnable = true;
 
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(alphaPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
 	{
-		OutputDebugStringW(L"ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ì¶¬‚É¸”s");
+		OutputDebugStringW(L"ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã®ç”Ÿæˆã«å¤±æ•—");
 		return;
 	}
 }
@@ -237,7 +241,7 @@ void PipelineState::CreateMulPipelineState()
 	renderTargetBlendDesc.SrcBlend = D3D12_BLEND_ZERO;
 	renderTargetBlendDesc.DestBlend = D3D12_BLEND_SRC_COLOR;
 
-	//Alphag‘¤‚àİ’è‚µ‚È‚¢‚Æ³í‚ÉƒpƒCƒvƒ‰ƒCƒ“‚ªCreateo—ˆ‚È‚¢‚½‚ßˆê‰‘‚­
+	//Alphagå´ã‚‚è¨­å®šã—ãªã„ã¨æ­£å¸¸ã«ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ãŒCreateå‡ºæ¥ãªã„ãŸã‚ä¸€å¿œæ›¸ã
 	renderTargetBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
 	renderTargetBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
 	renderTargetBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
@@ -248,12 +252,12 @@ void PipelineState::CreateMulPipelineState()
 	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
 	desc.BlendState.IndependentBlendEnable = false;
 	desc.BlendState.AlphaToCoverageEnable = false;
-	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // [“xƒXƒeƒ“ƒVƒ‹‚ÍƒfƒtƒHƒ‹ƒg‚ğg‚¤
+	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚’ä½¿ã†
 
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(mulPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
 	{
-		OutputDebugStringW(L"ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ì¶¬‚É¸”s");
+		OutputDebugStringW(L"ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã®ç”Ÿæˆã«å¤±æ•—");
 		return;
 	}
 }
@@ -268,7 +272,7 @@ void PipelineState::CreateAddPipelineState()
 	renderTargetBlendDesc.SrcBlend = D3D12_BLEND_ONE;
 	renderTargetBlendDesc.DestBlend = D3D12_BLEND_ONE;
 
-	//Alphag‘¤‚àİ’è‚µ‚È‚¢‚Æ³í‚ÉƒpƒCƒvƒ‰ƒCƒ“‚ªCreateo—ˆ‚È‚¢‚½‚ßˆê‰‘‚­
+	//Alphagå´ã‚‚è¨­å®šã—ãªã„ã¨æ­£å¸¸ã«ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ãŒCreateå‡ºæ¥ãªã„ãŸã‚ä¸€å¿œæ›¸ã
 	renderTargetBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
 	renderTargetBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
 	renderTargetBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
@@ -279,12 +283,12 @@ void PipelineState::CreateAddPipelineState()
 	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
 	desc.BlendState.IndependentBlendEnable = false;
 	desc.BlendState.AlphaToCoverageEnable = false;
-	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // [“xƒXƒeƒ“ƒVƒ‹‚ÍƒfƒtƒHƒ‹ƒg‚ğg‚¤
+	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚’ä½¿ã†
 
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(addPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
 	{
-		OutputDebugStringW(L"ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ì¶¬‚É¸”s");
+		OutputDebugStringW(L"ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã®ç”Ÿæˆã«å¤±æ•—");
 		return;
 	}
 }
@@ -294,7 +298,7 @@ void PipelineState::CreateSubPipelineState()
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(subPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
 	{
-		OutputDebugStringW(L"ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ì¶¬‚É¸”s");
+		OutputDebugStringW(L"ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã®ç”Ÿæˆã«å¤±æ•—");
 		return;
 	}
 }
@@ -305,7 +309,7 @@ void PipelineState::CreateErrorPipelineState()
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(errorPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
 	{
-		OutputDebugStringW(L"ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ì¶¬‚É¸”s");
+		OutputDebugStringW(L"ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã‚¹ãƒ†ãƒ¼ãƒˆã®ç”Ÿæˆã«å¤±æ•—");
 		return;
 	}
 }

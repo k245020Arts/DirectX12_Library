@@ -667,9 +667,6 @@
     <FxCompile Include="Shader\FBXModelShader\FBXModelVertexShader.hlsl">
       <Filter>Shader\FBXModelShader</Filter>
     </FxCompile>
-    <FxCompile Include="Shader\FBXModelShader\FBXModelPixelShader.hlsl">
-      <Filter>Shader\FBXModelShader</Filter>
-    </FxCompile>
     <FxCompile Include="Shader\ErrorShader\ErrorPixelShader.hlsl">
       <Filter>Shader\ErrorShader</Filter>
     </FxCompile>
@@ -691,6 +688,9 @@
     <FxCompile Include="Shader\3DBaseShader\Polygon3DDepthVertexShader.hlsl">
       <Filter>Shader\3DBaseShader</Filter>
     </FxCompile>
+    <FxCompile Include="Shader\FBXModelShader\FBXModelPixelShader.hlsl">
+      <Filter>Shader\FBXModelShader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\2DBaseShader\BasicShaderHeader.hlsli">
@@ -701,6 +701,9 @@
     </None>
     <None Include="ImGui\imgui_extra_math.inl">
       <Filter>Imgui</Filter>
+    </None>
+    <None Include="Shader\Shadow\ShadowSample.hlsli">
+      <Filter>Shader\Shadow</Filter>
     </None>
   </ItemGroup>
   <ItemGroup Label="Filters">

@@ -43,8 +43,10 @@ void Polygon3D::Draw()
 	commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 	commandList->SetGraphicsRootDescriptorTable(1, descriptorHandle->handleGPU);
 	commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
-	commandList->SetGraphicsRootDescriptorTable(3, shadowMapHandle->handleGPU);
-
+	if (shadowMapHandle != nullptr) {
+		commandList->SetGraphicsRootDescriptorTable(3, shadowMapHandle->handleGPU);
+	}
+	
 	if (fillMode) {
 		commandList->IASetPrimitiveTopology(drawType);//適切な形に表示をするようにする
 	}
@@ -70,13 +72,11 @@ void Polygon3D::Draw()
 }
 
 void Polygon3D::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMap)
-{
+{	
+	shadowMapHandle = _shadowMap.GetSRV();
 	if (!ShadowMapCreater::GetInstance()->GetUseShadowMap()) {
-		shadowMapHandle = nullptr;
 		return;
 	}
-		
-	shadowMapHandle = _shadowMap.GetSRV();
 	if (shadowPipelineState == nullptr || !shadowPipelineState->IsSuccess() || shadowConstBuffer.empty())
 	{
 		return;

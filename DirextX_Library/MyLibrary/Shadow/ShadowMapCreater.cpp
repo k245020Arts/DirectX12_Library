@@ -6,6 +6,7 @@
 #include "../Light/Light.h"
 #include "../Object3D/Object3DManager.h"
 #include "../../ImGui/imgui.h"
+#include "../Camera3D/Camera3D.h"
 
 ShadowMapCreater::ShadowMapCreater()
 {
@@ -35,8 +36,26 @@ void ShadowMapCreater::Init()
 
         shadowRenderPass->SetExecuteFunction([this]()
          {
-             shadowCamera->Update();
-             Object3DManager::GetInstance()->DrawShadow(*shadowCamera, *shadowMap.get());
+            if (!useShadowMap) return;
+
+            // ライト方向を毎フレーム反映
+            const auto& lightData = Light::GetInstance()->GetLightBufferData();
+            if (lightData.lightCount != 0)
+            {
+                shadowCamera->SetDirection(lightData.lights[0].direction);
+            }
+
+            // カメラの注視点に追従(使う場合)
+            if (followCamera)
+            {
+                shadowCamera->SetTarget(Camera3D::GetInstance()->GetTarget());
+            }
+
+            // スナップ計算用に実際のマップサイズを渡す
+            shadowCamera->SetMapSize(shadowMap->GetWidth(), shadowMap->GetHeight());
+
+            shadowCamera->Update();
+            Object3DManager::GetInstance()->DrawShadow(*shadowCamera, *shadowMap.get());
          });
 
         shadowRenderPass->SetEndFunction([this]()
@@ -46,7 +65,7 @@ void ShadowMapCreater::Init()
 
         // 必ずSceneRenderPassより先に登録する。
         RenderPassManager::GetInstance()->AddPass(shadowRenderPass);
-        shadowRenderPass->SetEnabled(useShadowMap);
+        shadowRenderPass->SetEnabled(true);
     }
     else
     {
@@ -107,7 +126,6 @@ void ShadowMapCreater::SetUseShadowMap(const bool _use, const int _w, const int 
     if (shadowMap == nullptr)
         return;
 
-    shadowRenderPass->SetEnabled(_use);
     useShadowMap = _use;
     if (!_use)
         return;
@@ -151,4 +169,11 @@ void ShadowMapCreater::Update()
             }
         }
     }
+}
+
+void ShadowMapCreater::SetShadowTarget(const Vector3& _target)
+{
+    if (shadowCamera == nullptr)
+        return;
+    shadowCamera->SetTarget(_target);
 }

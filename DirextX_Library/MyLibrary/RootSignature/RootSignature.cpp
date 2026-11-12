@@ -146,7 +146,7 @@ void RootSignature::SetModelRootSignature()
 	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
 	// RootParameter
-	CD3DX12_ROOT_PARAMETER rootParam[5] = {};
+	CD3DX12_ROOT_PARAMETER rootParam[6] = {};
 
 	// RootParameter 0 : b0 Transform
 	rootParam[0].InitAsConstantBufferView(0,0,D3D12_SHADER_VISIBILITY_ALL);
@@ -179,8 +179,19 @@ void RootSignature::SetModelRootSignature()
 
 	rootParam[4].InitAsDescriptorTable(1,&shadowMapRange,D3D12_SHADER_VISIBILITY_PIXEL);
 
+	// RootParameter 5 : t2 NormalMap
+	D3D12_DESCRIPTOR_RANGE normalRange = {};
+
+	normalRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	normalRange.NumDescriptors = 1;
+	normalRange.BaseShaderRegister = 2;
+	normalRange.RegisterSpace = 0;
+	normalRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[5].InitAsDescriptorTable(1, &normalRange, D3D12_SHADER_VISIBILITY_PIXEL);
+
 	//Static Sampler : s0
-	D3D12_STATIC_SAMPLER_DESC samplerDescs[3] = {};
+	D3D12_STATIC_SAMPLER_DESC samplerDescs[4] = {};
 
 	// Sampler 0 : Material Texture (s0)
 	samplerDescs[0].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
@@ -232,13 +243,31 @@ void RootSignature::SetModelRootSignature()
 	samplerDescs[2].MaxAnisotropy = 1;
 	samplerDescs[2].ShaderRegister = 2;
 
+	// Sampler 0 : Material Texture (s0)
+	samplerDescs[3].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+				 
+	samplerDescs[3].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[3].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[3].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+				 
+	samplerDescs[3].MipLODBias = 0.0f;
+	samplerDescs[3].MaxAnisotropy = 1;
+	samplerDescs[3].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	samplerDescs[3].BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+	samplerDescs[3].MinLOD = 0.0f;
+	samplerDescs[3].MaxLOD = D3D12_FLOAT32_MAX;
+				 
+	samplerDescs[3].ShaderRegister = 3;
+	samplerDescs[3].RegisterSpace = 0;
+	samplerDescs[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
 
 	D3D12_ROOT_SIGNATURE_DESC desc = {};
 
 	desc.NumParameters = _countof(rootParam);
 	desc.pParameters = rootParam;
 
-	desc.NumStaticSamplers = 3;
+	desc.NumStaticSamplers = _countof(samplerDescs);
 	desc.pStaticSamplers = samplerDescs;
 
 	desc.Flags = flag;

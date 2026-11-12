@@ -1,4 +1,5 @@
 #include "Light.h"
+#include "../Camera3D/Camera3D.h"
 
 Light::Light()
 {
@@ -11,7 +12,7 @@ Light::~Light()
 
 void Light::Update()
 {
-
+    lightBufferData.cameraPos = Camera3D::GetInstance()->GetPosition();
 }
 
 // ƒ‰ƒCƒg‚Ì’Ç‰Á

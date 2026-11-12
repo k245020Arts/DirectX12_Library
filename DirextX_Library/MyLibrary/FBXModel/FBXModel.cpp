@@ -171,17 +171,22 @@ void FBXModel::Draw()
 		commandList->SetGraphicsRootSignature(rootSignature->Get());
 		commandList->SetPipelineState(pipelineState->GetPipelineState());
 		commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootDescriptorTable(1, materialHandles[i].diffuseMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
 		commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
 		commandList->SetGraphicsRootConstantBufferView(3, boneConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
+
 		if (shadowMapHandle != nullptr) {
 			commandList->SetGraphicsRootDescriptorTable(4, shadowMapHandle->handleGPU);
 		}
+
+		commandList->SetGraphicsRootDescriptorTable(5, materialHandles[i].normalMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
 
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &vbView);
 		commandList->IASetIndexBuffer(&ibView);
 
-		commandList->SetGraphicsRootDescriptorTable(1, materialHandles[i]->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
+		
+		
 		//地面影を描画する場合はインシタンシングを2にする。
 		if (groundShadow) {
 			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 2, 0, 0, 0); // インデックスの数分描画する
@@ -418,16 +423,32 @@ void FBXModel::Init()
 
 	for (size_t i = 0; i < modelData.meshes.size(); i++)
 	{
-		auto texPath = modelData.meshes[i].DiffuseMap;
+		auto diffusePath = modelData.meshes[i].DiffuseMap;
 		if (!modelData.meshes[i].DiffuseMap.empty()) {
 			if (GetExtension(modelData.meshes[i].DiffuseMap) == TexExtension::PSD) {
-				texPath = ReplaceExtension(modelData.meshes[i].DiffuseMap, "png"); //psdの場合はtgaとして扱う
+				diffusePath = ReplaceExtension(modelData.meshes[i].DiffuseMap, "png"); //psdの場合はtgaとして扱う
 			}
 		}
-		ResultErrorHandle::ErrorCode errorHandle = TextureLoader::GetInstance()->Load(texPath);
-		auto mainTex = TextureLoader::GetInstance()->Get(texPath);
-		auto handle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), texPath);
-		materialHandles.push_back(handle);
+
+		auto normalPath = modelData.meshes[i].NormalMap;
+		if (!modelData.meshes[i].NormalMap.empty()) {
+			if (GetExtension(modelData.meshes[i].NormalMap) == TexExtension::PSD) {
+				normalPath = ReplaceExtension(modelData.meshes[i].NormalMap, "png"); //psdの場合はtgaとして扱う
+			}
+		}
+
+		TextureSRVData srvData;
+		ResultErrorHandle::ErrorCode errorHandle = TextureLoader::GetInstance()->Load(diffusePath);
+		auto mainTex = TextureLoader::GetInstance()->Get(diffusePath);
+		auto handle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), diffusePath);
+		srvData.diffuseMap = handle;
+
+		ResultErrorHandle::ErrorCode normalMapErrorHandle = TextureLoader::GetInstance()->Load(normalPath);
+		auto normalTex = TextureLoader::GetInstance()->Get(normalPath);
+		auto normalHandle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), normalPath);
+		srvData.normalMap = normalHandle;
+
+		materialHandles.push_back(srvData);
 	}
 
 	rootSignature = std::make_unique<RootSignature>();
@@ -481,11 +502,10 @@ void FBXModel::SetShadowPipelineState()
 
 void FBXModel::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMap)
 {
+	shadowMapHandle = _shadowMap.GetSRV();
 	if (!ShadowMapCreater::GetInstance()->GetUseShadowMap()) {
-		shadowMapHandle = nullptr;
 		return;
 	}
-	shadowMapHandle = _shadowMap.GetSRV();
     if (shadowPipelineState == nullptr || !shadowPipelineState->IsSuccess() ||
         shadowConstBuffer.empty() || boneConstBuffer.empty() || modelData.meshes.empty())
     {

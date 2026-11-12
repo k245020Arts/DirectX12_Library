@@ -162,18 +162,20 @@ Scene::Scene()
 	// 蝶番の制限（例: 膝）
 	model->SetIKHinge(legIK, 1, Vector3(1, 0, 0), 0.0f, DirectX::XMConvertToRadians(130.0f));
 
-	//Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Color::RGBToVector3(WHITE)));
+	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Color::RGBToVector3(WHITE)));
+	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 0.0f, 1.0f), 1.0f, Color::RGBToVector3(WHITE)));
 
 	model->SetBlendMode(BlendState::NO_BLEND);
 	model->SetAlpha(0.5f);
 
 	plane = new FBXModel();
-	plane->Load("data/plane.fbx");
-	plane->GetTransform().position = Vector3(0, 0, 0);
-	plane->GetTransform().rotation = Vector3(DirectX::XM_PIDIV2, 0, 0);
+	plane->Load("data/planeNormal3.fbx");
+	plane->GetTransform().position = Vector3(0.f, 0.f, 0.f);
+	plane->GetTransform().rotation = Vector3(0.0f, 0.f, 0.f);
 	plane->SetColor(WHITE);
 
 	ShadowMapCreater::GetInstance()->SetUseShadowMap(true, 2048, 2048);
+	ShadowMapCreater::GetInstance()->SetFollowCamera(true);
 
 #endif // MODEL
 
@@ -234,9 +236,12 @@ Scene::Scene()
 
 	planeBox = new Box3D();
 
-	planeBox->GetTransform().scale = Vector3(100.f, 0.1f, 100.0f);
+	planeBox->GetTransform().scale = Vector3(10.0f, 0.1f, 10.0f);
 	planeBox->GetTransform().position = Vector3(0.0f, -50.0f, 0.0f);
 	planeBox->SetColor(WHITE);
+
+	ShadowMapCreater::GetInstance()->SetUseShadowMap(true, 2048, 2048);
+	ShadowMapCreater::GetInstance()->SetFollowCamera(true);
 
 #endif // ON3D
 
@@ -268,7 +273,6 @@ Scene::~Scene()
 }
 
 //#define CAMERA_TEST
-float testCounter;
 void Scene::Update()
 {
 #ifdef  ON2D
@@ -388,6 +392,9 @@ void Scene::Update()
 	else {
 		speedUP = 0.0f;
 	}
+
+	/*Camera3D::GetInstance()->SetTarget(model->GetTransform().position);
+	Camera3D::GetInstance()->SetPosition(model->GetTransform().position + matrix.TransformDirection(Vector3(0.0f,600.0f,-200.0f)));*/
 
 #endif // MODEL
 	//box3D->Update();

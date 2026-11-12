@@ -41,6 +41,9 @@ struct LightBufferData
     Vector3 ambientColor;
     float ambientIntensity;
 
+    Vector3 cameraPos;
+    float pad;
+
     LightBufferData()
     {
         lightCount = 0;

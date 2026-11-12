@@ -143,7 +143,8 @@ ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting,Mo
         if (materialIndex < scene->mNumMaterials)
         {
             const auto pMaterial = scene->mMaterials[materialIndex];
-            LoadTexture(setting.filename, meshes[i], pMaterial);
+            LoadDiffuseTexture(setting.filename, meshes[i], pMaterial);
+            LoadNormalTexture(setting.filename, meshes[i], pMaterial);
         }
     }
 
@@ -236,8 +237,53 @@ void AssimpLoader::LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool in
         auto position = &(src->mVertices[i]);
         auto normal = src->HasNormals()? &src->mNormals[i] : &zero3D;
         auto uv = (src->HasTextureCoords(0)) ? &(src->mTextureCoords[0][i]) : &zero3D;
-        auto tangent = (src->HasTangentsAndBitangents()) ? &(src->mTangents[i]) : &zero3D;
+
         auto color = (src->HasVertexColors(0)) ? &(src->mColors[0][i]) : &zeroColor;
+
+        // 接線（Tangent）の取得とゼロチェック
+        aiVector3D validTangent(1.0f, 0.0f, 0.0f);
+        bool hasValidTangent = false;
+
+        if (src->HasTangentsAndBitangents())
+        {
+            aiVector3D t = src->mTangents[i];
+            // 長さの2乗が 0.0001f より大きければ有効な接線とみなす
+            if ((t.x * t.x + t.y * t.y + t.z * t.z) > 0.0001f)
+            {
+                validTangent = t;
+                hasValidTangent = true;
+            }
+        }
+
+        // 接線が無効（または無い）場合は、法線と平行にならない軸から外積で安全に作る
+        if (!hasValidTangent)
+        {
+            aiVector3D n = *normal;
+            // 法線がほぼX軸(1,0,0)を向いている場合はZ軸(0,0,1)を基準にする
+            aiVector3D up = (std::abs(n.x) > 0.9f) ? aiVector3D(0.0f, 0.0f, 1.0f) : aiVector3D(1.0f, 0.0f, 0.0f);
+
+            // 外積 (up × n) で法線に直交する接線を作る
+            validTangent = aiVector3D(
+                up.y * n.z - up.z * n.y,
+                up.z * n.x - up.x * n.z,
+                up.x * n.y - up.y * n.x
+            );
+            validTangent.Normalize();
+        }
+
+        // 従法線（Bitangent）の向き（+1.0f または -1.0f）を計算
+        float tangentW = 1.0f;
+        if (src->HasNormals() && hasValidTangent)
+        {
+            auto bitangent = &(src->mBitangents[i]);
+            aiVector3D crossNT(
+                normal->y * validTangent.z - normal->z * validTangent.y,
+                normal->z * validTangent.x - normal->x * validTangent.z,
+                normal->x * validTangent.y - normal->y * validTangent.x
+            );
+            float dot = crossNT.x * bitangent->x + crossNT.y * bitangent->y + crossNT.z * bitangent->z;
+            tangentW = (dot < 0.0f) ? -1.0f : 1.0f;
+        }
 
         //反転オプションが合ったらUVを反転させる
         if (inverseU) {
@@ -252,7 +298,7 @@ void AssimpLoader::LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool in
         vertex.position = Vector3(position->x, position->y, position->z);
         vertex.normal = Vector3(normal->x, normal->y, normal->z);
         vertex.uv = Vector2(uv->x, uv->y);
-        vertex.tangent = Vector3(tangent->x, tangent->y, tangent->z);
+        vertex.tangent = Vector4(validTangent.x, validTangent.y, validTangent.z, tangentW);
         vertex.color = Vector4(color->r, color->g, color->b,color->a);
 
         dst.Vertices[i] = vertex;
@@ -271,7 +317,7 @@ void AssimpLoader::LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool in
     }
 }
 
-void AssimpLoader::LoadTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src)
+void AssimpLoader::LoadDiffuseTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src)
 {
     aiString path;
     
@@ -304,11 +350,42 @@ void AssimpLoader::LoadTexture(const wchar_t* filename, Mesh& dst, const aiMater
     else
     {
         dst.DiffuseMap.clear();
+        dst.DiffuseMap = L"NO_DIFFUSE_IMAGE.err";
         textureLoader = false;
     }
     //テクスチャが設定されていないものはエラーマテリアルにはならないようにする
     if (path.Empty()) {
         textureLoader = true;;
+    }
+}
+
+void AssimpLoader::LoadNormalTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src)
+{
+    aiString path;
+
+    if (src->Get(AI_MATKEY_TEXTURE_NORMALS(0), path) == AI_SUCCESS)
+    {
+        const std::string p = path.C_Str();
+
+        // 埋め込みテクスチャ("*0" など)は未対応
+        if (!p.empty() && p[0] == '*')
+        {
+            OutputDebugStringA("[NormalTexture] 埋め込みテクスチャ(未対応)\n");
+            dst.NormalMap.clear();
+            return;
+        }
+
+        dst.NormalMap = ResolveTexturePath(filename, p);
+
+        if (dst.NormalMap.empty())
+            OutputDebugStringA(("[NormalTexture] 見つかりません: " + p + "\n").c_str());
+        else
+            OutputDebugStringW((L"[NormalTexture] 読み込み: " + dst.NormalMap + L"\n").c_str());
+    }
+    else
+    {
+        dst.NormalMap.clear();
+        dst.NormalMap = L"NO_NORMAL_IMAGE.err";
     }
 }
 
@@ -575,13 +652,15 @@ void AssimpLoader::ApplyStaticMeshNodeTransforms(ModelData& model)
 
             DirectX::XMStoreFloat3(&vertex.normal, normal);
 
-            DirectX::XMVECTOR tangent = DirectX::XMLoadFloat3(&vertex.tangent);
+            DirectX::XMVECTOR tangent = DirectX::XMLoadFloat4(&vertex.tangent);
+            const float tangentW = vertex.tangent.w;                    // 元の符号を退避
 
             tangent = DirectX::XMVector3TransformNormal(tangent, nodeWorld);
-
             tangent = DirectX::XMVector3Normalize(tangent);
 
-            DirectX::XMStoreFloat3(&vertex.tangent, tangent);
+            DirectX::XMFLOAT3 t3;
+            DirectX::XMStoreFloat3(&t3, tangent);
+            vertex.tangent = Vector4(t3.x, t3.y, t3.z, tangentW);       // w を復元
         }
     }
 }

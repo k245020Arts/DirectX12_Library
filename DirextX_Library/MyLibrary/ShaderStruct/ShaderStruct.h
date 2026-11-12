@@ -13,7 +13,7 @@ struct Vertex
     Vector3 position; // 位置座標
     Vector3 normal; // 法線
     Vector2 uv; // uv座標
-    Vector3 tangent; // 接空間
+    Vector4 tangent; // 接空間
     Vector4 color; // 頂点色
 
    static const D3D12_INPUT_LAYOUT_DESC InputLayout;
@@ -99,7 +99,7 @@ struct VertexSkinning3D {
     Vector3 position;
     Vector3 normal;
     Vector2 uv;
-    Vector3 tangent;
+    Vector4 tangent;
     Vector4 color;
 
     // アニメーション用に以下を追加（最大4つのボーンが影響する場合）
@@ -129,7 +129,7 @@ struct Mesh
     std::vector<VertexSkinning3D> Vertices; // 頂点データの配列
     std::vector<uint32_t> Indices; // インデックスの配列
     std::wstring DiffuseMap; // テクスチャのファイルパス
-
+    std::wstring NormalMap; //テクスチャのノーマルマップのファイルパス
     bool hasBones = false;
 };
 

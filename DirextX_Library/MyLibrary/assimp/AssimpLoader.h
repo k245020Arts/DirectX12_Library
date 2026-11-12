@@ -35,7 +35,8 @@ public:
     bool GetTextureLoader() { return textureLoader; }
 private:
     void LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool inverseV);
-    void LoadTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src);
+    void LoadDiffuseTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src);
+    void LoadNormalTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src);
     ResultErrorHandle::ErrorCode  LoadAnimations(const aiScene* scene,std::vector<AnimationData>& animations);
     ResultErrorHandle::ErrorCode  LoadBones(Mesh& dst, const aiMesh* src, ModelData& model);
     int LoadNodeHierarchy(const aiNode* src, int parentIndex, ModelData& model);
