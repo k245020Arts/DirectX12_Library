@@ -37,6 +37,23 @@ cbuffer LightBuffer : register(b1)
     float pad;
 };
 
+cbuffer NormalMapParam : register(b3)
+{
+    float enableNormal;
+    float normalStrength;
+    float2 normalPad;
+};
+
+cbuffer SpecularParam : register(b4)
+{
+    float enableSpecular;
+    float specularStrength;
+    float specularPow;
+    float specularPad;
+    
+    float4 specularColor;
+};
+
 struct VSInput
 {
     float3 pos : POSITION; // í∏ì_ç¿ïW

@@ -81,4 +81,6 @@ private:
 
 	FBXModel* plane;
 	Box3D* planeBox;
+
+	FBXModel* rock;
 };

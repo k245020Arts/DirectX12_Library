@@ -4,6 +4,7 @@
 #include "../Shadow/ShadowCamera.h"
 #include "../Shadow/ShadowMap.h"
 #include "../Shadow/ShadowMapCreater.h"
+#include "../../ImGui/imgui.h"
 
 Object3DManager::Object3DManager()
 {
@@ -32,6 +33,17 @@ Object3DManager::~Object3DManager()
 void Object3DManager::Update()
 {
 	Camera3D::GetInstance()->Update(); //3D描画で使うカメラの更新
+	// ウィンドウは1回だけ開き、各オブジェクトの項目をその中に並べる
+	ImGui::Begin("ShaderEdit");
+	for (auto itr = objects->begin(); itr != objects->end(); itr++)
+	{
+		Object3D* obj = *itr;
+		if (obj == nullptr || obj->IsDestory())
+			continue;
+		obj->ShaderParamSerializeImgui();
+	}
+	ImGui::End();
+
 	for (auto itr = objects->begin(); itr != objects->end(); itr++)
 	{
 		Object3D* obj = *itr;

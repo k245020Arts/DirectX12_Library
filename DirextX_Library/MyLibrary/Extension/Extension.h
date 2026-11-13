@@ -43,6 +43,21 @@ inline std::wstring GetWideString(const std::string& str)
 	return wstr;
 }
 
+// wchar_t* Å® UTF-8 ÇÃ std::stringÇ…ïœä∑
+inline std::string WideToStringUTF8(const wchar_t* _wstr)
+{
+	if (_wstr == nullptr || _wstr[0] == L'\0')
+		return std::string();
+
+	const int size = WideCharToMultiByte(CP_UTF8, 0, _wstr, -1, nullptr, 0, nullptr, nullptr);
+	if (size <= 1)
+		return std::string();
+
+	std::string result(size - 1, '\0'); //ññîˆÇÃ '\0' ï™ÇÕä‹ÇﬂÇ»Ç¢
+	WideCharToMultiByte(CP_UTF8, 0, _wstr, -1, result.data(), size, nullptr, nullptr);
+	return result;
+}
+
 enum class TexExtension
 {
 	NO = -1,
@@ -146,3 +161,4 @@ inline ResultErrorHandle::ErrorCode CheckPath(const wchar_t* _filePath)
 
 	return ResultErrorHandle::ErrorCode::OK;
 }
+

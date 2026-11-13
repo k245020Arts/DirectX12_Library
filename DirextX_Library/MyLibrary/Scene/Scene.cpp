@@ -135,7 +135,7 @@ Scene::Scene()
 	hand = new FBXModel();
 
 	//hand->Load("data/Sword.fbx");
-	hand->Load("data/motion.fbx");
+	hand->Load("data/motion.fbx", false, true);
 
 	// キャラクターの右手に取り付ける
 	hand->AttachToNode(model, L"mixamorig:LeftHand");
@@ -172,10 +172,18 @@ Scene::Scene()
 	plane->Load("data/planeNormal3.fbx");
 	plane->GetTransform().position = Vector3(0.f, 0.f, 0.f);
 	plane->GetTransform().rotation = Vector3(0.0f, 0.f, 0.f);
+	plane->GetTransform().scale = Vector3(1.0f, 1.0f, 1.0f);
 	plane->SetColor(WHITE);
+	plane->EnableToSpecularMap(true);
 
 	ShadowMapCreater::GetInstance()->SetUseShadowMap(true, 2048, 2048);
 	ShadowMapCreater::GetInstance()->SetFollowCamera(true);
+
+	rock = new FBXModel();
+	rock->Load("data/test/Island_Wall_05_low.fbx", false, true);
+	rock->GetTransform().position = Vector3(0.f, 100.0f, 0.f);
+	rock->GetTransform().rotation = Vector3(0.0f, 0.f, 0.f);
+	rock->GetTransform().scale = Vector3(1.f, 1.f, 1.f);
 
 #endif // MODEL
 

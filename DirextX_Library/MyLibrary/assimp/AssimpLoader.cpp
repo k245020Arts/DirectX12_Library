@@ -317,11 +317,26 @@ void AssimpLoader::LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool in
     }
 }
 
+// 指定した種類のテクスチャを優先順に探し、最初に見つかったパスを返す
+// (Blender は DIFFUSE / NORMALS、Maya の PBS 系マテリアルは BASE_COLOR / NORMAL_CAMERA、
+//  Maya の bump2d 経由の法線マップは HEIGHT に入ることがある)
+static bool GetTexturePathWithFallback(const aiMaterial* mat, std::initializer_list<aiTextureType> types, aiString& outPath)
+{
+    for (const aiTextureType type : types)
+    {
+        if (mat->GetTextureCount(type) > 0 && mat->GetTexture(type, 0, &outPath) == AI_SUCCESS)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void AssimpLoader::LoadDiffuseTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src)
 {
     aiString path;
     
-    if (src->Get(AI_MATKEY_TEXTURE_DIFFUSE(0), path) == AI_SUCCESS)
+    if (GetTexturePathWithFallback(src, { aiTextureType_DIFFUSE, aiTextureType_BASE_COLOR }, path))
     {
         const std::string p = path.C_Str();
 
@@ -363,7 +378,7 @@ void AssimpLoader::LoadNormalTexture(const wchar_t* filename, Mesh& dst, const a
 {
     aiString path;
 
-    if (src->Get(AI_MATKEY_TEXTURE_NORMALS(0), path) == AI_SUCCESS)
+    if (GetTexturePathWithFallback(src, { aiTextureType_NORMALS, aiTextureType_NORMAL_CAMERA, aiTextureType_HEIGHT }, path))
     {
         const std::string p = path.C_Str();
 

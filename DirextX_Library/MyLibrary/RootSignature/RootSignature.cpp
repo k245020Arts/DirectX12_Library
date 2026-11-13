@@ -146,7 +146,7 @@ void RootSignature::SetModelRootSignature()
 	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
 	// RootParameter
-	CD3DX12_ROOT_PARAMETER rootParam[6] = {};
+	CD3DX12_ROOT_PARAMETER rootParam[8] = {};
 
 	// RootParameter 0 : b0 Transform
 	rootParam[0].InitAsConstantBufferView(0,0,D3D12_SHADER_VISIBILITY_ALL);
@@ -189,6 +189,11 @@ void RootSignature::SetModelRootSignature()
 	normalRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	rootParam[5].InitAsDescriptorTable(1, &normalRange, D3D12_SHADER_VISIBILITY_PIXEL);
+
+	//RootParameter 3 : b3 Normal
+	rootParam[6].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL);
+	//RootParameter 3 : b4 Specular
+	rootParam[7].InitAsConstantBufferView(4, 0, D3D12_SHADER_VISIBILITY_ALL);
 
 	//Static Sampler : s0
 	D3D12_STATIC_SAMPLER_DESC samplerDescs[4] = {};

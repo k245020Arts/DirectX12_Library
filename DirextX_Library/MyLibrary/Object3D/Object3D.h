@@ -26,6 +26,9 @@ public:
 
     inline int GetDrawOrder() const { return drawOrder; }
 
+    std::string GetTag() { return tag;; }
+    void SetTag(std::string& _tag) { tag = _tag; }
+
 protected:
     Transform transform;
 
@@ -37,7 +40,11 @@ protected:
 
     virtual void VertexMapping(const Camera3D* _camera) { ; }
 
+    virtual void ShaderParamSerializeImgui() {};
+
     friend class Object3DManager;
+
+    std::string tag;
 
 private:
     bool isDestory;

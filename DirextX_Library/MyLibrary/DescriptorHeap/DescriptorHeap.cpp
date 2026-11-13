@@ -147,8 +147,7 @@ void DescriptorHeap::Free(D3D12_CPU_DESCRIPTOR_HANDLE cpu,D3D12_GPU_DESCRIPTOR_H
 
 	const auto gpuStart = m_pHeap->GetGPUDescriptorHandleForHeapStart();
 
-	if (cpu.ptr < cpuStart.ptr ||
-		gpu.ptr < gpuStart.ptr)
+	if (cpu.ptr < cpuStart.ptr || gpu.ptr < gpuStart.ptr)
 	{
 		return;
 	}
@@ -157,9 +156,7 @@ void DescriptorHeap::Free(D3D12_CPU_DESCRIPTOR_HANDLE cpu,D3D12_GPU_DESCRIPTOR_H
 	const SIZE_T gpuOffset = gpu.ptr - gpuStart.ptr;
 
 	// スロットの境界と CPU/GPU ハンドルの対応を確認
-	if (cpuOffset % m_IncrementSize != 0 ||
-		gpuOffset % m_IncrementSize != 0 ||
-		cpuOffset != gpuOffset)
+	if (cpuOffset % m_IncrementSize != 0 ||gpuOffset % m_IncrementSize != 0 ||cpuOffset != gpuOffset)
 	{
 		return;
 	}

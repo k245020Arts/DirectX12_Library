@@ -5,9 +5,9 @@
 #include "../Light/Light.h"
 #include <unordered_map>
 #include "../Shadow/ShadowMap.h"
+#include "../ConstBuffer/ConstBuffer.h"
 
 class VertexBuffer;
-class ConstBuffer;
 class PipelineState;
 class RootSignature;
 class IndexBuffer;
@@ -135,7 +135,65 @@ public:
 
 	void SetGroundShadow(bool _shadow) { groundShadow = _shadow; }
 
+	/// <summary>
+	/// ノーマルマップを有効にするかどうか
+	/// </summary>
+	/// <param name="_enableNormal"></param>
+	void EnableToNormalMap(const bool _enableNormal) { normalMapParam.enableNormal = _enableNormal ? 1.0f : 0.0f; }
+	void NormalMapStrength(const float _strength) { normalMapParam.normalStrength = _strength; }
+
+	/// <summary>
+	/// スペキュラマップを有効にするかどうか
+	/// </summary>
+	/// <param name="_enableSpecular"></param>
+	void EnableToSpecularMap(const bool _enableSpecular) { specularParam.enableSpecular = _enableSpecular ? 1.0f : 0.0f; }
+	void SpecularMapStrength(const float _strength) { specularParam.specularStrength = _strength; }
+	void SpecularMapPow(const float _pow) { specularParam.specularPow = _pow; }
+	void SpecularMapColor(const Rgb& _rgb) { specularParam.specularColor = Color::RGBToVector4(_rgb); }
+	void SpecularMapColor(const Vector4& _rgb) { specularParam.specularColor = _rgb; }
+
 private:
+
+    using ConstantPtr = std::vector<std::shared_ptr<ConstBuffer>>;
+
+	struct ConstantBufferData
+	{
+		ConstantPtr matrixTransform;
+		ConstantPtr light;
+		ConstantPtr bone;
+		ConstantPtr shadow;
+		ConstantPtr normalMap;
+		ConstantPtr specularMap;
+
+		ConstantBufferData()
+		{
+			matrixTransform.resize(FRAME_BUFFER_COUNT);
+			light.resize(FRAME_BUFFER_COUNT);
+			bone.resize(FRAME_BUFFER_COUNT);
+			shadow.resize(FRAME_BUFFER_COUNT);
+			specularMap.resize(FRAME_BUFFER_COUNT);
+			normalMap.resize(FRAME_BUFFER_COUNT);
+		}
+	};
+
+	/// <summary>
+	/// 定数バッファの作成時に使う関数
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="_data"></param>
+	/// <param name="_message"></param>
+	/// <returns></returns>
+	template<typename T>
+	bool CreateConstantBufferData(std::shared_ptr<ConstBuffer>& _data,const std::wstring& _message)
+	{
+		_data = std::make_shared<ConstBuffer>(sizeof(T));
+		if (!_data->IsValid())
+		{
+			OutputDebugStringW(_message.c_str());
+			return false;
+		}
+		return true;
+	}
 
 	void Init();
 
@@ -154,10 +212,7 @@ private:
 	std::unique_ptr<PipelineState> wireFramePipelineState;
 	std::vector <std::unique_ptr<IndexBuffer>> indexBuffer;
 
-	std::vector<std::shared_ptr<ConstBuffer>> constBuffer;
-	std::vector<std::shared_ptr<ConstBuffer>> lightConstBuffer;
-	std::vector<std::shared_ptr<ConstBuffer>> boneConstBuffer;
-	std::vector<std::shared_ptr<ConstBuffer>> shadowConstBuffer;
+	ConstantBufferData constantBufferPtr;
 	std::unique_ptr<RootSignature> shadowRootSignature;
 	std::unique_ptr<PipelineState> shadowPipelineState;
 
@@ -187,4 +242,9 @@ private:
 
 	bool groundShadow = false;
 	DescriptorHandle* shadowMapHandle = nullptr;
+
+	NormalMapParam normalMapParam;
+	SpecularParam specularParam;
+
+	void ShaderParamSerializeImgui()override;
 };

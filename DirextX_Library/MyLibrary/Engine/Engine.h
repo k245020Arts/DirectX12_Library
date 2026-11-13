@@ -19,8 +19,6 @@
 #include "../SingleTon/SingletonBase.h"
 #include "../Helper/Helper.h"
 
-static constexpr int FRAME_BUFFER_COUNT = 2;
-
 class Engine : public SingletonBase<Engine>
 {
 public:

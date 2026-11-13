@@ -7,6 +7,7 @@
 #include "../Extension/Extension.h"
 #include "../Easing/Easing.h"
 #include "../ResultErrorHandle/ResultErrorHandle.h"
+#include "../Color/Color.h"
 
 struct Vertex
 {
@@ -142,3 +143,19 @@ enum class BlendState
     MUL,
 };
 
+struct NormalMapParam
+{
+    float enableNormal = 1.0f;
+    float normalStrength = 1.0f;
+    Vector2 normalPad;
+};
+
+struct SpecularParam
+{
+    float enableSpecular = 0.0f;
+    float specularStrength = 0.5f;
+    float specularPow = 1.0f;
+    float specularPad;
+
+    Vector4 specularColor = Vector4(1.0f,1.0f,1.0f,1.0f);
+};

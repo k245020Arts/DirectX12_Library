@@ -14,6 +14,7 @@
 #include <filesystem>
 #include "../Shadow/ShadowCamera.h"
 #include "../Shadow/ShadowMapCreater.h"
+#include "../DirectX12Imgui/DirectX12Imgui.h"
 
 namespace fs = std::filesystem;
 namespace {
@@ -41,6 +42,35 @@ namespace {
 		DirectX::XMStoreFloat3(&out, p);
 		return out;
 	}
+
+	// 無効のときに項目をグレーアウトする（ImGui 1.84 以降。古い版では何もしない）
+	void BeginDisabledIf(bool _disabled)
+	{
+#if defined(IMGUI_VERSION_NUM) && IMGUI_VERSION_NUM >= 18400
+		ImGui::BeginDisabled(_disabled);
+#else
+		(void)_disabled;
+#endif
+	}
+
+	void EndDisabledIf()
+	{
+#if defined(IMGUI_VERSION_NUM) && IMGUI_VERSION_NUM >= 18400
+		ImGui::EndDisabled();
+#endif
+	}
+
+	// 直前の項目の横に「(?)」を出し、マウスを乗せると説明を表示する
+	void HelpTooltip(const char* _text)
+	{
+		ImGui::SameLine();
+		ImGui::TextDisabled("(?)");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("%s", _text);
+		}
+	}
+
 }
 
 FBXModel::FBXModel()
@@ -81,6 +111,7 @@ ResultErrorHandle FBXModel::Load(const wchar_t* _modelFilePath)
 
 ResultErrorHandle FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip)
 {
+	tag = WideToStringUTF8(_modelFilePath);
 	ResultErrorHandle handle;
 	handle.SetErrorCode(ResultErrorHandle::ErrorCode::OK);
 	if (_modelFilePath == nullptr)
@@ -103,7 +134,6 @@ ResultErrorHandle FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, boo
 		return handle;
 	}
 
-	constBuffer.resize(FRAME_BUFFER_COUNT);
 	if (animator == nullptr) {
 		animator = std::make_unique<Animator>(modelData);
 	}
@@ -170,16 +200,18 @@ void FBXModel::Draw()
 
 		commandList->SetGraphicsRootSignature(rootSignature->Get());
 		commandList->SetPipelineState(pipelineState->GetPipelineState());
-		commandList->SetGraphicsRootConstantBufferView(0, constBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootConstantBufferView(0, constantBufferPtr.matrixTransform[currentIndex]->GetAddress()); // 定数バッファをセット
 		commandList->SetGraphicsRootDescriptorTable(1, materialHandles[i].diffuseMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
-		commandList->SetGraphicsRootConstantBufferView(2, lightConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
-		commandList->SetGraphicsRootConstantBufferView(3, boneConstBuffer[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootConstantBufferView(2, constantBufferPtr.light[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootConstantBufferView(3, constantBufferPtr.bone[currentIndex]->GetAddress()); // 定数バッファをセット
 
 		if (shadowMapHandle != nullptr) {
 			commandList->SetGraphicsRootDescriptorTable(4, shadowMapHandle->handleGPU);
 		}
 
 		commandList->SetGraphicsRootDescriptorTable(5, materialHandles[i].normalMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
+		commandList->SetGraphicsRootConstantBufferView(6, constantBufferPtr.normalMap[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootConstantBufferView(7, constantBufferPtr.specularMap[currentIndex]->GetAddress()); // 定数バッファをセット
 
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &vbView);
@@ -323,11 +355,7 @@ IKChain* FBXModel::GetIK(int ikId)
 
 void FBXModel::Init()
 {
-	lightConstBuffer.resize(FRAME_BUFFER_COUNT);
-	boneConstBuffer.resize(FRAME_BUFFER_COUNT);
-	shadowConstBuffer.resize(FRAME_BUFFER_COUNT);
 	vertexBuffer.reserve(modelData.meshes.size());
-
 	for (size_t i = 0; i < modelData.meshes.size(); i++)
 	{
 		auto size = sizeof(VertexSkinning3D) * modelData.meshes[i].Vertices.size();
@@ -369,46 +397,31 @@ void FBXModel::Init()
 
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
-		constBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
-		if (!constBuffer[i]->IsValid())
-		{
-			OutputDebugStringW(L"変換行列用定数バッファの生成に失敗\n");
-		}
-		lightConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(LightBufferData));
-		if (!lightConstBuffer[i]->IsValid())
-		{
-			OutputDebugStringW(L"ライト用定数バッファの生成に失敗\n");
-		}
-		boneConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(BoneBuffer));
-		if (!boneConstBuffer[i]->IsValid())
-		{
-			OutputDebugStringW(L"ボーン用バッファの生成に失敗\n");
-		}
-
-		shadowConstBuffer[i] = std::make_shared<ConstBuffer>(sizeof(MatrixTransform));
-		if (!shadowConstBuffer[i]->IsValid())
-		{
-			OutputDebugStringW(L"Shadow用変換定数バッファの生成に失敗\n");
-		}
+		CreateConstantBufferData<MatrixTransform>(constantBufferPtr.matrixTransform[i], L"変換行列用定数バッファの生成に失敗\n");
+		CreateConstantBufferData<LightBufferData>(constantBufferPtr.light[i], L"ライト用定数バッファの生成に失敗\n");
+		CreateConstantBufferData<BoneBuffer>(constantBufferPtr.bone[i], L"ボーン用バッファの生成に失敗\n");
+		CreateConstantBufferData<MatrixTransform>(constantBufferPtr.shadow[i], L"Shadow用変換定数バッファの生成に失敗\n");
+		CreateConstantBufferData<SpecularParam>(constantBufferPtr.specularMap[i], L"スペキュラマップ用定数バッファの生成に失敗\n");
+		CreateConstantBufferData<NormalMapParam>(constantBufferPtr.normalMap[i], L"ノーマルマップ用定数バッファの生成に失敗\n");
 		
 		// 変換行列の登録
-		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
+		auto ptr = constantBufferPtr.matrixTransform[i]->GetPtr<MatrixTransform>();
 		ptr->World = DirectX::XMMatrixIdentity();
 		ptr->View = DirectX::XMMatrixLookAtRH(eyePos, targetPos, upward);
 		ptr->Proj = DirectX::XMMatrixPerspectiveFovRH(fov, aspect, 0.3f, 1000.0f);
 		ptr->shadow = DirectX::XMMatrixIdentity();
 
-		auto shadowPtr = shadowConstBuffer[i]->GetPtr<MatrixTransform>();
+		auto shadowPtr = constantBufferPtr.shadow[i]->GetPtr<MatrixTransform>();
 		shadowPtr->World = DirectX::XMMatrixIdentity();
 		shadowPtr->View = DirectX::XMMatrixIdentity();
 		shadowPtr->Proj = DirectX::XMMatrixIdentity();
 		shadowPtr->uvRect = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 
-		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
+		auto light = constantBufferPtr.light[i]->GetPtr<LightBufferData>();
 		LightBufferData l = Light::GetInstance()->GetLightBufferData();
 		*light = l;
 
-		auto* bone = boneConstBuffer[i]->GetPtr<BoneBuffer>();
+		auto* bone = constantBufferPtr.bone[i]->GetPtr<BoneBuffer>();
 		const auto& matrices = animator->GetBoneMatrices();
 
 		const size_t count = std::min(matrices.size(), static_cast<size_t>(BONE_MAX));
@@ -417,6 +430,12 @@ void FBXModel::Init()
 		{
 			DirectX::XMStoreFloat4x4(&bone->bones[j], matrices[j]);
 		}
+
+		auto specular = constantBufferPtr.specularMap[i]->GetPtr<SpecularParam>();
+		*specular = specularParam;
+
+		auto normal = constantBufferPtr.normalMap[i]->GetPtr<NormalMapParam>();
+		*normal = normalMapParam;
 	}
 
 	materialHandles.clear();
@@ -507,20 +526,20 @@ void FBXModel::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMa
 		return;
 	}
     if (shadowPipelineState == nullptr || !shadowPipelineState->IsSuccess() ||
-        shadowConstBuffer.empty() || boneConstBuffer.empty() || modelData.meshes.empty())
+		constantBufferPtr.shadow.empty() || constantBufferPtr.bone.empty() || modelData.meshes.empty())
     {
         return;
     }
 
     const UINT currentIndex = Engine::GetInstance()->CurrentBackBufferIndex();
-    if (currentIndex >= shadowConstBuffer.size() || currentIndex >= boneConstBuffer.size())
+    if (currentIndex >= constantBufferPtr.shadow.size() || currentIndex >= constantBufferPtr.bone.size())
     {
         return;
     }
 
     auto* commandList = Engine::GetInstance()->CommandList();
 
-    auto* transformData = shadowConstBuffer[currentIndex]->GetPtr<MatrixTransform>();
+    auto* transformData = constantBufferPtr.shadow[currentIndex]->GetPtr<MatrixTransform>();
     transformData->World = BuildWorldMatrix();
     transformData->View = camera.GetViewMatrix();
     transformData->Proj = camera.GetProjectionMatrix();
@@ -529,15 +548,15 @@ void FBXModel::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMa
 
 	transformData->lightViewProjection = lightViewProjection;
 
-	auto* constBuff = constBuffer[currentIndex]->GetPtr<MatrixTransform>();
+	auto* constBuff = constantBufferPtr.matrixTransform[currentIndex]->GetPtr<MatrixTransform>();
 	constBuff->lightViewProjection = lightViewProjection;
 
     commandList->SetGraphicsRootSignature(shadowRootSignature->Get());
     commandList->SetPipelineState(shadowPipelineState->GetPipelineState());
 
     // ShadowDepthRootSignature: RP0=b0 Transform, RP1=b2 BoneBuffer。
-    commandList->SetGraphicsRootConstantBufferView(0,shadowConstBuffer[currentIndex]->GetAddress());
-    commandList->SetGraphicsRootConstantBufferView(1,boneConstBuffer[currentIndex]->GetAddress());
+    commandList->SetGraphicsRootConstantBufferView(0,constantBufferPtr.shadow[currentIndex]->GetAddress());
+    commandList->SetGraphicsRootConstantBufferView(1,constantBufferPtr.bone[currentIndex]->GetAddress());
 
     commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -571,18 +590,18 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 	
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
-		auto ptr = constBuffer[i]->GetPtr<MatrixTransform>();
+		auto ptr = constantBufferPtr.matrixTransform[i]->GetPtr<MatrixTransform>();
 		ptr->World = world;
 		ptr->View = _camera->GetViewMatrix();
 		ptr->Proj = _camera->GetProjectionMatrix();
 		ptr->uvRect = Vector4();
 		ptr->shadow = shadow;
 
-		auto light = lightConstBuffer[i]->GetPtr<LightBufferData>();
+		auto light = constantBufferPtr.light[i]->GetPtr<LightBufferData>();
 		LightBufferData l = Light::GetInstance()->GetLightBufferData();
 		*light = l;
 
-		auto* bone = boneConstBuffer[i]->GetPtr<BoneBuffer>();
+		auto* bone = constantBufferPtr.bone[i]->GetPtr<BoneBuffer>();
 		const auto& matrices = animator->GetBoneMatrices();
 
 		const size_t count = std::min(matrices.size(),static_cast<size_t>(BONE_MAX));
@@ -591,6 +610,12 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 		{
 			DirectX::XMStoreFloat4x4(&bone->bones[j],matrices[j]);
 		}
+
+		auto specular = constantBufferPtr.specularMap[i]->GetPtr<SpecularParam>();
+		*specular = specularParam;
+
+		auto normal = constantBufferPtr.normalMap[i]->GetPtr<NormalMapParam>();
+		*normal = normalMapParam;
 	}
 }
 
@@ -622,6 +647,76 @@ Matrix FBXModel::GetSocketMatrix(int nodeIndex) const
 
 	// 親自身のワールド行列（親のスケールは、そのまま武器にも掛かる）
 	return rigid * BuildWorldMatrix();
+}
+
+void FBXModel::ShaderParamSerializeImgui()
+{
+	// ShaderEdit ウィンドウに複数のモデルが並ぶので、同じ名前の項目がぶつからないように ID をモデルごとに分ける
+	ImGui::PushID(this);
+
+	const std::string title = tag.empty() ? std::string("FBXModel") : tag;
+
+	if (ImGui::CollapsingHeader(title.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		// ================= ノーマルマップ =================
+		ImGui::TextUnformatted(u8"ノーマルマップ");
+		ImGui::Separator();
+
+		bool normalOn = normalMapParam.enableNormal > 0.5f;
+		if (ImGui::Checkbox(u8"有効##normal", &normalOn))
+		{
+			normalMapParam.enableNormal = normalOn ? 1.0f : 0.0f;
+		}
+
+		ImGui::SliderFloat(u8"強さ##normal", &normalMapParam.normalStrength, 0.0f, 2.0f, "%.2f");
+
+		ImGui::Spacing();
+
+		// ================= スペキュラ =================
+		ImGui::TextUnformatted(u8"スペキュラ（ハイライト）");
+		ImGui::Separator();
+
+		bool specularOn = specularParam.enableSpecular > 0.5f;
+		if (ImGui::Checkbox(u8"有効##specular", &specularOn))
+		{
+			specularParam.enableSpecular = specularOn ? 1.0f : 0.0f;
+		}
+		HelpTooltip(u8"OFF にすると、ツヤ（ハイライト）が出なくなります");
+
+		BeginDisabledIf(!specularOn);
+
+		ImGui::SliderFloat(u8"強さ##specular", &specularParam.specularStrength, 0.0f, 2.0f, "%.2f");
+		HelpTooltip(u8"ハイライトの明るさ。0.0 で見えなくなります");
+
+		ImGui::SliderFloat(u8"鋭さ", &specularParam.specularPow, 1.0f, 256.0f, "%.1f");
+		HelpTooltip(u8"大きいほどハイライトが小さく鋭くなります（金属・つるつる）。小さいと広くぼやけます（ざらざら）");
+
+		ImGui::TextUnformatted(u8"質感の目安:");
+		ImGui::SameLine();
+		if (ImGui::Button(u8"ざらざら")) { specularParam.specularPow = 8.0f; }
+		ImGui::SameLine();
+		if (ImGui::Button(u8"普通")) { specularParam.specularPow = 32.0f; }
+		ImGui::SameLine();
+		if (ImGui::Button(u8"つるつる")) { specularParam.specularPow = 128.0f; }
+
+		// 色は x,y,z (RGB) だけを編集する。w は触らない
+		ImGui::ColorEdit3(u8"色", &specularParam.specularColor.x);
+		HelpTooltip(u8"ハイライトの色。基本は白。金属っぽくしたいときは素材の色に寄せます");
+
+		EndDisabledIf();
+
+		ImGui::Spacing();
+
+		// ================= リセット =================
+		// NormalMapParam / SpecularParam の既定値（構造体で決めている初期値）に戻す
+		if (ImGui::Button(u8"初期値に戻す"))
+		{
+			normalMapParam = NormalMapParam();
+			specularParam = SpecularParam();
+		}
+	}
+
+	ImGui::PopID();
 }
 
 void FBXModel::AttachToNode(FBXModel* parent, const std::wstring& nodeName)
