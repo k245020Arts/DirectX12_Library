@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include "../Shadow/ShadowMap.h"
 #include "../ConstBuffer/ConstBuffer.h"
+#include "../ModelSettings/ModelSettings.h"
 
 class VertexBuffer;
 class PipelineState;
@@ -46,6 +47,9 @@ struct ModelData
 
 	// ルートノードの逆行列
 	Matrix globalInverseTransform;
+
+	// <モデル名>.fbx.json の内容（テクスチャ名・ノーマルマップ・スペキュラの設定）
+	ModelSettings settings;
 };
 
 struct TextureSRVData
@@ -70,7 +74,7 @@ public:
 	~FBXModel();
 
 	ResultErrorHandle Load(const std::string& _modelFilePath);
-	ResultErrorHandle Load(const std::string& _modelFilePath,bool _uflip,bool _vflip);
+	ResultErrorHandle Load(const std::string& _modelFilePath, bool _uflip, bool _vflip);
 
 	ResultErrorHandle Load(const wchar_t* _modelFilePath);
 	ResultErrorHandle Load(const wchar_t* _modelFilePath, bool _uflip, bool _vflip);
@@ -152,9 +156,17 @@ public:
 	void SpecularMapColor(const Rgb& _rgb) { specularParam.specularColor = Color::RGBToVector4(_rgb); }
 	void SpecularMapColor(const Vector4& _rgb) { specularParam.specularColor = _rgb; }
 
+	/// <summary>
+	/// 今のノーマルマップ・スペキュラの設定を、<モデル名>.fbx.json に保存する
+	/// （ImGui の「今の設定をJSONに保存」ボタンからも呼ばれる）
+	/// </summary>
+	/// <param name="_overwriteBroken">JSON が壊れているときに、上書きしてよいか</param>
+	/// <returns>保存できたかどうか</returns>
+	bool SaveSettings(bool _overwriteBroken = false);
+
 private:
 
-    using ConstantPtr = std::vector<std::shared_ptr<ConstBuffer>>;
+	using ConstantPtr = std::vector<std::shared_ptr<ConstBuffer>>;
 
 	struct ConstantBufferData
 	{
@@ -184,7 +196,7 @@ private:
 	/// <param name="_message"></param>
 	/// <returns></returns>
 	template<typename T>
-	bool CreateConstantBufferData(std::shared_ptr<ConstBuffer>& _data,const std::wstring& _message)
+	bool CreateConstantBufferData(std::shared_ptr<ConstBuffer>& _data, const std::wstring& _message)
 	{
 		_data = std::make_shared<ConstBuffer>(sizeof(T));
 		if (!_data->IsValid())
@@ -199,8 +211,8 @@ private:
 
 	void SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint);
 
-	
-	void DrawShadow(const ShadowCamera& _camera,const ShadowMap& _shadowMap) override;
+
+	void DrawShadow(const ShadowCamera& _camera, const ShadowMap& _shadowMap) override;
 	void SetShadowPipelineState();
 	ModelData modelData;
 
@@ -245,6 +257,11 @@ private:
 
 	NormalMapParam normalMapParam;
 	SpecularParam specularParam;
+
+	// ---- <モデル名>.fbx.json との受け渡し ----
+	std::wstring modelFilePath;      // Load に渡されたモデルのパス
+	void ApplySettings();            // JSON の内容 → normalMapParam / specularParam
+	void CollectSettings();          // normalMapParam / specularParam → JSON の内容
 
 	void ShaderParamSerializeImgui()override;
 };

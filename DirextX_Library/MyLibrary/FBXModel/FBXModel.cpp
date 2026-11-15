@@ -134,6 +134,10 @@ ResultErrorHandle FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, boo
 		return handle;
 	}
 
+	// <モデル名>.fbx.json の設定を反映する（JSON が無ければ、ロード中に自動で作られている）
+	modelFilePath = _modelFilePath;
+	ApplySettings();
+
 	if (animator == nullptr) {
 		animator = std::make_unique<Animator>(modelData);
 	}
@@ -217,8 +221,8 @@ void FBXModel::Draw()
 		commandList->IASetVertexBuffers(0, 1, &vbView);
 		commandList->IASetIndexBuffer(&ibView);
 
-		
-		
+
+
 		//地面影を描画する場合はインシタンシングを2にする。
 		if (groundShadow) {
 			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 2, 0, 0, 0); // インデックスの数分描画する
@@ -227,7 +231,7 @@ void FBXModel::Draw()
 			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 1, 0, 0, 0); // インデックスの数分描画する
 		}
 
-		
+
 	}
 }
 
@@ -403,7 +407,7 @@ void FBXModel::Init()
 		CreateConstantBufferData<MatrixTransform>(constantBufferPtr.shadow[i], L"Shadow用変換定数バッファの生成に失敗\n");
 		CreateConstantBufferData<SpecularParam>(constantBufferPtr.specularMap[i], L"スペキュラマップ用定数バッファの生成に失敗\n");
 		CreateConstantBufferData<NormalMapParam>(constantBufferPtr.normalMap[i], L"ノーマルマップ用定数バッファの生成に失敗\n");
-		
+
 		// 変換行列の登録
 		auto ptr = constantBufferPtr.matrixTransform[i]->GetPtr<MatrixTransform>();
 		ptr->World = DirectX::XMMatrixIdentity();
@@ -498,25 +502,25 @@ void FBXModel::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wst
 
 void FBXModel::SetShadowPipelineState()
 {
-    shadowRootSignature = std::make_unique<RootSignature>();
-    shadowRootSignature->SetShadowDepthRootSignature();
-    if (!shadowRootSignature->IsSuccess())
-    {
-        OutputDebugStringW(L"Shadow用RootSignatureの生成に失敗\n");
-        return;
-    }
+	shadowRootSignature = std::make_unique<RootSignature>();
+	shadowRootSignature->SetShadowDepthRootSignature();
+	if (!shadowRootSignature->IsSuccess())
+	{
+		OutputDebugStringW(L"Shadow用RootSignatureの生成に失敗\n");
+		return;
+	}
 
-    shadowPipelineState = std::make_unique<PipelineState>(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-    shadowPipelineState->SetInputLayout(VertexSkinning3D::InputLayout);
-    shadowPipelineState->SetRootSignature(shadowRootSignature->Get());
-    shadowPipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
-    shadowPipelineState->SetVS(L"Shader/FBXModelShader/FBXModelDepthVertexShader.hlsl","DepthVS_FBX");
-    shadowPipelineState->CreateDepthOnly();
+	shadowPipelineState = std::make_unique<PipelineState>(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	shadowPipelineState->SetInputLayout(VertexSkinning3D::InputLayout);
+	shadowPipelineState->SetRootSignature(shadowRootSignature->Get());
+	shadowPipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
+	shadowPipelineState->SetVS(L"Shader/FBXModelShader/FBXModelDepthVertexShader.hlsl", "DepthVS_FBX");
+	shadowPipelineState->CreateDepthOnly();
 
-    if (!shadowPipelineState->IsSuccess())
-    {
-        OutputDebugStringW(L"Shadow用PipelineStateの生成に失敗\n");
-    }
+	if (!shadowPipelineState->IsSuccess())
+	{
+		OutputDebugStringW(L"Shadow用PipelineStateの生成に失敗\n");
+	}
 }
 
 void FBXModel::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMap)
@@ -525,55 +529,55 @@ void FBXModel::DrawShadow(const ShadowCamera& camera, const ShadowMap& _shadowMa
 	if (!ShadowMapCreater::GetInstance()->GetUseShadowMap()) {
 		return;
 	}
-    if (shadowPipelineState == nullptr || !shadowPipelineState->IsSuccess() ||
+	if (shadowPipelineState == nullptr || !shadowPipelineState->IsSuccess() ||
 		constantBufferPtr.shadow.empty() || constantBufferPtr.bone.empty() || modelData.meshes.empty())
-    {
-        return;
-    }
+	{
+		return;
+	}
 
-    const UINT currentIndex = Engine::GetInstance()->CurrentBackBufferIndex();
-    if (currentIndex >= constantBufferPtr.shadow.size() || currentIndex >= constantBufferPtr.bone.size())
-    {
-        return;
-    }
+	const UINT currentIndex = Engine::GetInstance()->CurrentBackBufferIndex();
+	if (currentIndex >= constantBufferPtr.shadow.size() || currentIndex >= constantBufferPtr.bone.size())
+	{
+		return;
+	}
 
-    auto* commandList = Engine::GetInstance()->CommandList();
+	auto* commandList = Engine::GetInstance()->CommandList();
 
-    auto* transformData = constantBufferPtr.shadow[currentIndex]->GetPtr<MatrixTransform>();
-    transformData->World = BuildWorldMatrix();
-    transformData->View = camera.GetViewMatrix();
-    transformData->Proj = camera.GetProjectionMatrix();
-    transformData->uvRect = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-	Matrix lightViewProjection =camera.GetViewMatrix() * camera.GetProjectionMatrix();
+	auto* transformData = constantBufferPtr.shadow[currentIndex]->GetPtr<MatrixTransform>();
+	transformData->World = BuildWorldMatrix();
+	transformData->View = camera.GetViewMatrix();
+	transformData->Proj = camera.GetProjectionMatrix();
+	transformData->uvRect = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	Matrix lightViewProjection = camera.GetViewMatrix() * camera.GetProjectionMatrix();
 
 	transformData->lightViewProjection = lightViewProjection;
 
 	auto* constBuff = constantBufferPtr.matrixTransform[currentIndex]->GetPtr<MatrixTransform>();
 	constBuff->lightViewProjection = lightViewProjection;
 
-    commandList->SetGraphicsRootSignature(shadowRootSignature->Get());
-    commandList->SetPipelineState(shadowPipelineState->GetPipelineState());
+	commandList->SetGraphicsRootSignature(shadowRootSignature->Get());
+	commandList->SetPipelineState(shadowPipelineState->GetPipelineState());
 
-    // ShadowDepthRootSignature: RP0=b0 Transform, RP1=b2 BoneBuffer。
-    commandList->SetGraphicsRootConstantBufferView(0,constantBufferPtr.shadow[currentIndex]->GetAddress());
-    commandList->SetGraphicsRootConstantBufferView(1,constantBufferPtr.bone[currentIndex]->GetAddress());
+	// ShadowDepthRootSignature: RP0=b0 Transform, RP1=b2 BoneBuffer。
+	commandList->SetGraphicsRootConstantBufferView(0, constantBufferPtr.shadow[currentIndex]->GetAddress());
+	commandList->SetGraphicsRootConstantBufferView(1, constantBufferPtr.bone[currentIndex]->GetAddress());
 
-    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    for (size_t i = 0; i < modelData.meshes.size(); ++i)
-    {
-        if (i >= vertexBuffer.size() || i >= indexBuffer.size())
-        {
-            continue;
-        }
+	for (size_t i = 0; i < modelData.meshes.size(); ++i)
+	{
+		if (i >= vertexBuffer.size() || i >= indexBuffer.size())
+		{
+			continue;
+		}
 
-        const auto vbView = vertexBuffer[i]->GetView();
-        const auto ibView = indexBuffer[i]->View();
+		const auto vbView = vertexBuffer[i]->GetView();
+		const auto ibView = indexBuffer[i]->View();
 
-        commandList->IASetVertexBuffers(0, 1, &vbView);
-        commandList->IASetIndexBuffer(&ibView);
-        commandList->DrawIndexedInstanced(static_cast<UINT>(modelData.meshes[i].Indices.size()),1, 0, 0, 0);
-    }
+		commandList->IASetVertexBuffers(0, 1, &vbView);
+		commandList->IASetIndexBuffer(&ibView);
+		commandList->DrawIndexedInstanced(static_cast<UINT>(modelData.meshes[i].Indices.size()), 1, 0, 0, 0);
+	}
 }
 
 void FBXModel::VertexMapping(const Camera3D* _camera)
@@ -587,7 +591,7 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 	Vector4 plane = Vector4(0, 1, 0, 0);
 	Vector3 lightVec = Light::GetInstance()->GetLightBufferData().lights[0].direction * -1.0f;
 	Matrix shadow = DirectX::XMMatrixShadow(DirectX::XMLoadFloat4(&plane), DirectX::XMLoadFloat3(&lightVec));
-	
+
 	for (size_t i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
 		auto ptr = constantBufferPtr.matrixTransform[i]->GetPtr<MatrixTransform>();
@@ -604,11 +608,11 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 		auto* bone = constantBufferPtr.bone[i]->GetPtr<BoneBuffer>();
 		const auto& matrices = animator->GetBoneMatrices();
 
-		const size_t count = std::min(matrices.size(),static_cast<size_t>(BONE_MAX));
+		const size_t count = std::min(matrices.size(), static_cast<size_t>(BONE_MAX));
 
 		for (size_t j = 0; j < count; ++j)
 		{
-			DirectX::XMStoreFloat4x4(&bone->bones[j],matrices[j]);
+			DirectX::XMStoreFloat4x4(&bone->bones[j], matrices[j]);
 		}
 
 		auto specular = constantBufferPtr.specularMap[i]->GetPtr<SpecularParam>();
@@ -647,6 +651,49 @@ Matrix FBXModel::GetSocketMatrix(int nodeIndex) const
 
 	// 親自身のワールド行列（親のスケールは、そのまま武器にも掛かる）
 	return rigid * BuildWorldMatrix();
+}
+
+void FBXModel::ApplySettings()
+{
+	const ModelSettings& s = modelData.settings;
+
+	normalMapParam.enableNormal = s.normalMap.enable ? 1.0f : 0.0f;
+	normalMapParam.normalStrength = s.normalMap.strength;
+
+	specularParam.enableSpecular = s.specular.enable ? 1.0f : 0.0f;
+	specularParam.specularStrength = s.specular.strength;
+	specularParam.specularPow = s.specular.pow;
+	specularParam.specularColor.x = s.specular.color[0];
+	specularParam.specularColor.y = s.specular.color[1];
+	specularParam.specularColor.z = s.specular.color[2];
+
+	// ★ここに追加（ModelSettings に足した項目を、シェーダーに渡すパラメーターへ反映する）
+}
+
+void FBXModel::CollectSettings()
+{
+	ModelSettings& s = modelData.settings;
+
+	s.normalMap.enable = normalMapParam.enableNormal > 0.5f;
+	s.normalMap.strength = normalMapParam.normalStrength;
+
+	s.specular.enable = specularParam.enableSpecular > 0.5f;
+	s.specular.strength = specularParam.specularStrength;
+	s.specular.pow = specularParam.specularPow;
+	s.specular.color = { specularParam.specularColor.x, specularParam.specularColor.y, specularParam.specularColor.z };
+
+	// ★ここに追加（今のパラメーターを、ModelSettings に書き戻す）
+}
+
+bool FBXModel::SaveSettings(bool _overwriteBroken)
+{
+	if (modelFilePath.empty())
+	{
+		return false; // まだ Load されていない
+	}
+
+	CollectSettings();
+	return modelData.settings.Save(_overwriteBroken);
 }
 
 void FBXModel::ShaderParamSerializeImgui()
@@ -713,6 +760,57 @@ void FBXModel::ShaderParamSerializeImgui()
 		{
 			normalMapParam = NormalMapParam();
 			specularParam = SpecularParam();
+		}
+
+		ImGui::Spacing();
+
+		// ================= 設定ファイル（JSON） =================
+		ImGui::TextUnformatted(u8"設定ファイル（JSON）");
+		ImGui::Separator();
+
+		const ModelSettings& settings = modelData.settings;
+		const std::string jsonPath = WideToStringUTF8(settings.filePath.c_str());
+		ImGui::TextWrapped("%s", jsonPath.c_str());
+
+		switch (settings.state)
+		{
+		case ModelSettings::State::Loaded:
+			ImGui::TextUnformatted(u8"状態: 保存済み（起動時にこの内容が読み込まれます）");
+			break;
+		case ModelSettings::State::New:
+			ImGui::TextUnformatted(u8"状態: まだ保存されていません");
+			break;
+		case ModelSettings::State::Broken:
+			ImGui::TextUnformatted(u8"状態: JSON が壊れています（FBX の情報で動作中。上書きしません）");
+			break;
+		}
+
+		if (ImGui::Button(u8"今の設定をJSONに保存"))
+		{
+			SaveSettings();
+		}
+		HelpTooltip(u8"ノーマルマップとスペキュラの今の値を、JSON に保存します。次回のロードからこの値で始まります");
+
+		if (settings.state == ModelSettings::State::Broken)
+		{
+			ImGui::SameLine();
+			if (ImGui::Button(u8"壊れたJSONを上書き"))
+			{
+				SaveSettings(true);
+			}
+		}
+
+		if (ImGui::TreeNode(u8"マテリアルのテクスチャ"))
+		{
+			for (const auto& kv : settings.materials)
+			{
+				ImGui::BulletText("%s", kv.first.c_str());
+				ImGui::Indent();
+				ImGui::Text("diffuse : %s", kv.second.diffuse.empty() ? u8"（なし）" : kv.second.diffuse.c_str());
+				ImGui::Text("normal  : %s", kv.second.normal.empty() ? u8"（なし）" : kv.second.normal.c_str());
+				ImGui::Unindent();
+			}
+			ImGui::TreePop();
 		}
 	}
 

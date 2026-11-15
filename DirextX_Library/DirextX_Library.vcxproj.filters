@@ -172,6 +172,12 @@
     <Filter Include="Shader\Shadow">
       <UniqueIdentifier>{59dc3a2b-a2e7-4635-8753-b1fab207ae87}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MyLibrary\JsonReader">
+      <UniqueIdentifier>{91ada3ed-871d-4d40-a111-60e9fa2f3a7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLibrary\ModelSettings">
+      <UniqueIdentifier>{3de1e93b-446a-449c-be7a-e404c845451c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp">
@@ -386,6 +392,12 @@
     </ClCompile>
     <ClCompile Include="MyLibrary\Shadow\ShadowMapCreater.cpp">
       <Filter>MyLibrary\Shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\JsonReader\JsonReader.cpp">
+      <Filter>MyLibrary\JsonReader</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\ModelSettings\ModelSettings.cpp">
+      <Filter>MyLibrary\ModelSettings</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -640,6 +652,15 @@
     </ClInclude>
     <ClInclude Include="MyLibrary\Shadow\ShadowMapCreater.h">
       <Filter>MyLibrary\Shadow</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\JsonReader\JsonReader.h">
+      <Filter>MyLibrary\JsonReader</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\ModelSettings\ModelSettings.h">
+      <Filter>MyLibrary\ModelSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\JsonReader\UTFConverter.h">
+      <Filter>MyLibrary\JsonReader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

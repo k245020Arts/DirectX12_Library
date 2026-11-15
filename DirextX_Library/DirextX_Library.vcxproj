@@ -106,13 +106,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\DirectXTex-main\DirectXTex;$(ProjectDir)\Assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\DirectXTex-main\DirectXTex;$(ProjectDir)\Assimp\include;$(ProjectDir)./</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\DirectXTex-main\DirectXTex\Bin\Desktop_2022_Win10\x64\Debug;%(AdditionalLibraryDirectories);$(ProjectDir)\Assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\DirectXTex-main\DirectXTex\Bin\Desktop_2022_Win10\x64\Debug;%(AdditionalLibraryDirectories);$(ProjectDir)\Assimp\lib;$(ProjectDir)./</AdditionalLibraryDirectories>
       <AdditionalDependencies>assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateMapFile>false</GenerateMapFile>
       <MapFileName />
@@ -129,13 +129,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\DirectXTex-main\DirectXTex;$(ProjectDir)\Assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\DirectXTex-main\DirectXTex;$(ProjectDir)\Assimp\include;$(ProjectDir)./</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\DirectXTex-main\DirectXTex\Bin\Desktop_2022_Win10\x64\Release;%(AdditionalLibraryDirectories);$(ProjectDir)\Assimp\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\DirectXTex-main\DirectXTex\Bin\Desktop_2022_Win10\x64\Release;%(AdditionalLibraryDirectories);$(ProjectDir)\Assimp\lib;$(ProjectDir)./</AdditionalLibraryDirectories>
       <AdditionalDependencies>assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>DirectX12_lib.exe</OutputFile>
     </Link>
@@ -171,8 +171,10 @@
     <ClCompile Include="MyLibrary\Input\InputManager.cpp" />
     <ClCompile Include="MyLibrary\Input\Key\KeyInput.cpp" />
     <ClCompile Include="MyLibrary\Input\Mouse\MouseInput.cpp" />
+    <ClCompile Include="MyLibrary\JsonReader\JsonReader.cpp" />
     <ClCompile Include="MyLibrary\Light\Light.cpp" />
     <ClCompile Include="MyLibrary\main.cpp" />
+    <ClCompile Include="MyLibrary\ModelSettings\ModelSettings.cpp" />
     <ClCompile Include="MyLibrary\Object2D\Object2DManager.cpp" />
     <ClCompile Include="MyLibrary\Object3D\Object3DManager.cpp" />
     <ClCompile Include="MyLibrary\PipelineState\PipelineState.cpp" />
@@ -253,7 +255,10 @@
     <ClInclude Include="MyLibrary\Input\Key\KeyInput.h" />
     <ClInclude Include="MyLibrary\Input\Mouse\MouseCode.h" />
     <ClInclude Include="MyLibrary\Input\Mouse\MouseInput.h" />
+    <ClInclude Include="MyLibrary\JsonReader\JsonReader.h" />
+    <ClInclude Include="MyLibrary\JsonReader\UTFConverter.h" />
     <ClInclude Include="MyLibrary\Light\Light.h" />
+    <ClInclude Include="MyLibrary\ModelSettings\ModelSettings.h" />
     <ClInclude Include="MyLibrary\Object2D\Object2D.h" />
     <ClInclude Include="MyLibrary\Object2D\Object2DManager.h" />
     <ClInclude Include="MyLibrary\Object3D\Object3D.h" />

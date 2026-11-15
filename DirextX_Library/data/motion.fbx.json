@@ -1,0 +1,39 @@
+{
+  "materials": {
+    "Body": {
+      "diffuse": "Body_2D_View.png",
+      "normal": ""
+    },
+    "Face": {
+      "diffuse": "Face_2D_View.png",
+      "normal": ""
+    },
+    "Hair": {
+      "diffuse": "Hair_2D_View.png",
+      "normal": ""
+    },
+    "Leg": {
+      "diffuse": "Leg_2D_View.png",
+      "normal": ""
+    },
+    "Parts": {
+      "diffuse": "Parts_2D_View.png",
+      "normal": ""
+    }
+  },
+  "normalMap": {
+    "enable": true,
+    "strength": 1.0
+  },
+  "specular": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "enable": false,
+    "pow": 1.0,
+    "strength": 0.5
+  },
+  "version": 1
+}

@@ -1,0 +1,23 @@
+{
+  "materials": {
+    "lambert2": {
+      "diffuse": "Island_Wall_04_low_lambert2_BaseColor.png",
+      "normal": "Island_Wall_04_low_lambert2_Normal.png"
+    }
+  },
+  "normalMap": {
+    "enable": true,
+    "strength": 1.0
+  },
+  "specular": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "enable": false,
+    "pow": 1.0,
+    "strength": 0.5
+  },
+  "version": 1
+}

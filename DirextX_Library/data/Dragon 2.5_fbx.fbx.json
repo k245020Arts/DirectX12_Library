@@ -1,0 +1,31 @@
+{
+  "materials": {
+    "EYES": {
+      "diffuse": "textures/Dragon_Bump_Col2.jpg",
+      "normal": "textures/Dragon_Nor_mirror2.jpg"
+    },
+    "Game_dragon": {
+      "diffuse": "textures/Dragon_Bump_Col2.jpg",
+      "normal": "textures/Dragon_Nor_mirror2.jpg"
+    },
+    "Game_dragon.001": {
+      "diffuse": "textures/Dragon_Bump_Col2.jpg",
+      "normal": "textures/Dragon_Nor_mirror2.jpg"
+    }
+  },
+  "normalMap": {
+    "enable": true,
+    "strength": 1.0
+  },
+  "specular": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "enable": false,
+    "pow": 1.0,
+    "strength": 0.5
+  },
+  "version": 1
+}

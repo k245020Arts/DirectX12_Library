@@ -6,6 +6,7 @@
 #include <filesystem>
 #include "../FBXModel/FBXModel.h"
 #include "../ResultErrorHandle/ResultErrorHandle.h"
+#include "../ModelSettings/ModelSettings.h"
 
 namespace fs = std::filesystem;
 
@@ -35,18 +36,17 @@ static DirectX::XMFLOAT4X4 ConvertMatrix(const aiMatrix4x4& a)
     return DirectX::XMFLOAT4X4(a.a1, a.b1, a.c1, a.d1, a.a2, a.b2, a.c2, a.d2, a.a3, a.b3, a.c3, a.d3, a.a4, a.b4, a.c4, a.d4);
 }
 
-static std::wstring ResolveTexturePath(const std::wstring& modelFile, const std::string& texPathUtf8)
+static std::wstring ResolveTexturePath(const std::wstring& modelFile, const std::wstring& texPath)
 {
     const fs::path modelPath(modelFile);
     const fs::path dir = modelPath.parent_path();
     const fs::path stem = modelPath.stem();
 
     // "/" と "\" のどちらの区切りでもファイル名だけ取り出す
-    const size_t pos = texPathUtf8.find_last_of("/\\");
-    const std::string fileName = (pos == std::string::npos) ? texPathUtf8 : texPathUtf8.substr(pos + 1);
-    const fs::path fn(GetWideString(fileName));
+    const size_t pos = texPath.find_last_of(L"/\\");
+    const fs::path fn((pos == std::wstring::npos) ? texPath : texPath.substr(pos + 1));
 
-    std::wstring rel = GetWideString(texPathUtf8);
+    std::wstring rel = texPath;
     std::replace(rel.begin(), rel.end(), L'\\', L'/');
 
     //Step1 : 想定しているフォルダ構造で検索をする
@@ -68,9 +68,9 @@ static std::wstring ResolveTexturePath(const std::wstring& modelFile, const std:
 
     //Step2 : FBXのフォルダ以下をファイル名で再帰検索
     std::error_code ec;
-    for (fs::recursive_directory_iterator it(dir, fs::directory_options::skip_permission_denied, ec), end;it != end; it.increment(ec))
+    for (fs::recursive_directory_iterator it(dir, fs::directory_options::skip_permission_denied, ec), end; it != end; it.increment(ec))
     {
-        if (ec) 
+        if (ec)
             break; //エラーが出たらブレイク
         if (it->is_regular_file(ec) && it->path().filename() == fn)
             return it->path().wstring(); //見つかれば
@@ -79,7 +79,16 @@ static std::wstring ResolveTexturePath(const std::wstring& modelFile, const std:
     return L"404_NotFound_Texture_Path.err"; //最後まで探して見つからなければテクスチャが見つからない
 }
 
-ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting,ModelData& _model)
+// FBX(Assimp)から取れたパスはUTF-8なので、UTF-8として変換してから探す
+static std::wstring ResolveTexturePath(const std::wstring& modelFile, const std::string& texPathUtf8)
+{
+    return ResolveTexturePath(modelFile, UTFConverter::Utf8ToWide(texPathUtf8));
+}
+
+// マテリアル名(JSON のキー)。定義はこのファイルの下のほうにある
+static std::string GetMaterialName(const aiMaterial* mat, unsigned int index);
+
+ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting, ModelData& _model)
 {
     // パス確認
     ResultErrorHandle::ErrorCode pathResult = CheckPath(setting.filename);
@@ -128,6 +137,10 @@ ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting,Mo
 
     meshes.clear();
 
+    // モデルごとの設定ファイル(<モデル名>.fbx.json)を読み込む。無ければ、このロードの最後に自動で作る
+    ModelSettings sidecar = ModelSettings::Load(setting.filename);
+    bool settingsDirty = sidecar.dirty;
+
     meshes.resize(scene->mNumMeshes);
     for (size_t i = 0; i < meshes.size(); i++) {
         const auto pMesh = scene->mMeshes[i];
@@ -143,8 +156,18 @@ ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting,Mo
         if (materialIndex < scene->mNumMaterials)
         {
             const auto pMaterial = scene->mMaterials[materialIndex];
-            LoadDiffuseTexture(setting.filename, meshes[i], pMaterial);
-            LoadNormalTexture(setting.filename, meshes[i], pMaterial);
+
+            // JSON はマテリアル名で引く。初めてのマテリアルなら、あとで JSON に書き足す
+            const std::string materialName = GetMaterialName(pMaterial, materialIndex);
+            if (sidecar.materials.find(materialName) == sidecar.materials.end())
+            {
+                settingsDirty = true;
+            }
+            MaterialSettings& materialSettings = sidecar.materials[materialName];
+
+            LoadDiffuseTexture(setting.filename, meshes[i], pMaterial, materialSettings, settingsDirty);
+            LoadNormalTexture(setting.filename, meshes[i], pMaterial, materialSettings, settingsDirty);
+
         }
     }
 
@@ -157,7 +180,7 @@ ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting,Mo
     // ルートノードの逆行列を保存
     _model.globalInverseTransform = rootMatrix.Inverse();
 
-    _model.rootNodeIndex =  LoadNodeHierarchy(scene->mRootNode, -1, _model);
+    _model.rootNodeIndex = LoadNodeHierarchy(scene->mRootNode, -1, _model);
 
     // ボーン名 → ノード番号。メッシュを持たないノードを優先する
     std::unordered_map<std::wstring, int> nodeByName;
@@ -166,7 +189,7 @@ ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting,Mo
             nodeByName.emplace(_model.nodes[n].name, static_cast<int>(n));
         }
     }
- 
+
     for (size_t n = 0; n < _model.nodes.size(); ++n)
     {
         nodeByName.emplace(_model.nodes[n].name, static_cast<int>(n)); // 既にあれば上書きされない
@@ -186,8 +209,15 @@ ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting,Mo
         }
 
     }
-    
+
     ApplyStaticMeshNodeTransforms(_model);
+
+    // 設定ファイルが無い(または足りない項目がある)ときは書き出す。壊れている JSON は上書きしない
+    if (sidecar.state == ModelSettings::State::New || settingsDirty)
+    {
+        sidecar.Save();
+    }
+    _model.settings = sidecar;
 
     scene = nullptr;
 
@@ -196,7 +226,7 @@ ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting,Mo
 
 ResultErrorHandle::ErrorCode AssimpLoader::LoadAnimation(const std::string& _filePath, ModelData& _model)
 {
-    return LoadAnimation(GetWideString(_filePath),_model);
+    return LoadAnimation(GetWideString(_filePath), _model);
 }
 
 ResultErrorHandle::ErrorCode AssimpLoader::LoadAnimation(const std::wstring& _filePath, ModelData& _model)
@@ -231,11 +261,11 @@ void AssimpLoader::LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool in
     aiColor4D zeroColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     dst.Vertices.resize(src->mNumVertices);
-    
+
     for (auto i = 0u; i < src->mNumVertices; ++i)
     {
         auto position = &(src->mVertices[i]);
-        auto normal = src->HasNormals()? &src->mNormals[i] : &zero3D;
+        auto normal = src->HasNormals() ? &src->mNormals[i] : &zero3D;
         auto uv = (src->HasTextureCoords(0)) ? &(src->mTextureCoords[0][i]) : &zero3D;
 
         auto color = (src->HasVertexColors(0)) ? &(src->mColors[0][i]) : &zeroColor;
@@ -299,7 +329,7 @@ void AssimpLoader::LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool in
         vertex.normal = Vector3(normal->x, normal->y, normal->z);
         vertex.uv = Vector2(uv->x, uv->y);
         vertex.tangent = Vector4(validTangent.x, validTangent.y, validTangent.z, tangentW);
-        vertex.color = Vector4(color->r, color->g, color->b,color->a);
+        vertex.color = Vector4(color->r, color->g, color->b, color->a);
 
         dst.Vertices[i] = vertex;
     }
@@ -332,10 +362,56 @@ static bool GetTexturePathWithFallback(const aiMaterial* mat, std::initializer_l
     return false;
 }
 
-void AssimpLoader::LoadDiffuseTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src)
+// マテリアル名(JSON のキーに使う)。名前が付いていないときは番号で代用する
+static std::string GetMaterialName(const aiMaterial* mat, unsigned int index)
 {
+    aiString name;
+    if (mat->Get(AI_MATKEY_NAME, name) == AI_SUCCESS && name.length > 0)
+    {
+        return name.C_Str();
+    }
+    return "material_" + std::to_string(index);
+}
+
+// "C:\\a\\b\\tex.png" や "a/b/tex.png" から、ファイル名だけを取り出す
+static std::string FileNameOf(const std::string& path)
+{
+    const size_t pos = path.find_last_of("/\\");
+    return (pos == std::string::npos) ? path : path.substr(pos + 1);
+}
+
+// 見つけたテクスチャを「モデルのフォルダからの相対パス」にして、JSON に残せる形(UTF-8)にする
+static std::string ToSidecarTexturePath(const std::wstring& modelFile, const std::wstring& resolved)
+{
+    fs::path rel = fs::path(resolved).lexically_relative(fs::path(modelFile).parent_path());
+    if (rel.empty())
+    {
+        rel = fs::path(resolved); // 別のドライブなど、相対にできないときはそのまま
+    }
+    return UTFConverter::wstring_to_utf8(rel.generic_wstring());
+}
+
+void AssimpLoader::LoadDiffuseTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty)
+{
+    // JSON にテクスチャ名が書かれていれば、FBX の情報より優先する
+    if (!material.diffuse.empty())
+    {
+        const std::wstring jsonName = UTFConverter::Utf8ToWide(material.diffuse);
+        dst.DiffuseMap = ResolveTexturePath(filename, jsonName);
+
+        if (dst.DiffuseMap == L"404_NotFound_Texture_Path.err") {
+            textureLoader = false;
+            OutputDebugStringW((L"[Texture] JSONで指定されたテクスチャが見つかりません: " + jsonName + L"\n").c_str());
+        }
+        else {
+            textureLoader = true;
+            OutputDebugStringW((L"[Texture] JSONの指定で読み込み: " + dst.DiffuseMap + L"\n").c_str());
+        }
+        return;
+    }
+
     aiString path;
-    
+
     if (GetTexturePathWithFallback(src, { aiTextureType_DIFFUSE, aiTextureType_BASE_COLOR }, path))
     {
         const std::string p = path.C_Str();
@@ -349,6 +425,10 @@ void AssimpLoader::LoadDiffuseTexture(const wchar_t* filename, Mesh& dst, const 
         }
 
         dst.DiffuseMap = ResolveTexturePath(filename, p);
+
+        // FBX から見つけた結果を JSON に残す(次回からは JSON の内容が使われる)
+        material.diffuse = (dst.DiffuseMap == L"404_NotFound_Texture_Path.err") ? FileNameOf(p) : ToSidecarTexturePath(filename, dst.DiffuseMap);
+        settingsDirty = true;
 
         if (dst.DiffuseMap == L"404_NotFound_Texture_Path.err") {
             textureLoader = false;
@@ -374,8 +454,21 @@ void AssimpLoader::LoadDiffuseTexture(const wchar_t* filename, Mesh& dst, const 
     }
 }
 
-void AssimpLoader::LoadNormalTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src)
+void AssimpLoader::LoadNormalTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty)
 {
+    // JSON にテクスチャ名が書かれていれば、FBX の情報より優先する
+    if (!material.normal.empty())
+    {
+        const std::wstring jsonName = UTFConverter::Utf8ToWide(material.normal);
+        dst.NormalMap = ResolveTexturePath(filename, jsonName);
+
+        if (dst.NormalMap == L"404_NotFound_Texture_Path.err")
+            OutputDebugStringW((L"[NormalTexture] JSONで指定されたテクスチャが見つかりません: " + jsonName + L"\n").c_str());
+        else
+            OutputDebugStringW((L"[NormalTexture] JSONの指定で読み込み: " + dst.NormalMap + L"\n").c_str());
+        return;
+    }
+
     aiString path;
 
     if (GetTexturePathWithFallback(src, { aiTextureType_NORMALS, aiTextureType_NORMAL_CAMERA, aiTextureType_HEIGHT }, path))
@@ -391,6 +484,10 @@ void AssimpLoader::LoadNormalTexture(const wchar_t* filename, Mesh& dst, const a
         }
 
         dst.NormalMap = ResolveTexturePath(filename, p);
+
+        // FBX から見つけた結果を JSON に残す(次回からは JSON の内容が使われる)
+        material.normal = (dst.NormalMap == L"404_NotFound_Texture_Path.err") ? FileNameOf(p) : ToSidecarTexturePath(filename, dst.NormalMap);
+        settingsDirty = true;
 
         if (dst.NormalMap.empty())
             OutputDebugStringA(("[NormalTexture] 見つかりません: " + p + "\n").c_str());
@@ -440,7 +537,7 @@ ResultErrorHandle::ErrorCode AssimpLoader::LoadAnimations(const aiScene* scene, 
         // 名前が空の場合は仮の名前を設定
         if (dstAnimation.name.empty())
         {
-            dstAnimation.name =L"Animation_" + std::to_wstring(i);
+            dstAnimation.name = L"Animation_" + std::to_wstring(i);
         }
 
         // 再生時間（tick単位）
@@ -452,7 +549,7 @@ ResultErrorHandle::ErrorCode AssimpLoader::LoadAnimations(const aiScene* scene, 
         dstAnimation.channels.reserve(srcAnimation->mNumChannels);
 
         // 各ノードのアニメーションを読み込む
-        for (uint32_t j = 0;j < srcAnimation->mNumChannels;++j)
+        for (uint32_t j = 0; j < srcAnimation->mNumChannels; ++j)
         {
             const aiNodeAnim* srcChannel = srcAnimation->mChannels[j];
 
@@ -464,13 +561,13 @@ ResultErrorHandle::ErrorCode AssimpLoader::LoadAnimations(const aiScene* scene, 
             //位置キーフレーム
             dstChannel.positionKeys.reserve(srcChannel->mNumPositionKeys);
 
-            for (uint32_t k = 0;k < srcChannel->mNumPositionKeys;++k)
+            for (uint32_t k = 0; k < srcChannel->mNumPositionKeys; ++k)
             {
-                const aiVectorKey& key =srcChannel->mPositionKeys[k];
+                const aiVectorKey& key = srcChannel->mPositionKeys[k];
 
-                Vector3 position(key.mValue.x, key.mValue.y,key.mValue.z);
+                Vector3 position(key.mValue.x, key.mValue.y, key.mValue.z);
 
-                dstChannel.positionKeys.emplace_back(key.mTime,position);
+                dstChannel.positionKeys.emplace_back(key.mTime, position);
             }
 
             // 回転キーフレーム
@@ -479,12 +576,12 @@ ResultErrorHandle::ErrorCode AssimpLoader::LoadAnimations(const aiScene* scene, 
 
             for (uint32_t k = 0; k < srcChannel->mNumRotationKeys; ++k)
             {
-                const aiQuatKey& key =srcChannel->mRotationKeys[k];
+                const aiQuatKey& key = srcChannel->mRotationKeys[k];
 
                 // Vector4の格納順序は x, y, z, w
-                Vector4 rotation(key.mValue.x,key.mValue.y,key.mValue.z,key.mValue.w );
+                Vector4 rotation(key.mValue.x, key.mValue.y, key.mValue.z, key.mValue.w);
 
-                dstChannel.rotationKeys.emplace_back(key.mTime, rotation );
+                dstChannel.rotationKeys.emplace_back(key.mTime, rotation);
             }
 
             // --------------------------------
@@ -492,13 +589,13 @@ ResultErrorHandle::ErrorCode AssimpLoader::LoadAnimations(const aiScene* scene, 
             // --------------------------------
             dstChannel.scalingKeys.reserve(srcChannel->mNumScalingKeys);
 
-            for (uint32_t k = 0;k < srcChannel->mNumScalingKeys;++k)
+            for (uint32_t k = 0; k < srcChannel->mNumScalingKeys; ++k)
             {
-                const aiVectorKey& key =srcChannel->mScalingKeys[k];
+                const aiVectorKey& key = srcChannel->mScalingKeys[k];
 
-                Vector3 scale(key.mValue.x,key.mValue.y,key.mValue.z);
+                Vector3 scale(key.mValue.x, key.mValue.y, key.mValue.z);
 
-                dstChannel.scalingKeys.emplace_back(key.mTime,scale);
+                dstChannel.scalingKeys.emplace_back(key.mTime, scale);
             }
 
             dstAnimation.channels.emplace_back(std::move(dstChannel));
@@ -556,7 +653,7 @@ ResultErrorHandle::ErrorCode AssimpLoader::LoadBones(Mesh& dst, const aiMesh* sr
     return ResultErrorHandle::ErrorCode::OK;
 }
 
-int AssimpLoader::LoadNodeHierarchy(const aiNode* src,int parentIndex,ModelData& model)
+int AssimpLoader::LoadNodeHierarchy(const aiNode* src, int parentIndex, ModelData& model)
 {
     const int currentIndex = static_cast<int>(model.nodes.size());
 
@@ -575,7 +672,7 @@ int AssimpLoader::LoadNodeHierarchy(const aiNode* src,int parentIndex,ModelData&
 
     for (unsigned int i = 0; i < src->mNumChildren; ++i)
     {
-        const int childIndex = LoadNodeHierarchy(src->mChildren[i],currentIndex,model);
+        const int childIndex = LoadNodeHierarchy(src->mChildren[i], currentIndex, model);
 
         model.nodes[currentIndex].children.emplace_back(static_cast<uint32_t>(childIndex));
     }
@@ -609,13 +706,13 @@ void AssimpLoader::ApplyStaticMeshNodeTransforms(ModelData& model)
     }
 
     // ノードのグローバル変換を計算する
-    std::vector<DirectX::XMMATRIX> globalTransforms(model.nodes.size(),DirectX::XMMatrixIdentity());
+    std::vector<DirectX::XMMATRIX> globalTransforms(model.nodes.size(), DirectX::XMMatrixIdentity());
 
-    auto calculateGlobal =[&](auto&& self,int nodeIndex,DirectX::FXMMATRIX parentTransform) -> void
-    {
-         const NodeData& node = model.nodes[nodeIndex];
+    auto calculateGlobal = [&](auto&& self, int nodeIndex, DirectX::FXMMATRIX parentTransform) -> void
+        {
+            const NodeData& node = model.nodes[nodeIndex];
 
-         const DirectX::XMMATRIX local = DirectX::XMLoadFloat4x4(&node.localTransform);
+            const DirectX::XMMATRIX local = DirectX::XMLoadFloat4x4(&node.localTransform);
 
             // 行ベクトル方式：ローカル * 親
             globalTransforms[nodeIndex] = local * parentTransform;
@@ -624,15 +721,15 @@ void AssimpLoader::ApplyStaticMeshNodeTransforms(ModelData& model)
             {
                 if (childIndex < model.nodes.size())
                 {
-                    self(self,static_cast<int>(childIndex),globalTransforms[nodeIndex]);
+                    self(self, static_cast<int>(childIndex), globalTransforms[nodeIndex]);
                 }
             }
-     };
+        };
 
-    calculateGlobal(calculateGlobal,model.rootNodeIndex,DirectX::XMMatrixIdentity());
+    calculateGlobal(calculateGlobal, model.rootNodeIndex, DirectX::XMMatrixIdentity());
 
     // ボーンを持たないメッシュだけ、ノード変換を頂点に焼き込む
-    for (size_t meshIndex = 0;meshIndex < meshCount;++meshIndex)
+    for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
     {
         Mesh& mesh = model.meshes[meshIndex];
 
@@ -648,7 +745,7 @@ void AssimpLoader::ApplyStaticMeshNodeTransforms(ModelData& model)
             globalTransforms[nodeIndex];
 
         // 法線用の逆転置行列
-        const DirectX::XMMATRIX normalMatrix =DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, nodeWorld));
+        const DirectX::XMMATRIX normalMatrix = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, nodeWorld));
 
         for (auto& vertex : mesh.Vertices)
         {

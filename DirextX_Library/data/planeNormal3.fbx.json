@@ -1,0 +1,23 @@
+{
+  "materials": {
+    "Material.001": {
+      "diffuse": "planeTexture.png",
+      "normal": "textures/Floor_N.jpg"
+    }
+  },
+  "normalMap": {
+    "enable": true,
+    "strength": 1.0
+  },
+  "specular": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "enable": false,
+    "pow": 1.0,
+    "strength": 0.5
+  },
+  "version": 1
+}
