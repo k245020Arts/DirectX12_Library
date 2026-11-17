@@ -178,6 +178,15 @@
     <Filter Include="MyLibrary\ModelSettings">
       <UniqueIdentifier>{3de1e93b-446a-449c-be7a-e404c845451c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MyLibrary\PostEffect\Bloom">
+      <UniqueIdentifier>{0324d871-8928-4d5e-a9ee-dbf550d2afe7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLibrary\PostEffect\Copy">
+      <UniqueIdentifier>{e5fccfbd-444d-4e72-85ee-adbaa0ee2389}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\PostEffectShader\Bloom">
+      <UniqueIdentifier>{f2c37333-ae80-4353-8eec-09c1e2b8de4d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp">
@@ -399,6 +408,15 @@
     <ClCompile Include="MyLibrary\ModelSettings\ModelSettings.cpp">
       <Filter>MyLibrary\ModelSettings</Filter>
     </ClCompile>
+    <ClCompile Include="MyLibrary\RenderTarget\MultiRenderTarget.cpp">
+      <Filter>MyLibrary\RenderTarget</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\PostEffect\Copy\CopyEffect.cpp">
+      <Filter>MyLibrary\PostEffect\Copy</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\PostEffect\Bloom\BloomEffect.cpp">
+      <Filter>MyLibrary\PostEffect\Bloom</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyLibrary\assimp\AssimpLoader.h">
@@ -614,9 +632,6 @@
     <ClInclude Include="KLibrary\GeneralUtils\StringUtils\StringUtils.h">
       <Filter>KLibrary\String</Filter>
     </ClInclude>
-    <ClInclude Include="MyLibrary/RenderTarget/RenderTarget.h">
-      <Filter>MyLibrary\RenderTarget</Filter>
-    </ClInclude>
     <ClInclude Include="MyLibrary/RenderPass/RenderPass.h">
       <Filter>MyLibrary\RenderPass</Filter>
     </ClInclude>
@@ -661,6 +676,21 @@
     </ClInclude>
     <ClInclude Include="MyLibrary\JsonReader\UTFConverter.h">
       <Filter>MyLibrary\JsonReader</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\RenderTarget\MultiRenderTarget.h">
+      <Filter>MyLibrary\RenderTarget</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\RenderTarget\SceneLayout.h">
+      <Filter>MyLibrary\RenderTarget</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\PostEffect\Copy\CopyEffect.h">
+      <Filter>MyLibrary\PostEffect\Copy</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\PostEffect\Bloom\BloomEffect.h">
+      <Filter>MyLibrary\PostEffect\Bloom</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\RenderTarget\RenderTarget.h">
+      <Filter>MyLibrary\RenderTarget</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -711,6 +741,15 @@
     </FxCompile>
     <FxCompile Include="Shader\FBXModelShader\FBXModelPixelShader.hlsl">
       <Filter>Shader\FBXModelShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\Bloom\BloomBlurPixelShader.hlsl">
+      <Filter>Shader\PostEffectShader\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\Bloom\BloomCompositePixelShader.hlsl">
+      <Filter>Shader\PostEffectShader\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\Bloom\CopyPixelShader.hlsl">
+      <Filter>Shader\PostEffectShader\Bloom</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

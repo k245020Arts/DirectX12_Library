@@ -180,10 +180,13 @@ Scene::Scene()
 	ShadowMapCreater::GetInstance()->SetFollowCamera(true);
 
 	rock = new FBXModel();
-	rock->Load("data/test/Island_Wall_05_low.fbx", false, true);
+	rock->Load("data/test/Island_Wall_04_low.fbx", false, true);
 	rock->GetTransform().position = Vector3(0.f, 100.0f, 0.f);
 	rock->GetTransform().rotation = Vector3(0.0f, 0.f, 0.f);
 	rock->GetTransform().scale = Vector3(1.f, 1.f, 1.f);
+
+	/*sky = new FBXModel();
+	sky->Load("data/sky/SKY1.fbx", true, true);*/
 
 #endif // MODEL
 

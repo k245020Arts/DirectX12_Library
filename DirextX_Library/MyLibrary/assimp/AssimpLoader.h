@@ -38,6 +38,7 @@ private:
     void LoadMesh(Mesh& dst, const aiMesh* src, bool inverseU, bool inverseV);
     void LoadDiffuseTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty);
     void LoadNormalTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty);
+    void LoadHeightTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty);
     ResultErrorHandle::ErrorCode  LoadAnimations(const aiScene* scene,std::vector<AnimationData>& animations);
     ResultErrorHandle::ErrorCode  LoadBones(Mesh& dst, const aiMesh* src, ModelData& model);
     int LoadNodeHierarchy(const aiNode* src, int parentIndex, ModelData& model);

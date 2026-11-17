@@ -24,6 +24,16 @@ struct PostEffectPassInfo
     RenderTarget* target = nullptr;
 };
 
+//シーン描画(マルチレンダーターゲット)で書かれたテクスチャ一覧
+//PostEffectPipeline が用意して、各エフェクトに渡す(使わないエフェクトは無視してよい)
+//  ターゲットを増やしたとき、または被写界深度のように深度が必要になったときは、ここに足す
+struct SceneTextures
+{
+    DescriptorHandle* color = nullptr; //通常の描画結果(SV_TARGET0)
+    DescriptorHandle* bloom = nullptr; //光らせたい色(SV_TARGET1)
+    DescriptorHandle* depth = nullptr; //シーンの深度(未対応 : 被写界深度などを作るときに用意する)
+};
+
 class PostEffect
 {
 public:
@@ -43,6 +53,13 @@ public:
     virtual std::vector<PostEffectPassInfo> CreatePasses() = 0;
 
     void SetInputTexture(DescriptorHandle* handle);
+
+    //シーン描画で書かれたテクスチャ(Bloom など)を使うエフェクト用
+    //PostEffectPipelineに追加済みなら、自動で設定される
+    void SetSceneTextures(const SceneTextures* _textures)
+    {
+        sceneTextures = _textures;
+    }
 
     //このエフェクトの有効/無効(初期値は有効)
     //無効の間はこのエフェクトのパスは実行されず、前段の結果がそのまま次へ渡る
@@ -79,6 +96,8 @@ protected:
     std::unique_ptr<PipelineState> pipelineState = nullptr;
 
     DescriptorHandle* inputTexture = nullptr;
+
+    const SceneTextures* sceneTextures = nullptr;
 
     void DrawFullscreen(DescriptorHandle* inputTexture,ConstBuffer* constBuffer);
 

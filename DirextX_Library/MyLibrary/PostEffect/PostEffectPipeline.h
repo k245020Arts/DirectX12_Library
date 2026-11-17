@@ -7,6 +7,9 @@
 #include <wtypes.h>
 #include "PostEffect.h"
 #include "../RenderTarget/RenderTarget.h"
+#include "../RenderTarget/MultiRenderTarget.h"
+#include "../RenderTarget/SceneLayout.h"
+#include "Copy/CopyEffect.h"
 #include "../RenderPass/RenderPass.h"
 
 //ポストエフェクトのチェーンを管理するクラス
@@ -22,7 +25,8 @@
 //  blur->SetSigma(3.0f);      // エフェクト固有のパラメータ
 //
 //自動でやること
-//  ・シーンの描画先RenderTargetの用意(有効なエフェクトが無ければBackBufferへ直接描画)
+//  ・シーンの描画先(マルチレンダーターゲット : SceneLayout.h)の用意
+//    シーンは常にこの描画先へ描く。有効なエフェクトが無いときは、色(SV_TARGET0)をBackBufferへコピーする
 //  ・エフェクト間の中間RenderTargetの用意(2枚を交互に使い回す)
 //  ・各エフェクトへの入力テクスチャの設定
 //  ・有効なエフェクトのうち最後のものの出力先をBackBufferにする
@@ -70,6 +74,9 @@ public:
 
         T* raw = effect.get();
 
+        //シーン描画で書かれたテクスチャ(Bloom など)を使えるようにしておく
+        raw->SetSceneTextures(&sceneTextures);
+
         //有効/無効が切り替わったら、つなぎ直す
         raw->SetStateChangedCallback([this]()
         {
@@ -92,9 +99,16 @@ public:
     bool Build();
 
     //取得
+    //シーンの色(SV_TARGET0)のRenderTarget
     RenderTarget* GetSceneRenderTarget() const
     {
-        return sceneRenderTarget.get();
+        return sceneTargets ? sceneTargets->GetTarget(SceneLayout::Color) : nullptr;
+    }
+
+    //シーンのマルチレンダーターゲット(色 + Bloom など)
+    MultiRenderTarget* GetSceneTargets() const
+    {
+        return sceneTargets.get();
     }
 
     size_t GetEffectCount() const
@@ -134,8 +148,11 @@ private:
     //※ メンバーは後ろから破棄される
     //  RenderTarget -> entries の順に宣言して、参照される側を後に破棄する
 
-    //シーン描画先
-    std::shared_ptr<RenderTarget> sceneRenderTarget;
+    //シーン描画先(マルチレンダーターゲット)
+    std::shared_ptr<MultiRenderTarget> sceneTargets;
+
+    //シーン描画先のテクスチャ一覧(エフェクトが参照する)
+    SceneTextures sceneTextures;
 
     //エフェクト間の中間描画先(交互に使う)
     std::shared_ptr<RenderTarget> workRenderTargets[2];
@@ -145,4 +162,8 @@ private:
 
     //シーン描画パス
     std::shared_ptr<RenderPass> scenePass;
+
+    //有効なエフェクトが無いとき、シーンの色をBackBufferへ出すためのコピー
+    std::unique_ptr<CopyEffect> copyEffect;
+    std::shared_ptr<RenderPass> copyPass;
 };

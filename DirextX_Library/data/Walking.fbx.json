@@ -1,7 +1,16 @@
 {
+  "bloom": {
+    "enable": true,
+    "intensity": 1.0
+  },
+  "heightMap": {
+    "enable": false,
+    "strength": 1.0
+  },
   "materials": {
     "MariaMat": {
       "diffuse": "Walking.fbm/maria_diffuse.png",
+      "height": "",
       "normal": "Walking.fbm/maria_normal.png"
     }
   },

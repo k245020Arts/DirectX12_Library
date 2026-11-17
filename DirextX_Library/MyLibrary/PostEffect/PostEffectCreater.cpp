@@ -7,6 +7,7 @@
 #include "../RenderPass/RenderPassManager.h"
 #include "../PostEffect/PostEffectPipeline.h"
 #include "../PostEffect/GaussianBlur/GaussianBlur.h"
+#include "../PostEffect/Bloom/BloomEffect.h"
 #include "../PostEffect/NormalMapPostEffect/DistortionPostEffect.h"
 #include "../Shadow/ShadowMap.h"
 #include "../Shadow/ShadowCamera.h"
@@ -49,6 +50,8 @@ void PostEffectCreater::Init()
         Object3DManager::GetInstance()->Draw();
     });
 
+    // ブルームは最初に入れる(あとから足す被写界深度などは、ブルームより前に入れる)
+    bloom = postEffectPipeline->AddEffect<BloomEffect>();
     gaussianBlur = postEffectPipeline->AddEffect<GaussianBlur>();
     distortion = postEffectPipeline->AddEffect<DistortionPostEffect>();
 
@@ -57,6 +60,10 @@ void PostEffectCreater::Init()
         distortion->Load("data/testDist.png");
     }
 
+    if (bloom != nullptr)
+    {
+        bloom->SetEnabled(false);
+    }
     if (gaussianBlur != nullptr)
     {
         gaussianBlur->SetEnabled(false);
@@ -83,6 +90,39 @@ void PostEffectCreater::Update()
 {
 #ifdef IMGUI
     ImGui::Begin("PostEffect");
+
+    if (bloom != nullptr)
+    {
+        bool enabled = bloom->IsEnabled();
+        if (ImGui::Checkbox("Bloom", &enabled))
+        {
+            bloom->SetEnabled(enabled);
+        }
+
+        float threshold = bloom->GetThreshold();
+        if (ImGui::SliderFloat("Bloom Threshold", &threshold, 0.0f, 0.99f))
+        {
+            bloom->SetThreshold(threshold);
+        }
+
+        float intensity = bloom->GetIntensity();
+        if (ImGui::SliderFloat("Bloom Intensity", &intensity, 0.0f, 3.0f))
+        {
+            bloom->SetIntensity(intensity);
+        }
+
+        float bloomSigma = bloom->GetSigma();
+        if (ImGui::SliderFloat("Bloom Sigma", &bloomSigma, 0.1f, 10.0f))
+        {
+            bloom->SetSigma(bloomSigma);
+        }
+
+        float bloomSpread = bloom->GetSpread();
+        if (ImGui::SliderFloat("Bloom Spread", &bloomSpread, 0.0f, 8.0f))
+        {
+            bloom->SetSpread(bloomSpread);
+        }
+    }
 
     if (gaussianBlur != nullptr)
     {
@@ -124,6 +164,14 @@ void PostEffectCreater::Update()
 
     ImGui::End();
 #endif // IMGUI
+}
+
+void PostEffectCreater::EnableBloom(bool _enable)
+{
+    if (bloom != nullptr)
+    {
+        bloom->SetEnabled(_enable);
+    }
 }
 
 void PostEffectCreater::EnableGaussainBlur(bool _enable)

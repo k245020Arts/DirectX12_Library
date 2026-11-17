@@ -83,4 +83,5 @@ private:
 	Box3D* planeBox;
 
 	FBXModel* rock;
+	FBXModel* sky;
 };

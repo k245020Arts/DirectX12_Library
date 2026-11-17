@@ -6,11 +6,17 @@ Texture2D _MainTex : register(t0); // テクスチャ
 
 SamplerState shadowSampler : register(s1);
 
-float4 BasicPS_3D(VSOutput input) : SV_TARGET
+ScenePSOutput BasicPS_3D(VSOutput input) : SV_TARGET
 {
+    ScenePSOutput output;
+    output.color = float4(0, 0, 0, 1);
+
+    // このシェーダーのものは光らない。0 を書いて、後ろにある光るものを隠す
+    output.bloom = float4(0, 0, 0, 0);
+    
     if (input.instNo == 1)
     {
-        return float4(0, 0, 0, 1);
+        return output;
     }
     
     float3 totalLight = ambientColor * ambientIntensity;
@@ -37,5 +43,7 @@ float4 BasicPS_3D(VSOutput input) : SV_TARGET
 
     finalRGB.rgb *= lerp(0.3f, 1.0f, shadowColor);
 
-    return float4(finalRGB, color.a);
+    output.color = float4(finalRGB, color.a);
+
+    return output;
 }

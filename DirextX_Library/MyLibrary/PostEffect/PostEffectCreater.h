@@ -4,6 +4,7 @@
 
 class PostEffectPipeline;
 class GaussianBlur;
+class BloomEffect;
 class DistortionPostEffect;
 class ShadowMap;
 class ShadowCamera;
@@ -21,6 +22,7 @@ public:
 
 	void EnableGaussainBlur(bool _enable);
 	void EnableDistortion(bool _enable);
+	void EnableBloom(bool _enable);
 
 private:
 
@@ -28,6 +30,7 @@ private:
 	std::unique_ptr<PostEffectPipeline> postEffectPipeline;
 
 	// 個別に操作したいエフェクト(所有権は postEffectPipeline が持つので delete しない)
+	BloomEffect* bloom = nullptr;
 	GaussianBlur* gaussianBlur = nullptr;
 	DistortionPostEffect* distortion = nullptr;
 

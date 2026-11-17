@@ -1,0 +1,27 @@
+{
+  "bloom": {
+    "enable": true,
+    "intensity": 1.0
+  },
+  "materials": {
+    "マテリアル": {
+      "diffuse": "Day Sun High Clear.png",
+      "normal": ""
+    }
+  },
+  "normalMap": {
+    "enable": true,
+    "strength": 1.0
+  },
+  "specular": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "enable": false,
+    "pow": 1.0,
+    "strength": 0.5
+  },
+  "version": 1
+}

@@ -1,5 +1,6 @@
 ﻿#include "FBXModel.h"
 #include "../ShaderStruct/ShaderStruct.h"
+#include "../RenderTarget/SceneLayout.h"
 #include "../VertexBuffer/VertexBuffer.h"
 #include "../Engine/Engine.h"
 #include "../ConstBuffer/ConstBuffer.h"
@@ -216,6 +217,9 @@ void FBXModel::Draw()
 		commandList->SetGraphicsRootDescriptorTable(5, materialHandles[i].normalMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
 		commandList->SetGraphicsRootConstantBufferView(6, constantBufferPtr.normalMap[currentIndex]->GetAddress()); // 定数バッファをセット
 		commandList->SetGraphicsRootConstantBufferView(7, constantBufferPtr.specularMap[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootConstantBufferView(8, constantBufferPtr.bloom[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootDescriptorTable(9, materialHandles[i].heightMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
+		commandList->SetGraphicsRootConstantBufferView(10, constantBufferPtr.heightMap[currentIndex]->GetAddress()); // そのメッシュに対応するディスクリプタテーブルをセット
 
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &vbView);
@@ -407,6 +411,8 @@ void FBXModel::Init()
 		CreateConstantBufferData<MatrixTransform>(constantBufferPtr.shadow[i], L"Shadow用変換定数バッファの生成に失敗\n");
 		CreateConstantBufferData<SpecularParam>(constantBufferPtr.specularMap[i], L"スペキュラマップ用定数バッファの生成に失敗\n");
 		CreateConstantBufferData<NormalMapParam>(constantBufferPtr.normalMap[i], L"ノーマルマップ用定数バッファの生成に失敗\n");
+		CreateConstantBufferData<BloomParam>(constantBufferPtr.bloom[i], L"ブルーム用用定数バッファの生成に失敗\n");
+		CreateConstantBufferData<HeightMapParam>(constantBufferPtr.heightMap[i], L"ハイトマップ用定数バッファの生成に失敗\n");
 
 		// 変換行列の登録
 		auto ptr = constantBufferPtr.matrixTransform[i]->GetPtr<MatrixTransform>();
@@ -440,6 +446,12 @@ void FBXModel::Init()
 
 		auto normal = constantBufferPtr.normalMap[i]->GetPtr<NormalMapParam>();
 		*normal = normalMapParam;
+
+		auto bloom = constantBufferPtr.bloom[i]->GetPtr<BloomParam>();
+		*bloom = bloomParam;
+
+		auto height = constantBufferPtr.heightMap[i]->GetPtr<HeightMapParam>();
+		*height = heightMapParam;
 	}
 
 	materialHandles.clear();
@@ -453,6 +465,12 @@ void FBXModel::Init()
 			}
 		}
 
+		TextureSRVData srvData;
+		ResultErrorHandle::ErrorCode errorHandle = TextureLoader::GetInstance()->Load(diffusePath);
+		auto mainTex = TextureLoader::GetInstance()->Get(diffusePath);
+		auto handle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), diffusePath);
+		srvData.diffuseMap = handle;
+
 		auto normalPath = modelData.meshes[i].NormalMap;
 		if (!modelData.meshes[i].NormalMap.empty()) {
 			if (GetExtension(modelData.meshes[i].NormalMap) == TexExtension::PSD) {
@@ -460,16 +478,22 @@ void FBXModel::Init()
 			}
 		}
 
-		TextureSRVData srvData;
-		ResultErrorHandle::ErrorCode errorHandle = TextureLoader::GetInstance()->Load(diffusePath);
-		auto mainTex = TextureLoader::GetInstance()->Get(diffusePath);
-		auto handle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), diffusePath);
-		srvData.diffuseMap = handle;
-
 		ResultErrorHandle::ErrorCode normalMapErrorHandle = TextureLoader::GetInstance()->Load(normalPath);
 		auto normalTex = TextureLoader::GetInstance()->Get(normalPath);
 		auto normalHandle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), normalPath);
 		srvData.normalMap = normalHandle;
+
+		auto heightPath = modelData.meshes[i].HeightMap;
+		if (!modelData.meshes[i].HeightMap.empty()) {
+			if (GetExtension(modelData.meshes[i].HeightMap) == TexExtension::PSD) {
+				heightPath = ReplaceExtension(modelData.meshes[i].HeightMap, "png"); //psdの場合はtgaとして扱う
+			}
+		}
+
+		ResultErrorHandle::ErrorCode heightMapErrorHandle = TextureLoader::GetInstance()->Load(heightPath);
+		auto heightTex = TextureLoader::GetInstance()->Get(heightPath);
+		auto heightHandle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), heightPath);
+		srvData.heightMap = heightHandle;
 
 		materialHandles.push_back(srvData);
 	}
@@ -492,6 +516,9 @@ void FBXModel::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wst
 	pipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
 	pipelineState->SetVS(_VSfilePath, _VSentryPoint);
 	pipelineState->SetPS(_PSfilePath, _PSentryPoint);
+	// シーン描画はマルチレンダーターゲット。ピクセルシェーダー(BasicPS_FBX)は Bloom ターゲットにも出力する
+	pipelineState->SetRenderTargetFormats(SceneLayout::Formats, SceneLayout::Count);
+	pipelineState->SetExtraTargetOutput(true);
 	pipelineState->Create();
 
 	if (!pipelineState->IsSuccess())
@@ -620,6 +647,12 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 
 		auto normal = constantBufferPtr.normalMap[i]->GetPtr<NormalMapParam>();
 		*normal = normalMapParam;
+
+		auto bloom = constantBufferPtr.bloom[i]->GetPtr<BloomParam>();
+		*bloom = bloomParam;
+
+		auto height = constantBufferPtr.heightMap[i]->GetPtr<HeightMapParam>();
+		*height = heightMapParam;
 	}
 }
 
@@ -667,7 +700,12 @@ void FBXModel::ApplySettings()
 	specularParam.specularColor.y = s.specular.color[1];
 	specularParam.specularColor.z = s.specular.color[2];
 
-	// ★ここに追加（ModelSettings に足した項目を、シェーダーに渡すパラメーターへ反映する）
+	//ここに追加（ModelSettings に足した項目を、シェーダーに渡すパラメーターへ反映する）
+	bloomParam.enableBloom = s.bloom.enable ? 1.0f : 0.0f;
+	bloomParam.bloomIntensity = s.bloom.intensity;
+
+	heightMapParam.enableHeight = s.heightMap.enable ? 1.0f : 0.0f;
+	heightMapParam.heightStrength = s.heightMap.strength;
 }
 
 void FBXModel::CollectSettings()
@@ -683,6 +721,12 @@ void FBXModel::CollectSettings()
 	s.specular.color = { specularParam.specularColor.x, specularParam.specularColor.y, specularParam.specularColor.z };
 
 	// ★ここに追加（今のパラメーターを、ModelSettings に書き戻す）
+
+	bloomParam.enableBloom = s.bloom.enable > 0.5f;
+	bloomParam.bloomIntensity = s.bloom.intensity;
+
+	s.heightMap.enable = heightMapParam.enableHeight > 0.5f;
+	s.heightMap.strength = heightMapParam.heightStrength;
 }
 
 bool FBXModel::SaveSettings(bool _overwriteBroken)
@@ -719,6 +763,20 @@ void FBXModel::ShaderParamSerializeImgui()
 
 		ImGui::Spacing();
 
+		// ================= ハイトマップ =================
+		ImGui::TextUnformatted(u8"ハイトマップ");
+		ImGui::Separator();
+
+		bool heightOn = heightMapParam.enableHeight > 0.5f;
+		if (ImGui::Checkbox(u8"有効##height", &heightOn))
+		{
+			heightMapParam.enableHeight = heightOn ? 1.0f : 0.0f;
+		}
+
+		ImGui::SliderFloat(u8"強さ##height", &heightMapParam.heightStrength, 0.0f, 100.0f, "%.2f");
+
+		ImGui::Spacing();
+
 		// ================= スペキュラ =================
 		ImGui::TextUnformatted(u8"スペキュラ（ハイライト）");
 		ImGui::Separator();
@@ -750,6 +808,24 @@ void FBXModel::ShaderParamSerializeImgui()
 		ImGui::ColorEdit3(u8"色", &specularParam.specularColor.x);
 		HelpTooltip(u8"ハイライトの色。基本は白。金属っぽくしたいときは素材の色に寄せます");
 
+		EndDisabledIf();
+
+		ImGui::Spacing();
+
+		// ================= ブルーム =================
+		ImGui::TextUnformatted(u8"ブルーム（光る）");
+		ImGui::Separator();
+
+		bool bloomOn = bloomParam.enableBloom > 0.5f;
+		if (ImGui::Checkbox(u8"有効##bloom", &bloomOn))
+		{
+			bloomParam.enableBloom = bloomOn ? 1.0f : 0.0f;
+		}
+		HelpTooltip(u8"OFF にすると、このモデルは光りません（ポストエフェクトの Bloom が ON のときに効きます）");
+
+		BeginDisabledIf(!bloomOn);
+		ImGui::SliderFloat(u8"強さ##bloom", &bloomParam.bloomIntensity, 0.0f, 4.0f, "%.2f");
+		HelpTooltip(u8"Bloom ターゲットへ書く色の倍率。大きいほど強く光ります");
 		EndDisabledIf();
 
 		ImGui::Spacing();
@@ -808,6 +884,7 @@ void FBXModel::ShaderParamSerializeImgui()
 				ImGui::Indent();
 				ImGui::Text("diffuse : %s", kv.second.diffuse.empty() ? u8"（なし）" : kv.second.diffuse.c_str());
 				ImGui::Text("normal  : %s", kv.second.normal.empty() ? u8"（なし）" : kv.second.normal.c_str());
+				ImGui::Text("height  : %s", kv.second.height.empty() ? u8"（なし）" : kv.second.height.c_str());
 				ImGui::Unindent();
 			}
 			ImGui::TreePop();

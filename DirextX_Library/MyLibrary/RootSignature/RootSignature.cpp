@@ -146,7 +146,7 @@ void RootSignature::SetModelRootSignature()
 	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
 	// RootParameter
-	CD3DX12_ROOT_PARAMETER rootParam[8] = {};
+	CD3DX12_ROOT_PARAMETER rootParam[11] = {};
 
 	// RootParameter 0 : b0 Transform
 	rootParam[0].InitAsConstantBufferView(0,0,D3D12_SHADER_VISIBILITY_ALL);
@@ -194,9 +194,25 @@ void RootSignature::SetModelRootSignature()
 	rootParam[6].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL);
 	//RootParameter 3 : b4 Specular
 	rootParam[7].InitAsConstantBufferView(4, 0, D3D12_SHADER_VISIBILITY_ALL);
+	//RootParameter 8 : b5 Bloom
+	rootParam[8].InitAsConstantBufferView(5, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+	// RootParameter 5 : t2 NormalMap
+	D3D12_DESCRIPTOR_RANGE heightRange = {};
+
+	heightRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	heightRange.NumDescriptors = 1;
+	heightRange.BaseShaderRegister = 3;
+	heightRange.RegisterSpace = 0;
+	heightRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[9].InitAsDescriptorTable(1, &heightRange, D3D12_SHADER_VISIBILITY_ALL);
+
+	//RootParameter 9 : b6 Height
+	rootParam[10].InitAsConstantBufferView(6, 0, D3D12_SHADER_VISIBILITY_ALL);
 
 	//Static Sampler : s0
-	D3D12_STATIC_SAMPLER_DESC samplerDescs[4] = {};
+	D3D12_STATIC_SAMPLER_DESC samplerDescs[5] = {};
 
 	// Sampler 0 : Material Texture (s0)
 	samplerDescs[0].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
@@ -249,7 +265,7 @@ void RootSignature::SetModelRootSignature()
 	samplerDescs[2].ShaderRegister = 2;
 
 	// Sampler 0 : Material Texture (s0)
-	samplerDescs[3].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+	samplerDescs[3].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 				 
 	samplerDescs[3].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 	samplerDescs[3].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -265,6 +281,24 @@ void RootSignature::SetModelRootSignature()
 	samplerDescs[3].ShaderRegister = 3;
 	samplerDescs[3].RegisterSpace = 0;
 	samplerDescs[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	// Sampler 4 : HeightMap Texture (40)
+	samplerDescs[4].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+
+	samplerDescs[4].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[4].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[4].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+
+	samplerDescs[4].MipLODBias = 0.0f;
+	samplerDescs[4].MaxAnisotropy = 1;
+	samplerDescs[4].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	samplerDescs[4].BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+	samplerDescs[4].MinLOD = 0.0f;
+	samplerDescs[4].MaxLOD = D3D12_FLOAT32_MAX;
+
+	samplerDescs[4].ShaderRegister = 4;
+	samplerDescs[4].RegisterSpace = 0;
+	samplerDescs[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 
 	D3D12_ROOT_SIGNATURE_DESC desc = {};
@@ -526,6 +560,92 @@ void RootSignature::SetDistortionRootSignature()
 	samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;//奥行繰り返し
 	samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;//ボーダーの時は黒
 	samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;//補間しない(ニアレストネイバー)
+	samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;//ミップマップ最大値
+	samplerDesc.MinLOD = 0.0f;//ミップマップ最小値
+	samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;//オーバーサンプリングの際リサンプリングしない？
+	samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//ピクセルシェーダからのみ可視
+
+	// rootParam[1] : t0
+	D3D12_DESCRIPTOR_RANGE descTblRange = {};
+	descTblRange.NumDescriptors = 1;
+	descTblRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descTblRange.BaseShaderRegister = 0; // t0
+	descTblRange.RegisterSpace = 0;
+	descTblRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParam[0].DescriptorTable.pDescriptorRanges = &descTblRange;
+	rootParam[0].DescriptorTable.NumDescriptorRanges = 1;
+	rootParam[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	// rootParam[1] : t1
+	D3D12_DESCRIPTOR_RANGE descTblRange1 = {};
+	descTblRange1.NumDescriptors = 1;
+	descTblRange1.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descTblRange1.BaseShaderRegister = 1; // t1
+	descTblRange1.RegisterSpace = 0;
+	descTblRange1.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParam[1].DescriptorTable.pDescriptorRanges = &descTblRange1;
+	rootParam[1].DescriptorTable.NumDescriptorRanges = 1;
+	rootParam[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	// rootParam[2] : b0 (歪みのパラメータ)
+	rootParam[2].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_PIXEL);
+
+	// ルートシグニチャの設定（設定したいルートパラメーターとスタティックサンプラーを入れる）
+	D3D12_ROOT_SIGNATURE_DESC desc = {};
+	desc.NumParameters = std::size(rootParam); // ルートパラメーターの個数をいれる
+	desc.NumStaticSamplers = 1; // サンプラーの個数をいれる
+	desc.pParameters = rootParam; // ルートパラメーターのポインタをいれる
+	desc.pStaticSamplers = &samplerDesc; // サンプラーのポインタを入れる
+	desc.Flags = flag; // フラグを設定
+
+	ComPtr<ID3DBlob> pBlob;
+	ComPtr<ID3DBlob> pErrorBlob;
+
+	// シリアライズ
+	auto hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_0, pBlob.GetAddressOf(), pErrorBlob.GetAddressOf());
+	if (FAILED(hr))
+	{
+		OutputDebugStringW(L"ルートシグネチャシリアライズに失敗");
+		OutputDebugStringA(static_cast<const char*>(pErrorBlob->GetBufferPointer()));
+		return;
+	}
+
+	// ルートシグネチャ生成
+	hr = Engine::GetInstance()->Device()->CreateRootSignature(
+		0, // GPUが複数ある場合のノードマスク（今回は1個しか無い想定なので0）
+		pBlob->GetBufferPointer(), // シリアライズしたデータのポインタ
+		pBlob->GetBufferSize(), // シリアライズしたデータのサイズ
+		IID_PPV_ARGS(pRootSignature.GetAddressOf())); // ルートシグニチャ格納先のポインタ
+
+	if (FAILED(hr))
+	{
+		OutputDebugStringW(L"ルートシグネチャの生成に失敗");
+		return;
+	}
+
+	success = true;
+}
+
+// ポストエフェクト用 : t0, t1 の2枚を読む。サンプラーは LINEAR + CLAMP(ブルームなど、ぼかした画像を読む用)
+void RootSignature::SetPostEffectTwoInputRootSignature()
+{
+	auto flag = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT; // アプリケーションの入力アセンブラを使用する
+	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS; // ドメインシェーダーのルートシグネチャへのアクセスを拒否する
+	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS; // ハルシェーダーのルートシグネチャへのアクセスを拒否する
+	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS; // ジオメトリシェーダーのルートシグネチャへのアクセスを拒否する
+
+	CD3DX12_ROOT_PARAMETER rootParam[3] = {};
+	// スタティックサンプラーの設定
+	D3D12_STATIC_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;//横繰り返し
+	samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;//縦繰り返し
+	samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;//奥行繰り返し
+	samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;//ボーダーの時は黒
+	samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;//補間しない(ニアレストネイバー)
 	samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;//ミップマップ最大値
 	samplerDesc.MinLOD = 0.0f;//ミップマップ最小値
 	samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;//オーバーサンプリングの際リサンプリングしない？

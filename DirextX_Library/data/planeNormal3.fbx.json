@@ -1,7 +1,16 @@
 {
+  "bloom": {
+    "enable": true,
+    "intensity": 1.0
+  },
+  "heightMap": {
+    "enable": true,
+    "strength": 1.0
+  },
   "materials": {
     "Material.001": {
       "diffuse": "planeTexture.png",
+      "height": "HeightTest.png",
       "normal": "textures/Floor_N.jpg"
     }
   },

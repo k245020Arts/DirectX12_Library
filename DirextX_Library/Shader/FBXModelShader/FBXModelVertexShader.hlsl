@@ -1,5 +1,8 @@
 #include "../2DBaseShader/BasicShaderHeader.hlsli"
 
+SamplerState heightSmp : register(s4); // ハイトマップサンプラー
+Texture2D _heightTex : register(t3); // ハイトマップテクスチャ
+
 #define BONE_MAX 1024
 
 cbuffer BoneBuffer : register(b2)
@@ -10,8 +13,17 @@ cbuffer BoneBuffer : register(b2)
 VSOutput BasicVS_FBX(ModelVSInput input, uint instNo : SV_InstanceID)
 {
     VSOutput output = (VSOutput) 0;
+    
+    // ハイトマップから高さをサンプリング (グレースケール想定)
+    float height = _heightTex.SampleLevel(heightSmp, input.uv, 0).r;
 
-    float4 localPos = float4(input.pos, 1.0f);
+    float displacement = (height - 0.5f) * heightStrength;
+
+    float3 pos = input.pos.xyz;
+    float3 heightEffect = lerp(float3(0, 0, 0), input.normal * displacement, enableHeight);
+    pos += heightEffect;
+
+    float4 localPos = float4(pos, 1.0f);
     float4 bonePos =
     mul(bones[input.boneno[0]], localPos) * input.weights[0] +
     mul(bones[input.boneno[1]], localPos) * input.weights[1] +

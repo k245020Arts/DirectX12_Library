@@ -9,11 +9,15 @@ SamplerState shadowSampler : register(s1);
 SamplerState normalSmp : register(s3); // ノーマルマップのサンプラー
 Texture2D _normalTex : register(t2); // ノーマルマップのテクスチャ
 
-float4 BasicPS_FBX(VSOutput input) : SV_TARGET
+ScenePSOutput BasicPS_FBX(VSOutput input) : SV_TARGET
 {
+    ScenePSOutput output;
+    output.color = float4(0, 0, 0, 1);
+    output.bloom = float4(0, 0, 0, 0);
+
     if (input.instNo == 1)
     {
-        return float4(0, 0, 0, 1);
+        return output;
     }
     
     //Normalの計算
@@ -73,6 +77,11 @@ float4 BasicPS_FBX(VSOutput input) : SV_TARGET
     
     finalRGB += specularLight * specularColor.rgb * specularStrength * shadowColor * enableSpecular;
     
-    return float4(finalRGB, color.a);
+    output.color = float4(finalRGB, color.a);
+
+    // 光らせたい色。しきい値(threshold)はブルームのエフェクト側で掛ける
+    output.bloom = float4(finalRGB * enableBloom * bloomIntensity, 1.0f);
+
+    return output;
 
 }

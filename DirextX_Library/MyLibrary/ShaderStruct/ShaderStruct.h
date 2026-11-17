@@ -131,6 +131,7 @@ struct Mesh
     std::vector<uint32_t> Indices; // インデックスの配列
     std::wstring DiffuseMap; // テクスチャのファイルパス
     std::wstring NormalMap; //テクスチャのノーマルマップのファイルパス
+    std::wstring HeightMap; //テクスチャのハイトマップのファイルパス
     bool hasBones = false;
 };
 
@@ -158,4 +159,18 @@ struct SpecularParam
     float specularPad;
 
     Vector4 specularColor = Vector4(1.0f,1.0f,1.0f,1.0f);
+};
+
+struct BloomParam
+{
+    float enableBloom = 1.0f;     // 0: このモデルは光らない / 1: 光る
+    float bloomIntensity = 1.0f;  // 光る強さ(シーンの Bloom ターゲットへ書く色の倍率)
+    Vector2 bloomPad;
+};
+
+struct HeightMapParam
+{
+    float enableHeight = 0.0f;
+    float heightStrength = 1.0f;
+    Vector2 heightPad;
 };

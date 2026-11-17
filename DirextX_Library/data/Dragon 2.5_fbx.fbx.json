@@ -1,15 +1,26 @@
 {
+  "bloom": {
+    "enable": true,
+    "intensity": 1.0
+  },
+  "heightMap": {
+    "enable": false,
+    "strength": 1.0
+  },
   "materials": {
     "EYES": {
       "diffuse": "textures/Dragon_Bump_Col2.jpg",
+      "height": "",
       "normal": "textures/Dragon_Nor_mirror2.jpg"
     },
     "Game_dragon": {
       "diffuse": "textures/Dragon_Bump_Col2.jpg",
+      "height": "",
       "normal": "textures/Dragon_Nor_mirror2.jpg"
     },
     "Game_dragon.001": {
       "diffuse": "textures/Dragon_Bump_Col2.jpg",
+      "height": "",
       "normal": "textures/Dragon_Nor_mirror2.jpg"
     }
   },

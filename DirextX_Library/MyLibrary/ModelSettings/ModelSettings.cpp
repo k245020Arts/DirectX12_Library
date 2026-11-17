@@ -73,6 +73,7 @@ namespace
             Json m = Json::object();
             m["diffuse"] = kv.second.diffuse;
             m["normal"]  = kv.second.normal;
+            m["height"] = kv.second.height;
             materials[kv.first] = m;
         }
         j["materials"] = materials;
@@ -82,6 +83,11 @@ namespace
         normal["strength"] = Round4(_s.normalMap.strength);
         j["normalMap"] = normal;
 
+        Json height = Json::object();
+        height["enable"] = _s.heightMap.enable;
+        height["strength"] = Round4(_s.heightMap.strength);
+        j["heightMap"] = height;
+
         Json specular = Json::object();
         specular["enable"]   = _s.specular.enable;
         specular["strength"] = Round4(_s.specular.strength);
@@ -89,6 +95,11 @@ namespace
         specular["color"]    = Json::array({ Round4(_s.specular.color[0]), Round4(_s.specular.color[1]), Round4(_s.specular.color[2]) });
         // ここに追加(SpecularSettings に足した項目を書き出す)
         j["specular"] = specular;
+
+        Json bloom = Json::object();
+        bloom["enable"] = _s.bloom.enable;
+        bloom["intensity"] = Round4(_s.bloom.intensity);
+        j["bloom"] = bloom;
 
         return j;
     }
@@ -111,6 +122,7 @@ namespace
                 {
                     ReadString(*it, "diffuse", m.diffuse);
                     ReadString(*it, "normal",  m.normal);
+                    ReadString(*it, "height",  m.height);
                 }
                 _s.materials[it.key()] = m;
             }
@@ -123,6 +135,13 @@ namespace
             ReadFloat(*itNormal, "strength", _s.normalMap.strength);
         }
 
+        auto itHeight = _j.find("heightMap");
+        if (itHeight != _j.end() && itHeight->is_object())
+        {
+            ReadBool(*itHeight, "enable", _s.heightMap.enable);
+            ReadFloat(*itHeight, "strength", _s.heightMap.strength);
+        }
+
         auto itSpecular = _j.find("specular");
         if (itSpecular != _j.end() && itSpecular->is_object())
         {
@@ -131,6 +150,13 @@ namespace
             ReadFloat (*itSpecular, "pow",      _s.specular.pow);
             ReadColor3(*itSpecular, "color",    _s.specular.color);
             // ここに追加(SpecularSettings に足した項目を読み込む)
+        }
+
+        auto itBloom = _j.find("bloom");
+        if (itBloom != _j.end() && itBloom->is_object())
+        {
+            ReadBool(*itBloom, "enable", _s.bloom.enable);
+            ReadFloat(*itBloom, "intensity", _s.bloom.intensity);
         }
     }
 
@@ -155,16 +181,25 @@ ModelSettings::ModelSettings()
 {
     // 既定値は構造体(ShaderStruct.h)の初期値をそのまま使う。値を二重に持たないため
     const NormalMapParam normalDefault{};
+    const HeightMapParam heightDefault{};
     const SpecularParam  specularDefault{};
 
     normalMap.enable   = normalDefault.enableNormal > 0.5f;
     normalMap.strength = normalDefault.normalStrength;
+
+    heightMap.enable = heightDefault.enableHeight > 0.5f;
+    heightMap.strength = heightDefault.heightStrength;
 
     specular.enable   = specularDefault.enableSpecular > 0.5f;
     specular.strength = specularDefault.specularStrength;
     specular.pow      = specularDefault.specularPow;
     specular.color    = { specularDefault.specularColor.x, specularDefault.specularColor.y, specularDefault.specularColor.z };
     // ここに追加(新しい項目の既定値。構造体に既定値があるならそれに合わせる)
+
+    const BloomParam bloomDefault{};
+
+    bloom.enable = bloomDefault.enableBloom > 0.5f;
+    bloom.intensity = bloomDefault.bloomIntensity;
 }
 
 std::wstring ModelSettings::SidecarPath(const std::wstring& _modelPath)

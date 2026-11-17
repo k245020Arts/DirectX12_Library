@@ -1,23 +1,36 @@
 {
+  "bloom": {
+    "enable": true,
+    "intensity": 1.0
+  },
+  "heightMap": {
+    "enable": false,
+    "strength": 1.0
+  },
   "materials": {
     "Body": {
       "diffuse": "Body_2D_View.png",
-      "normal": ""
+      "height": "",
+      "normal": "Walking.fbm/maria_normal"
     },
     "Face": {
       "diffuse": "Face_2D_View.png",
-      "normal": ""
+      "height": "",
+      "normal": "l"
     },
     "Hair": {
       "diffuse": "Hair_2D_View.png",
+      "height": "",
       "normal": ""
     },
     "Leg": {
       "diffuse": "Leg_2D_View.png",
+      "height": "",
       "normal": ""
     },
     "Parts": {
       "diffuse": "Parts_2D_View.png",
+      "height": "",
       "normal": ""
     }
   },

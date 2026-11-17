@@ -1,4 +1,5 @@
 #include "Polygon3D.h"
+#include "../RenderTarget/SceneLayout.h"
 #include "../VertexBuffer/VertexBuffer.h"
 #include "../Engine/Engine.h"
 #include "../ConstBuffer/ConstBuffer.h"
@@ -216,6 +217,9 @@ void Polygon3D::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::ws
 	pipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
 	pipelineState->SetVS(_VSfilePath, _VSentryPoint);
 	pipelineState->SetPS(_PSfilePath, _PSentryPoint);
+	// シーン描画はマルチレンダーターゲット。ピクセルシェーダー(BasicPS_3D)は Bloom ターゲットにも出力する
+	pipelineState->SetRenderTargetFormats(SceneLayout::Formats, SceneLayout::Count);
+	pipelineState->SetExtraTargetOutput(true);
 	pipelineState->Create();
 
 	if (!pipelineState->IsSuccess())
@@ -255,6 +259,8 @@ void Polygon3D::SetWireFramePipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology
 	wireFramePipelineState->SetDrawLayOut(D3D12_FILL_MODE_WIREFRAME);
 	wireFramePipelineState->SetVS(_VSfilePath, _VSentryPoint);
 	wireFramePipelineState->SetPS(_PSfilePath, _PSentryPoint);
+	wireFramePipelineState->SetRenderTargetFormats(SceneLayout::Formats, SceneLayout::Count);
+	wireFramePipelineState->SetExtraTargetOutput(true);
 	wireFramePipelineState->Create();
 
 	if (!wireFramePipelineState->IsSuccess())

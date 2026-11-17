@@ -30,7 +30,7 @@ struct MaterialSettings
     // モデルのフォルダからの相対パス(例: "textures/Wall_BaseColor.png")。空なら FBX の情報を使う
     std::string diffuse;
     std::string normal;
-
+    std::string height;
 };
 
 struct NormalMapSettings
@@ -47,6 +47,18 @@ struct SpecularSettings
     std::array<float, 3> color = { 1.0f, 1.0f, 1.0f };
 };
 
+struct BloomSettings
+{
+    bool  enable = true;   // このモデルを光らせるか
+    float intensity = 1.0f;   // 光る強さ
+};
+
+struct HeightMapSettings
+{
+    bool  enable = true;
+    float strength = 1.0f;
+};
+
 struct ModelSettings
 {
     static constexpr int kVersion = 1;
@@ -61,7 +73,9 @@ struct ModelSettings
     // ---- JSON に保存される内容 ----
     std::map<std::string, MaterialSettings> materials; // キーはマテリアル名
     NormalMapSettings normalMap;
+    HeightMapSettings heightMap;
     SpecularSettings  specular;
+    BloomSettings     bloom;
 
     // ---- 実行時だけの情報(JSON には書かない) ----
     State        state = State::New;

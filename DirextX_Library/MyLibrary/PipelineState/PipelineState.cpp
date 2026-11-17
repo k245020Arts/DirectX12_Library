@@ -75,6 +75,9 @@ void PipelineState::SetPS(std::wstring filePath, std::string _entryPoint)
 
 void PipelineState::Create()
 {
+	// マルチレンダーターゲットのとき、2枚目以降の書き込み設定を反映する(描画先が1枚なら何も変わらない)
+	ApplyExtraTargetBlend();
+
 	// パイプラインステートを生成
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(defalutPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
@@ -218,6 +221,7 @@ void PipelineState::CreateAlphaPipelineState()
 
 	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
 	desc.BlendState.IndependentBlendEnable = false;
+	ApplyExtraTargetBlend(); // 2枚目以降のターゲット(MRT)の設定
 	desc.BlendState.AlphaToCoverageEnable = false;
 	//半透明用に、深度バッファへの書き込みだけを「禁止（ZERO）」にする
 	desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
@@ -251,6 +255,7 @@ void PipelineState::CreateMulPipelineState()
 
 	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
 	desc.BlendState.IndependentBlendEnable = false;
+	ApplyExtraTargetBlend(); // 2枚目以降のターゲット(MRT)の設定
 	desc.BlendState.AlphaToCoverageEnable = false;
 	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // 深度ステンシルはデフォルトを使う
 
@@ -282,6 +287,7 @@ void PipelineState::CreateAddPipelineState()
 
 	desc.BlendState.RenderTarget[0] = renderTargetBlendDesc;
 	desc.BlendState.IndependentBlendEnable = false;
+	ApplyExtraTargetBlend(); // 2枚目以降のターゲット(MRT)の設定
 	desc.BlendState.AlphaToCoverageEnable = false;
 	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT); // 深度ステンシルはデフォルトを使う
 
@@ -305,11 +311,65 @@ void PipelineState::CreateSubPipelineState()
 
 void PipelineState::CreateErrorPipelineState()
 {
+	// エラー用ピクセルシェーダーは SV_TARGET0 にしか出力しないので、2枚目以降には書き込まない
+	const bool prevExtraOutput = extraTargetOutput;
+	extraTargetOutput = false;
+	ApplyExtraTargetBlend();
+	extraTargetOutput = prevExtraOutput;
+
 	SetPS(L"Shader/ErrorShader/ErrorPixelShader.hlsl", "ErrorMain");
 	auto hr = Engine::GetInstance()->Device()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(errorPipelineState.ReleaseAndGetAddressOf()));
 	if (FAILED(hr))
 	{
 		OutputDebugStringW(L"パイプラインステートの生成に失敗");
 		return;
+	}
+}
+
+void PipelineState::SetRenderTargetFormats(const DXGI_FORMAT* _formats, UINT _count)
+{
+	assert(_formats != nullptr);
+	assert(_count >= 1 && _count <= D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT);
+
+	desc.NumRenderTargets = _count;
+
+	for (UINT i = 0; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+	{
+		desc.RTVFormats[i] = (i < _count) ? _formats[i] : DXGI_FORMAT_UNKNOWN;
+	}
+
+	renderTargetCount = _count;
+}
+
+void PipelineState::ApplyExtraTargetBlend()
+{
+	// 描画先が1枚なら従来のまま(RenderTarget[0] の設定が使われる)
+	if (renderTargetCount <= 1)
+	{
+		return;
+	}
+
+	// ターゲットごとに別々の設定にする。RenderTarget[0] は各ブレンドモードの設定がそのまま使われる
+	desc.BlendState.IndependentBlendEnable = TRUE;
+
+	for (UINT i = 1; i < renderTargetCount; ++i)
+	{
+		D3D12_RENDER_TARGET_BLEND_DESC extra = {};
+
+		// 2枚目以降はブレンドしない(光らせたい色などは、そのまま上書きしたい)
+		extra.BlendEnable = FALSE;
+		extra.LogicOpEnable = FALSE;
+		extra.SrcBlend = D3D12_BLEND_ONE;
+		extra.DestBlend = D3D12_BLEND_ZERO;
+		extra.BlendOp = D3D12_BLEND_OP_ADD;
+		extra.SrcBlendAlpha = D3D12_BLEND_ONE;
+		extra.DestBlendAlpha = D3D12_BLEND_ZERO;
+		extra.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		extra.LogicOp = D3D12_LOGIC_OP_NOOP;
+
+		// 出力しないシェーダーのときは書き込みマスクを 0 にして、ターゲットの中身を変えない
+		extra.RenderTargetWriteMask = extraTargetOutput ? D3D12_COLOR_WRITE_ENABLE_ALL : 0;
+
+		desc.BlendState.RenderTarget[i] = extra;
 	}
 }

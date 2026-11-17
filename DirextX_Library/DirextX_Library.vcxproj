@@ -178,6 +178,8 @@
     <ClCompile Include="MyLibrary\Object2D\Object2DManager.cpp" />
     <ClCompile Include="MyLibrary\Object3D\Object3DManager.cpp" />
     <ClCompile Include="MyLibrary\PipelineState\PipelineState.cpp" />
+    <ClCompile Include="MyLibrary\PostEffect\Bloom\BloomEffect.cpp" />
+    <ClCompile Include="MyLibrary\PostEffect\Copy\CopyEffect.cpp" />
     <ClCompile Include="MyLibrary\PostEffect\PostEffectCreater.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Box\Box2D.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Box\Box3D.cpp" />
@@ -194,6 +196,7 @@
     <ClCompile Include="MyLibrary\Primitives\Triangle\Triangle.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Triangle\Triangle3D.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Triangle\TriangularPrism.cpp" />
+    <ClCompile Include="MyLibrary\RenderTarget\MultiRenderTarget.cpp" />
     <ClCompile Include="MyLibrary\RootSignature\RootSignature.cpp" />
     <ClCompile Include="MyLibrary\Scene\Scene.cpp" />
     <ClCompile Include="MyLibrary\ShaderStruct\ShaderStruct.cpp" />
@@ -264,6 +267,8 @@
     <ClInclude Include="MyLibrary\Object3D\Object3D.h" />
     <ClInclude Include="MyLibrary\Object3D\Object3DManager.h" />
     <ClInclude Include="MyLibrary\PipelineState\PipelineState.h" />
+    <ClInclude Include="MyLibrary\PostEffect\Bloom\BloomEffect.h" />
+    <ClInclude Include="MyLibrary\PostEffect\Copy\CopyEffect.h" />
     <ClInclude Include="MyLibrary\PostEffect\PostEffectCreater.h" />
     <ClInclude Include="MyLibrary\PostEffect\PostEffectParam.h" />
     <ClInclude Include="MyLibrary\Primitives\Box\Box2D.h" />
@@ -281,6 +286,9 @@
     <ClInclude Include="MyLibrary\Primitives\Triangle\Triangle.h" />
     <ClInclude Include="MyLibrary\Primitives\Triangle\Triangle3D.h" />
     <ClInclude Include="MyLibrary\Primitives\Triangle\TriangularPrism.h" />
+    <ClInclude Include="MyLibrary\RenderTarget\MultiRenderTarget.h" />
+    <ClInclude Include="MyLibrary\RenderTarget\RenderTarget.h" />
+    <ClInclude Include="MyLibrary\RenderTarget\SceneLayout.h" />
     <ClInclude Include="MyLibrary\RootSignature\RootSignature.h" />
     <ClInclude Include="MyLibrary\Scene\Scene.h" />
     <ClInclude Include="MyLibrary\ShaderStruct\ShaderStruct.h" />
@@ -298,7 +306,6 @@
     <ClInclude Include="MyLibrary/Color/Color.h" />
     <ClInclude Include="MyLibrary/Animator/Animator.h" />
     <ClInclude Include="MyLibrary/ResultErrorHandle/ResultErrorHandle.h" />
-    <ClInclude Include="MyLibrary/RenderTarget/RenderTarget.h" />
     <ClInclude Include="MyLibrary/RenderPass/RenderPass.h" />
     <ClInclude Include="MyLibrary/RenderPass/RenderPassManager.h" />
     <ClInclude Include="MyLibrary/PostEffect/PostEffect.h" />
@@ -417,6 +424,30 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\Bloom\BloomBlurPixelShader.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BloomBlurPS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BloomBlurPS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\Bloom\BloomCompositePixelShader.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BloomCompositePS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">BloomCompositePS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\Bloom\CopyPixelShader.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CopyPS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CopyPS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shader\PostEffectBaseShader\DistortionShader\DistortionPixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

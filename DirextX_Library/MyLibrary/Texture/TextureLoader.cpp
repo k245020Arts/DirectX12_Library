@@ -37,6 +37,10 @@ ErrorCode TextureLoader::Load(const std::wstring& _path)
 		if (_path == L"NO_NORMAL_IMAGE.err") {
 			ColorTexture(_path, Vector4(0.5f, 0.5f, 1.0f, 1.0f)); //NormalMap‚ÍŒ©‚½–Ú‚É‰e‹¿‚·‚é‚Ì‚Å“Á•Êˆ—
 		}
+		else if (_path == L"NO_HEIGHT_IMAGE.err")
+		{
+			ColorTexture(_path, Vector4(0.5f, 0.5f, 0.5f, 1.0f)); //HeightMap‚ÍŒ©‚½–Ú‚É‰e‹¿‚·‚é‚Ì‚Å“Á•Êˆ—
+		}
 		else {
 			ColorTexture(_path, Vector4(1.0f, 0.0f, 1.0f, 1.0f));
 		}
@@ -88,6 +92,10 @@ ErrorCode TextureLoader::Load(const std::wstring& _path)
 		if (_path == L"NO_NORMAL_IMAGE.err") {
 			ColorTexture(_path, Vector4(0.5f, 0.5f, 1.0f, 1.0f)); //NormalMap‚ÍŒ©‚½–Ú‚É‰e‹¿‚·‚é‚Ì‚Å“Á•Êˆ—
 		}
+		else if (_path == L"NO_HEIGHT_IMAGE.err")
+		{
+			ColorTexture(_path, Vector4(0.5f, 0.5f, 0.5f, 1.0f)); //HeightMap‚ÍŒ©‚½–Ú‚É‰e‹¿‚·‚é‚Ì‚Å“Á•Êˆ—
+		}
 		else {
 			ColorTexture(_path, Vector4(1.0f, 0.0f, 1.0f, 1.0f));
 		}
@@ -99,6 +107,10 @@ ErrorCode TextureLoader::Load(const std::wstring& _path)
 	{
 		if (_path == L"NO_NORMAL_IMAGE.err") {
 			ColorTexture(_path, Vector4(0.5f, 0.5f, 1.0f, 1.0f)); //NormalMap‚ÍŒ©‚½–Ú‚É‰e‹¿‚·‚é‚Ì‚Å“Á•Êˆ—
+		}
+		else if (_path == L"NO_HEIGHT_IMAGE.err")
+		{
+			ColorTexture(_path, Vector4(0.5f, 0.5f, 0.5f, 1.0f)); //HeightMap‚ÍŒ©‚½–Ú‚É‰e‹¿‚·‚é‚Ì‚Å“Á•Êˆ—
 		}
 		else {
 			ColorTexture(_path, Vector4(1.0f, 0.0f, 1.0f, 1.0f));

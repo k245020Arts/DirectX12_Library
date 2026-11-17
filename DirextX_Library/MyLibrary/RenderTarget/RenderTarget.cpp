@@ -12,12 +12,13 @@ RenderTarget::~RenderTarget()
     }
 }
 
-bool RenderTarget::Create(UINT _width,UINT _height,DXGI_FORMAT _format)
+bool RenderTarget::Create(UINT _width,UINT _height,DXGI_FORMAT _format, const Vector4& _clearColor)
 {
     auto device = Engine::GetInstance()->Device();
 
     width = _width;
     height = _height;
+    defaultClearColor = _clearColor;
 
     // RTV用Heap
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
@@ -40,10 +41,10 @@ bool RenderTarget::Create(UINT _width,UINT _height,DXGI_FORMAT _format)
     D3D12_CLEAR_VALUE clearValue{};
 
     clearValue.Format = _format;
-    clearValue.Color[0] = 0.25f;
-    clearValue.Color[1] = 0.25f;
-    clearValue.Color[2] = 0.25f;
-    clearValue.Color[3] = 1.0f;
+    clearValue.Color[0] = _clearColor.x;
+    clearValue.Color[1] = _clearColor.y;
+    clearValue.Color[2] = _clearColor.z;
+    clearValue.Color[3] = _clearColor.w;
 
     //クリアバリューに関する設定を入れる
     HRESULT hr = device->CreateCommittedResource(&heapProperties,D3D12_HEAP_FLAG_NONE,&resourceDesc,currentState,&clearValue,IID_PPV_ARGS(resource.ReleaseAndGetAddressOf()));

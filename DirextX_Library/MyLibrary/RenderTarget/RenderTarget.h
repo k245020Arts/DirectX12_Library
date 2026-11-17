@@ -9,7 +9,8 @@ public:
     RenderTarget() = default;
     ~RenderTarget();
 
-    bool Create(UINT width,UINT height,DXGI_FORMAT format);
+    // _clearColor : 作成時の最適化クリア値。BeginRender で使うクリア色と同じにしておくと警告が出ない
+    bool Create(UINT width, UINT height, DXGI_FORMAT format, const Vector4& _clearColor = Vector4(0.25f, 0.25f, 0.25f, 1.0f));
 
     void BeginRender(const Vector4& clearColor);
 
@@ -30,6 +31,12 @@ public:
     UINT GetWidth() const { return width; }
     UINT GetHeight() const { return height; }
 
+    // ---- MultiRenderTarget から使う ----
+    D3D12_CPU_DESCRIPTOR_HANDLE GetRTVHandle() const { return rtvHeap->GetCPUDescriptorHandleForHeapStart(); }
+    void ToRenderTargetState() { Transition(D3D12_RESOURCE_STATE_RENDER_TARGET); }
+    void ToShaderResourceState() { Transition(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE); }
+    const Vector4& GetClearColor() const { return defaultClearColor; }
+
 private:
 
     void Transition(D3D12_RESOURCE_STATES nextState);
@@ -44,6 +51,8 @@ private:
 
     UINT width = 0;
     UINT height = 0;
+
+    Vector4 defaultClearColor = Vector4(0.25f, 0.25f, 0.25f, 1.0f);
 
     D3D12_RESOURCE_STATES currentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 };

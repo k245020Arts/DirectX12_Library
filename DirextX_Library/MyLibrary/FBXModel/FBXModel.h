@@ -56,6 +56,7 @@ struct TextureSRVData
 {
 	DescriptorHandle* diffuseMap;
 	DescriptorHandle* normalMap;
+	DescriptorHandle* heightMap;
 
 };
 
@@ -164,6 +165,9 @@ public:
 	/// <returns>保存できたかどうか</returns>
 	bool SaveSettings(bool _overwriteBroken = false);
 
+	void EnableToBloom(const bool _enableBloom) { bloomParam.enableBloom = _enableBloom ? 1.0f : 0.0f; }
+	void BloomStrength(const float _strength) { bloomParam.bloomIntensity = _strength; }
+
 private:
 
 	using ConstantPtr = std::vector<std::shared_ptr<ConstBuffer>>;
@@ -176,6 +180,8 @@ private:
 		ConstantPtr shadow;
 		ConstantPtr normalMap;
 		ConstantPtr specularMap;
+		ConstantPtr bloom;
+		ConstantPtr heightMap;
 
 		ConstantBufferData()
 		{
@@ -185,6 +191,8 @@ private:
 			shadow.resize(FRAME_BUFFER_COUNT);
 			specularMap.resize(FRAME_BUFFER_COUNT);
 			normalMap.resize(FRAME_BUFFER_COUNT);
+			bloom.resize(FRAME_BUFFER_COUNT);
+			heightMap.resize(FRAME_BUFFER_COUNT);
 		}
 	};
 
@@ -257,6 +265,8 @@ private:
 
 	NormalMapParam normalMapParam;
 	SpecularParam specularParam;
+	BloomParam bloomParam;
+	HeightMapParam heightMapParam;
 
 	// ---- <モデル名>.fbx.json との受け渡し ----
 	std::wstring modelFilePath;      // Load に渡されたモデルのパス

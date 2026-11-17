@@ -167,6 +167,7 @@ ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting, M
 
             LoadDiffuseTexture(setting.filename, meshes[i], pMaterial, materialSettings, settingsDirty);
             LoadNormalTexture(setting.filename, meshes[i], pMaterial, materialSettings, settingsDirty);
+            LoadHeightTexture(setting.filename, meshes[i], pMaterial, materialSettings, settingsDirty);
 
         }
     }
@@ -498,6 +499,53 @@ void AssimpLoader::LoadNormalTexture(const wchar_t* filename, Mesh& dst, const a
     {
         dst.NormalMap.clear();
         dst.NormalMap = L"NO_NORMAL_IMAGE.err";
+    }
+}
+
+void AssimpLoader::LoadHeightTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty)
+{
+    // JSON にテクスチャ名が書かれていれば、FBX の情報より優先する
+    if (!material.height.empty())
+    {
+        const std::wstring jsonName = UTFConverter::Utf8ToWide(material.height);
+        dst.HeightMap = ResolveTexturePath(filename, jsonName);
+
+        if (dst.HeightMap == L"404_NotFound_Texture_Path.err")
+            OutputDebugStringW((L"[HeightTexture] JSONで指定されたテクスチャが見つかりません: " + jsonName + L"\n").c_str());
+        else
+            OutputDebugStringW((L"[HeightTexture] JSONの指定で読み込み: " + dst.HeightMap + L"\n").c_str());
+        return;
+    }
+
+    aiString path;
+
+    if (GetTexturePathWithFallback(src, { aiTextureType_HEIGHT, aiTextureType_DISPLACEMENT }, path))
+    {
+        const std::string p = path.C_Str();
+
+        // 埋め込みテクスチャ("*0" など)は未対応
+        if (!p.empty() && p[0] == '*')
+        {
+            OutputDebugStringA("[HeightTexture] 埋め込みテクスチャ(未対応)\n");
+            dst.HeightMap.clear();
+            return;
+        }
+
+        dst.HeightMap = ResolveTexturePath(filename, p);
+
+        // FBX から見つけた結果を JSON に残す(次回からは JSON の内容が使われる)
+        material.height = (dst.HeightMap == L"404_NotFound_Texture_Path.err") ? FileNameOf(p) : ToSidecarTexturePath(filename, dst.NormalMap);
+        settingsDirty = true;
+
+        if (dst.HeightMap.empty())
+            OutputDebugStringA(("[HeightTexture] 見つかりません: " + p + "\n").c_str());
+        else
+            OutputDebugStringW((L"[HeightTexture] 読み込み: " + dst.HeightMap + L"\n").c_str());
+    }
+    else
+    {
+        dst.HeightMap.clear();
+        dst.HeightMap = L"NO_HEIGHT_IMAGE.err";
     }
 }
 

@@ -1,4 +1,5 @@
 #include "Billboard.h"
+#include "../RenderTarget/SceneLayout.h"
 #include "../DescriptorHeap/DescriptorHeap.h"
 #include "../VertexBuffer/VertexBuffer.h"
 #include "../Engine/Engine.h"
@@ -141,6 +142,9 @@ void Billboard::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::ws
 	pipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
 	pipelineState->SetVS(_VSfilePath, _VSentryPoint);
 	pipelineState->SetPS(_PSfilePath, _PSentryPoint);
+	// シーン描画はマルチレンダーターゲット。このシェーダーは Bloom ターゲットへ出力しない
+	// (SetExtraTargetOutput を false のままにして、Bloom ターゲットを変更しない = 半透明の後ろの光が見える)
+	pipelineState->SetRenderTargetFormats(SceneLayout::Formats, SceneLayout::Count);
 	pipelineState->Create();
 
 	if (!pipelineState->IsSuccess())

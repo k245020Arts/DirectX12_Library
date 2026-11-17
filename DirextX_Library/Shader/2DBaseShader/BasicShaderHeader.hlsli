@@ -37,6 +37,7 @@ cbuffer LightBuffer : register(b1)
     float pad;
 };
 
+// ノーマルマップ用用(C++ の NormalMapParam と同じ並び)
 cbuffer NormalMapParam : register(b3)
 {
     float enableNormal;
@@ -44,6 +45,7 @@ cbuffer NormalMapParam : register(b3)
     float2 normalPad;
 };
 
+// スペキュラ用(C++ の SpecularParam と同じ並び)
 cbuffer SpecularParam : register(b4)
 {
     float enableSpecular;
@@ -52,6 +54,29 @@ cbuffer SpecularParam : register(b4)
     float specularPad;
     
     float4 specularColor;
+};
+
+// ブルーム用(C++ の BloomParam と同じ並び)
+cbuffer BloomParam : register(b5)
+{
+    float enableBloom;
+    float bloomIntensity;
+    float2 bloomPad;
+};
+
+cbuffer HeightMapParam : register(b6)
+{
+    float enableHeight;
+    float heightStrength;
+    float2 heightPad;
+};
+
+// シーン描画(マルチレンダーターゲット)のピクセルシェーダー出力
+// 並びは C++ の SceneLayout(SceneLayout.h)と同じにすること
+struct ScenePSOutput
+{
+    float4 color : SV_TARGET0; // 通常の描画結果
+    float4 bloom : SV_TARGET1; // 光らせたい色(何も光らないなら 0)
 };
 
 struct VSInput

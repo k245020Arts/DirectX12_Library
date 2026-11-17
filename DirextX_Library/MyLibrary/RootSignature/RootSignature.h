@@ -17,6 +17,7 @@ public:
 	void Set3DRootSignature();
 	void SetPostEffectRootSignature();
 	void SetDistortionRootSignature();
+	void SetPostEffectTwoInputRootSignature(); // t0, t1, b0 (サンプラーは LINEAR + CLAMP)
 	void SetShadowDepthRootSignature();
 	void SetShadowDebugRootSignature();
 

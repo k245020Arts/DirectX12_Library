@@ -12,14 +12,18 @@ bool PostEffectPipeline::Init(UINT _width, UINT _height)
     width = _width;
     height = _height;
 
-    //シーン描画用RenderTarget
-    sceneRenderTarget = std::make_shared<RenderTarget>();
+    //シーン描画用のマルチレンダーターゲット(色 + Bloom など。構成は SceneLayout.h)
+    sceneTargets = std::make_shared<MultiRenderTarget>();
 
-    if (!sceneRenderTarget->Create(width, height, DXGI_FORMAT_R8G8B8A8_UNORM))
+    if (!sceneTargets->Create(width, height, SceneLayout::Formats, SceneLayout::ClearColors, SceneLayout::Count))
     {
-        sceneRenderTarget.reset();
+        sceneTargets.reset();
         return false;
     }
+
+    //エフェクトへ渡すテクスチャ一覧
+    sceneTextures.color = sceneTargets->GetTarget(SceneLayout::Color)->GetSRV();
+    sceneTextures.bloom = sceneTargets->GetTarget(SceneLayout::Bloom)->GetSRV();
 
     isInitialized = true;
 
@@ -118,6 +122,10 @@ bool PostEffectPipeline::Build()
 
     scenePass->SetExecuteFunction(sceneFunction);
 
+    //シーンは常にマルチレンダーターゲットへ描く(全ターゲットのバインド・クリア・状態遷移はここで行う)
+    scenePass->SetBeginFunction([this]() { sceneTargets->BeginRender(); });
+    scenePass->SetEndFunction([this]() { sceneTargets->EndRender(); });
+
     for (auto& entry : entries)
     {
         entry.passes.clear();
@@ -131,6 +139,23 @@ bool PostEffectPipeline::Build()
             entry.passes.push_back(pass);
         }
     }
+
+    //========================================
+    // コピー用のエフェクト
+    // 有効なエフェクトが無いときに、シーンの色をBackBufferへ出す
+    //========================================
+
+    copyEffect = std::make_unique<CopyEffect>();
+
+    if (!copyEffect->Init())
+    {
+        // コピーが作れなくても、エフェクトを使うときは動くので続行する
+        OutputDebugStringW(L"PostEffectPipeline : CopyEffectの初期化に失敗(エフェクトが無いときは画面が出ません)\n");
+    }
+
+    copyPass = std::make_shared<RenderPass>();
+
+    copyPass->SetExecuteFunction([this]() { copyEffect->Draw(); });
 
     //========================================
     // 描画先・入力テクスチャの決定
@@ -154,6 +179,9 @@ bool PostEffectPipeline::Build()
         }
     }
 
+    //最後にコピー(有効なエフェクトが無いときだけ実行される)
+    passManager->AddPass(copyPass);
+
     isBuilt = true;
 
     return true;
@@ -172,11 +200,10 @@ void PostEffectPipeline::ApplyRouting()
         }
     }
 
-    //有効なエフェクトがあればRenderTargetへ描画、無ければBackBufferへ直接描画
-    scenePass->SetRenderTarget(activeCount == 0 ? nullptr : sceneRenderTarget.get());
+    //シーンは常にマルチレンダーターゲットへ描く(Beginで全ターゲットをバインドするので、ここでは描画先を指定しない)
 
-    //次のエフェクトの入力になる RenderTarget (最初はシーンの描画結果)
-    RenderTarget* input = sceneRenderTarget.get();
+    //次のエフェクトの入力になる RenderTarget (最初はシーンの色)
+    RenderTarget* input = sceneTargets->GetTarget(SceneLayout::Color);
 
     //有効なエフェクトの中での順番
     size_t activeIndex = 0;
@@ -218,5 +245,15 @@ void PostEffectPipeline::ApplyRouting()
         input = output;
 
         activeIndex++;
+    }
+
+    //有効なエフェクトが無いときは、シーンの色をBackBufferへコピーする(それ以外のときは実行しない)
+    copyPass->SetEnabled(activeCount == 0);
+
+    if (activeCount == 0)
+    {
+        copyEffect->SetInputTexture(sceneTextures.color);
+
+        copyPass->SetRenderTarget(nullptr);
     }
 }

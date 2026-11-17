@@ -30,6 +30,15 @@ public:
 	void SetDepthWriteMask(D3D12_DEPTH_WRITE_MASK mask);
 	void SetDepthFunc(D3D12_COMPARISON_FUNC func);
 
+	// 描画先が複数ある(マルチレンダーターゲット)ときの設定。Create の前に呼ぶ
+	//  _formats : 描画先ごとのフォーマット(バインドするターゲットと同じ並びにすること)
+	void SetRenderTargetFormats(const DXGI_FORMAT* _formats, UINT _count);
+
+	// ピクセルシェーダーが 2枚目以降のターゲット(SV_TARGET1~)にも出力するかどうか
+	//  false(既定) : 2枚目以降には書き込まない(中身はそのまま残る)
+	//  true        : ピクセルシェーダーの出力を書き込む(シェーダー側で SV_TARGET1~ を出力しておくこと)
+	void SetExtraTargetOutput(bool _enable) { extraTargetOutput = _enable; }
+
 private:
 	bool success = false; // 生成に成功したかどうか
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {}; // パイプラインステートの設定
@@ -45,6 +54,10 @@ private:
 	ComPtr<ID3DBlob> errorBlob; // エラー検出用
 
 	BlendState blendState;
+
+	UINT renderTargetCount = 1;       // 描画先の数(desc.NumRenderTargets と同じ)
+	bool extraTargetOutput = false;   // 2枚目以降のターゲットへ書き込むか
+	void ApplyExtraTargetBlend();     // 2枚目以降のターゲットのブレンド設定(書き込みマスク)を desc に反映
 
 	void CreateAlphaPipelineState(); // パイプラインステートを生成
 	void CreateMulPipelineState(); // パイプラインステートを生成
