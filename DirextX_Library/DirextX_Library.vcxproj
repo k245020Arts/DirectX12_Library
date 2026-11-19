@@ -180,6 +180,7 @@
     <ClCompile Include="MyLibrary\PipelineState\PipelineState.cpp" />
     <ClCompile Include="MyLibrary\PostEffect\Bloom\BloomEffect.cpp" />
     <ClCompile Include="MyLibrary\PostEffect\Copy\CopyEffect.cpp" />
+    <ClCompile Include="MyLibrary\PostEffect\Fog\FogEffect.cpp" />
     <ClCompile Include="MyLibrary\PostEffect\PostEffectCreater.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Box\Box2D.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Box\Box3D.cpp" />
@@ -269,6 +270,7 @@
     <ClInclude Include="MyLibrary\PipelineState\PipelineState.h" />
     <ClInclude Include="MyLibrary\PostEffect\Bloom\BloomEffect.h" />
     <ClInclude Include="MyLibrary\PostEffect\Copy\CopyEffect.h" />
+    <ClInclude Include="MyLibrary\PostEffect\Fog\FogEffect.h" />
     <ClInclude Include="MyLibrary\PostEffect\PostEffectCreater.h" />
     <ClInclude Include="MyLibrary\PostEffect\PostEffectParam.h" />
     <ClInclude Include="MyLibrary\Primitives\Box\Box2D.h" />
@@ -458,6 +460,16 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">DistortionPixelShader</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\Fog\FogPixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">FogPS</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">FogPS</EntryPointName>
     </FxCompile>
     <FxCompile Include="Shader\PostEffectBaseShader\GaussianBlurPixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

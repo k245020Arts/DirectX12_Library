@@ -1,4 +1,5 @@
 ﻿#include "Engine.h"
+#include "../DescriptorHeap/DescriptorHeap.h"
 
 Engine::~Engine()
 {
@@ -547,6 +548,52 @@ bool Engine::CreateRenderTarget()
     return true;
 }
 
+bool Engine::CreateDepthCopy()
+{
+    if (pDepthCopy != nullptr && depthSRV != nullptr)
+    {
+        return true;
+    }
+
+    if (pDepthStencilBuffer == nullptr)
+    {
+        return false;
+    }
+
+    // 深度バッファと同じ大きさ・フォーマット(R32_TYPELESS)で、深度フラグだけ外したテクスチャを作る
+    D3D12_RESOURCE_DESC desc = pDepthStencilBuffer->GetDesc();
+
+    desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+    const CD3DX12_HEAP_PROPERTIES heapProperties(D3D12_HEAP_TYPE_DEFAULT);
+
+    const HRESULT hr = pDevice->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, nullptr, IID_PPV_ARGS(pDepthCopy.ReleaseAndGetAddressOf()));
+
+    if (FAILED(hr))
+    {
+        return false;
+    }
+
+    depthSRV = DescriptorHeap::GetInstance()->Allocate();
+
+    if (depthSRV == nullptr)
+    {
+        pDepthCopy.Reset();
+        return false;
+    }
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+
+    srvDesc.Format = DXGI_FORMAT_R32_FLOAT; //深度を通常のfloatテクスチャとして読む
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Texture2D.MipLevels = 1;
+
+    pDevice->CreateShaderResourceView(pDepthCopy.Get(), &srvDesc, depthSRV->handleCPU);
+
+    return true;
+}
+
 bool Engine::CreateDepthBuffer()
 {
 
@@ -556,7 +603,7 @@ bool Engine::CreateDepthBuffer()
     depthResDesc.Width = (UINT64)windowSize.width; //レンダーターゲットと同じ値
     depthResDesc.Height = (UINT64)windowSize.height;
     depthResDesc.DepthOrArraySize = 1; //テクスチャ配列でも、3Dテクスチャでもない
-    depthResDesc.Format = DXGI_FORMAT_D32_FLOAT; //深度書き込み用フォーマット
+    depthResDesc.Format = DXGI_FORMAT_R32_TYPELESS; //深度書き込み用フォーマット
     depthResDesc.SampleDesc.Count = 1; //サンプルは一ピクセルあたり一つ
 
     depthResDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL; //デプスステンシルとして活用
@@ -597,6 +644,43 @@ bool Engine::CreateDepthBuffer()
     pDevice->CreateDepthStencilView(pDepthStencilBuffer.Get(), &dsvDesc, pDsvHeap->GetCPUDescriptorHandleForHeapStart());
 
     return true;
+}
+
+DescriptorHandle* Engine::GetDepthSRV()
+{
+    if (!CreateDepthCopy())
+    {
+        return nullptr;
+    }
+
+    return depthSRV;
+}
+
+void Engine::CopyDepthBuffer()
+{
+    if (!CreateDepthCopy())
+    {
+        return;
+    }
+
+    // 深度バッファは常に DEPTH_WRITE、コピー先は常に PIXEL_SHADER_RESOURCE に戻す前提
+    const D3D12_RESOURCE_BARRIER before[2] =
+    {
+        CD3DX12_RESOURCE_BARRIER::Transition(pDepthStencilBuffer.Get(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_COPY_SOURCE),
+        CD3DX12_RESOURCE_BARRIER::Transition(pDepthCopy.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST),
+    };
+
+    commandList->ResourceBarrier(2, before);
+
+    commandList->CopyResource(pDepthCopy.Get(), pDepthStencilBuffer.Get());
+
+    const D3D12_RESOURCE_BARRIER after[2] =
+    {
+        CD3DX12_RESOURCE_BARRIER::Transition(pDepthStencilBuffer.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE),
+        CD3DX12_RESOURCE_BARRIER::Transition(pDepthCopy.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE),
+    };
+
+    commandList->ResourceBarrier(2, after);
 }
 
 void Engine::WaitRender()

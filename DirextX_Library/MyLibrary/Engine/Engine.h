@@ -19,10 +19,11 @@
 #include "../SingleTon/SingletonBase.h"
 #include "../Helper/Helper.h"
 
+struct DescriptorHandle;
+
 class Engine : public SingletonBase<Engine>
 {
 public:
-
 
 	~Engine();
 
@@ -32,6 +33,9 @@ public:
 	void EndRender();
 	void BindBackBuffer(const Vector4& clearColor);
 	void ResetViewport();
+
+	void CopyDepthBuffer();
+	DescriptorHandle* GetDepthSRV();
 
 	ID3D12Device6* Device();
 	ID3D12GraphicsCommandList* CommandList();
@@ -86,6 +90,11 @@ private:
 	UINT m_DsvDescriptorSize = 0;
 	ComPtr<ID3D12DescriptorHeap> pDsvHeap = nullptr;
 	ComPtr<ID3D12Resource> pDepthStencilBuffer = nullptr;
+
+	// 深度のコピー先(シェーダーで読む用)。必要になったときに作る
+	bool CreateDepthCopy();
+	ComPtr<ID3D12Resource> pDepthCopy = nullptr;
+	DescriptorHandle* depthSRV = nullptr;
 
 	ID3D12Resource* currentRenderTarget = nullptr;
 

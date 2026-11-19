@@ -124,7 +124,16 @@ bool PostEffectPipeline::Build()
 
     //シーンは常にマルチレンダーターゲットへ描く(全ターゲットのバインド・クリア・状態遷移はここで行う)
     scenePass->SetBeginFunction([this]() { sceneTargets->BeginRender(); });
-    scenePass->SetEndFunction([this]() { sceneTargets->EndRender(); });
+    scenePass->SetEndFunction([this]()
+        {
+            sceneTargets->EndRender();
+
+            //深度が必要なエフェクトがあるときは、このあとのパスで深度バッファが消されるので、ここでコピーしておく
+            if (needSceneDepth)
+            {
+                Engine::GetInstance()->CopyDepthBuffer();
+            }
+        });
 
     for (auto& entry : entries)
     {
@@ -149,8 +158,8 @@ bool PostEffectPipeline::Build()
 
     if (!copyEffect->Init())
     {
-        // コピーが作れなくても、エフェクトを使うときは動くので続行する
-        OutputDebugStringW(L"PostEffectPipeline : CopyEffectの初期化に失敗(エフェクトが無いときは画面が出ません)\n");
+        OutputDebugStringW(L"PostEffectPipeline : CopyEffectの初期化に失敗\n");
+        return false;
     }
 
     copyPass = std::make_shared<RenderPass>();
@@ -199,6 +208,19 @@ void PostEffectPipeline::ApplyRouting()
             activeCount++;
         }
     }
+
+    //深度が必要なエフェクト(フォグなど)が有効なら、シーン描画後に深度をコピーして、SceneTextures::depth で渡す
+    needSceneDepth = false;
+
+    for (auto& entry : entries)
+    {
+        if (entry.effect->IsEnabled() && entry.effect->NeedsSceneDepth())
+        {
+            needSceneDepth = true;
+        }
+    }
+
+    sceneTextures.depth = needSceneDepth ? Engine::GetInstance()->GetDepthSRV() : nullptr;
 
     //シーンは常にマルチレンダーターゲットへ描く(Beginで全ターゲットをバインドするので、ここでは描画先を指定しない)
 

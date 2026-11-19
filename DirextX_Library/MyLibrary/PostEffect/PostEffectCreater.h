@@ -6,6 +6,7 @@ class PostEffectPipeline;
 class GaussianBlur;
 class BloomEffect;
 class DistortionPostEffect;
+class FogEffect;
 class ShadowMap;
 class ShadowCamera;
 class ShadowMapDebug;
@@ -33,6 +34,7 @@ private:
 	BloomEffect* bloom = nullptr;
 	GaussianBlur* gaussianBlur = nullptr;
 	DistortionPostEffect* distortion = nullptr;
+	FogEffect* fog = nullptr;
 
 	friend class SingletonBase<PostEffectCreater>;
 

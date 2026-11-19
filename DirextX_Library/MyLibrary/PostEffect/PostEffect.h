@@ -31,7 +31,7 @@ struct SceneTextures
 {
     DescriptorHandle* color = nullptr; //通常の描画結果(SV_TARGET0)
     DescriptorHandle* bloom = nullptr; //光らせたい色(SV_TARGET1)
-    DescriptorHandle* depth = nullptr; //シーンの深度(未対応 : 被写界深度などを作るときに用意する)
+    DescriptorHandle* depth = nullptr; //シーンの深度(R32_FLOAT)。NeedsSceneDepth() が true のエフェクトが有効な間だけ入る
 };
 
 class PostEffect
@@ -53,6 +53,13 @@ public:
     virtual std::vector<PostEffectPassInfo> CreatePasses() = 0;
 
     void SetInputTexture(DescriptorHandle* handle);
+
+    //このエフェクトがシーンの深度(SceneTextures::depth)を使うかどうか
+    //true のエフェクトが有効な間だけ、PostEffectPipelineがシーン描画後に深度をコピーして渡す
+    virtual bool NeedsSceneDepth() const
+    {
+        return false;
+    }
 
     //シーン描画で書かれたテクスチャ(Bloom など)を使うエフェクト用
     //PostEffectPipelineに追加済みなら、自動で設定される

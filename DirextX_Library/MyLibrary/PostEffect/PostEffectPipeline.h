@@ -141,6 +141,7 @@ private:
 
     bool isInitialized = false;
     bool isBuilt = false;
+    bool needSceneDepth = false;
 
     //ƒV[ƒ“•`‰æˆ—
     std::function<void()> sceneFunction;

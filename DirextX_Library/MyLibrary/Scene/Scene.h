@@ -84,4 +84,7 @@ private:
 
 	FBXModel* rock;
 	FBXModel* sky;
+
+
+	bool firstPersonMode = false;
 };

@@ -17,6 +17,7 @@
 #include <vector>
 #include "../../ImGui/imgui.h"
 #include "../Shadow/ShadowMapCreater.h"
+#include "Fog/FogEffect.h"
 
 PostEffectCreater::PostEffectCreater()
 {
@@ -50,6 +51,9 @@ void PostEffectCreater::Init()
         Object3DManager::GetInstance()->Draw();
     });
 
+   
+    // フォグは深度(カメラからの距離)で色を変えるので、ぼかしや光を足す前の、いちばん最初に入れる
+    fog = postEffectPipeline->AddEffect<FogEffect>();
     // ブルームは最初に入れる(あとから足す被写界深度などは、ブルームより前に入れる)
     bloom = postEffectPipeline->AddEffect<BloomEffect>();
     gaussianBlur = postEffectPipeline->AddEffect<GaussianBlur>();
@@ -90,6 +94,59 @@ void PostEffectCreater::Update()
 {
 #ifdef IMGUI
     ImGui::Begin("PostEffect");
+
+    if (fog != nullptr)
+    {
+        bool enabled = fog->IsEnabled();
+        if (ImGui::Checkbox("Fog", &enabled))
+        {
+            fog->SetEnabled(enabled);
+        }
+
+        Vector4 color = fog->GetColor(color);
+        if (ImGui::ColorEdit4("Fog Color", &color.x))
+        {
+            fog->SetColor(color);
+        }
+
+        float density = fog->GetDensity();
+        if (ImGui::DragFloat("Fog Density", &density, 0.0005f, 0.0f, 1.0f, "%.4f"))
+        {
+            fog->SetDensity(density);
+        }
+
+        float falloff = fog->GetHeightFalloff();
+        if (ImGui::DragFloat("Fog Height Falloff", &falloff, 0.001f, 0.0f, 2.0f, "%.4f"))
+        {
+            fog->SetHeightFalloff(falloff);
+        }
+
+        float baseHeight = fog->GetBaseHeight();
+        if (ImGui::DragFloat("Fog Base Height", &baseHeight, 0.5f, -1000.0f, 1000.0f))
+        {
+            fog->SetBaseHeight(baseHeight);
+        }
+
+        float startDistance = fog->GetStartDistance();
+        if (ImGui::DragFloat("Fog Start Distance", &startDistance, 1.0f, 0.0f, 10000.0f))
+        {
+            fog->SetStartDistance(startDistance);
+        }
+
+        float maxOpacity = fog->GetMaxOpacity();
+        if (ImGui::SliderFloat("Fog Max Opacity", &maxOpacity, 0.0f, 1.0f))
+        {
+            fog->SetMaxOpacity(maxOpacity);
+        }
+
+        float sky = fog->GetSkyAmount();
+        if (ImGui::SliderFloat("Fog Sky", &sky, 0.0f, 1.0f))
+        {
+            fog->SetSkyAmount(sky);
+        }
+
+        ImGui::Separator();
+    }
 
     if (bloom != nullptr)
     {

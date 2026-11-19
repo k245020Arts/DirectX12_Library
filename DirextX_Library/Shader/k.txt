@@ -1,59 +1,76 @@
-#pragma once
-#include "../ShaderStruct/ShaderStruct.h"
-#include "../DescriptorHeap/DescriptorHeap.h"
+Texture2D SceneTex : register(t0); // 入力画像(前段の結果)
+Texture2D<float> DepthTex : register(t1); // シーンの深度(R32_FLOAT)
+SamplerState MainSampler : register(s0);
 
-class RenderTarget
+struct PSInput
 {
-public:
-
-    RenderTarget() = default;
-    ~RenderTarget();
-
-    // _clearColor : 作成時の最適化クリア値。BeginRender で使うクリア色と同じにしておくと警告が出ない
-    bool Create(UINT width, UINT height, DXGI_FORMAT format, const Vector4& _clearColor = Vector4(0.25f, 0.25f, 0.25f, 1.0f));
-
-    void BeginRender(const Vector4& clearColor);
-
-    void EndRender();
-
-    void SetShaderResource();
-
-    ID3D12Resource* GetResource() const
-    {
-        return resource.Get();
-    }
-
-    DescriptorHandle* GetSRV() const
-    {
-        return srvHandle;
-    }
-
-    UINT GetWidth() const { return width; }
-    UINT GetHeight() const { return height; }
-
-    // ---- MultiRenderTarget から使う ----
-    D3D12_CPU_DESCRIPTOR_HANDLE GetRTVHandle() const { return rtvHeap->GetCPUDescriptorHandleForHeapStart(); }
-    void ToRenderTargetState() { Transition(D3D12_RESOURCE_STATE_RENDER_TARGET); }
-    void ToShaderResourceState() { Transition(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE); }
-    const Vector4& GetClearColor() const { return defaultClearColor; }
-
-private:
-
-    void Transition(D3D12_RESOURCE_STATES nextState);
-
-    ComPtr<ID3D12Resource> resource;
-
-    ComPtr<ID3D12DescriptorHeap> rtvHeap;
-
-    DescriptorHandle* srvHandle = nullptr;
-
-    UINT rtvDescriptorSize = 0;
-
-    UINT width = 0;
-    UINT height = 0;
-
-    Vector4 defaultClearColor = Vector4(0.25f, 0.25f, 0.25f, 1.0f);
-
-    D3D12_RESOURCE_STATES currentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    float4 position : SV_POSITION;
+    float2 uv : TEXCOORD;
 };
 
+// C++ の FogParam と同じ並び
+cbuffer FogParam : register(b0)
+{
+    float4 fogColor;
+
+    float3 cameraPos;
+    float density;
+
+    float heightFalloff;
+    float baseHeight;
+    float maxOpacity;
+    float startDistance;
+
+    float skyAmount;
+    float3 fogPad;
+
+    float4x4 invViewProj;
+};
+
+float3 DepthToWorldPos(float2 uv, float depth)
+{
+    float4 ndc;
+    ndc.x = uv.x * 2.0f - 1.0f;
+    ndc.y = (1.0f - uv.y) * 2.0f - 1.0f;
+    ndc.z = depth;
+    ndc.w = 1.0f;
+    
+    float4 worldPos = mul(ndc, invViewProj);
+    
+    return worldPos.xyz / worldPos.w;
+}
+
+float4 FogPS(PSInput input) : SV_TARGET
+{
+    float4 scene = SceneTex.Sample(MainSampler, input.uv);
+
+    // 画面と同じ大きさなので、ピクセル座標でそのまま読める(フィルタを使わない)
+    float depth = DepthTex.Load(int3(input.position.xy, 0));
+
+    float3 worldPos = DepthToWorldPos(input.uv, depth);
+
+    float3 toPoint = worldPos - cameraPos;
+
+    float dist = max(length(toPoint), 0.0001f);
+
+    float segment = max(dist - startDistance, 0.0f);
+    float startDist = dist - segment;
+
+    float slope = toPoint.y / dist;
+    float startHeight = cameraPos.y + slope * startDist;
+
+    float densityAtStart = density * exp(clamp(-heightFalloff * (startHeight - baseHeight), -80.0f, 80.0f));
+
+    float x = heightFalloff * slope * segment;
+    float xs = x + step(abs(x), 0.0001f) * 0.0001f;
+    float integral = (1.0f - exp(clamp(-xs, -80.0f, 80.0f))) / xs;
+
+    float tau = densityAtStart * segment * integral;
+    float fog = min(1.0f - exp(-tau), maxOpacity);
+
+    fog *= lerp(1.0f, skyAmount, step(0.99999f, depth));
+
+    scene.rgb = lerp(scene.rgb, fogColor.rgb, fog);
+
+    return scene;
+}

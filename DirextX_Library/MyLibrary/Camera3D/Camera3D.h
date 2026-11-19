@@ -24,6 +24,8 @@ public:
     const Vector3 GetPosition()const { return position; }
     const Vector3 GetTarget()const { return target; }
     const Vector3 GetUpVec()const { return upVec; }
+    const float GetNear()const { return nearFar.cameraToNear; }
+    const float GetFar()const { return nearFar.cameraToFar; }
 
 private:
 

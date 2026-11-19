@@ -187,6 +187,12 @@
     <Filter Include="Shader\PostEffectShader\Bloom">
       <UniqueIdentifier>{f2c37333-ae80-4353-8eec-09c1e2b8de4d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MyLibrary\PostEffect\Fog">
+      <UniqueIdentifier>{d23925cd-c7f4-4ccd-8e9c-0510d3616962}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\PostEffectShader\Fog">
+      <UniqueIdentifier>{235303cf-d377-4f88-97f8-9a4518bf958e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp">
@@ -416,6 +422,9 @@
     </ClCompile>
     <ClCompile Include="MyLibrary\PostEffect\Bloom\BloomEffect.cpp">
       <Filter>MyLibrary\PostEffect\Bloom</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\PostEffect\Fog\FogEffect.cpp">
+      <Filter>MyLibrary\PostEffect\Fog</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -692,6 +701,9 @@
     <ClInclude Include="MyLibrary\RenderTarget\RenderTarget.h">
       <Filter>MyLibrary\RenderTarget</Filter>
     </ClInclude>
+    <ClInclude Include="MyLibrary\PostEffect\Fog\FogEffect.h">
+      <Filter>MyLibrary\PostEffect\Fog</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\2DBaseShader\Basic_VertexShader.hlsl">
@@ -750,6 +762,9 @@
     </FxCompile>
     <FxCompile Include="Shader\PostEffectBaseShader\Bloom\CopyPixelShader.hlsl">
       <Filter>Shader\PostEffectShader\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\Fog\FogPixelShader.hlsl">
+      <Filter>Shader\PostEffectShader\Fog</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
