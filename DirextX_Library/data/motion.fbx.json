@@ -9,34 +9,63 @@
   },
   "materials": {
     "Body": {
+      "ao": "",
       "diffuse": "Body_2D_View.png",
       "height": "",
-      "normal": "Walking.fbm/maria_normal"
+      "metallic": "",
+      "normal": "Walking.fbm/maria_normal",
+      "roughness": ""
     },
     "Face": {
+      "ao": "",
       "diffuse": "Face_2D_View.png",
       "height": "",
-      "normal": "l"
+      "metallic": "",
+      "normal": "l",
+      "roughness": ""
     },
     "Hair": {
+      "ao": "",
       "diffuse": "Hair_2D_View.png",
       "height": "",
-      "normal": ""
+      "metallic": "",
+      "normal": "",
+      "roughness": ""
     },
     "Leg": {
+      "ao": "",
       "diffuse": "Leg_2D_View.png",
       "height": "",
-      "normal": ""
+      "metallic": "",
+      "normal": "",
+      "roughness": ""
     },
     "Parts": {
+      "ao": "",
       "diffuse": "Parts_2D_View.png",
       "height": "",
-      "normal": ""
+      "metallic": "",
+      "normal": "",
+      "roughness": ""
     }
   },
   "normalMap": {
     "enable": true,
     "strength": 1.0
+  },
+  "pbr": {
+    "albedo": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "ao": 1.0,
+    "metallic": 0.0,
+    "roughness": 0.5,
+    "useAOMap": true,
+    "useAlbedoMap": true,
+    "useMetallicMap": true,
+    "useRoughnessMap": true
   },
   "specular": {
     "color": [

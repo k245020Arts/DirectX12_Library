@@ -185,12 +185,21 @@ Scene::Scene()
 	rock->GetTransform().rotation = Vector3(0.0f, 0.f, 0.f);
 	rock->GetTransform().scale = Vector3(1.f, 1.f, 1.f);
 
-	/*sky = new FBXModel();
-	sky->Load("data/sky/SKY1.fbx", true, true);*/
+	pbrSphere = new FBXModel();
+	pbrSphere->Load("data/PBRSphere.fbx");
+	pbrSphere->GetTransform().position = Vector3(-100.0f, 200.0f, -200.0f);
+
+	hellMeto = new FBXModel();
+	hellMeto->Load("data/Test/HellMeto.fbx", false, true);
+
+	hellMeto->GetTransform().position = Vector3(200.0f, 200.0f, -200.0f);
+
+	sky = new FBXModel();
+	sky->Load("data/sky/SM_SkySphere.fbx", true, true);
 
 #endif // MODEL
 
-	
+	Light::GetInstance()->AddLight(LightData(Vector3(-1.0f, -1.0f, -1.0f), 3.0f, Color::RGBToVector3(WHITE)));
 
 #ifdef ORIGINAL_MOUSE_POINTER
 	clickTime = 0.0f;

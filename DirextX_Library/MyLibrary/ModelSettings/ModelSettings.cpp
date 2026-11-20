@@ -74,6 +74,9 @@ namespace
             m["diffuse"] = kv.second.diffuse;
             m["normal"]  = kv.second.normal;
             m["height"] = kv.second.height;
+            m["metallic"] = kv.second.metallic;
+            m["roughness"] = kv.second.roughness;
+            m["ao"] = kv.second.ao;
             materials[kv.first] = m;
         }
         j["materials"] = materials;
@@ -101,6 +104,25 @@ namespace
         bloom["intensity"] = Round4(_s.bloom.intensity);
         j["bloom"] = bloom;
 
+        Json pbr = Json::object();
+
+        pbr["albedo"] = Json::array({
+            Round4(_s.pbr.albedo.x),
+            Round4(_s.pbr.albedo.y),
+            Round4(_s.pbr.albedo.z)
+            });
+
+        pbr["metallic"] = Round4(_s.pbr.metallic);
+        pbr["roughness"] = Round4(_s.pbr.roughness);
+        pbr["ao"] = Round4(_s.pbr.ao);
+
+        pbr["useAlbedoMap"] = _s.pbr.useAlbedoMap;
+        pbr["useMetallicMap"] = _s.pbr.useMetallicMap;
+        pbr["useRoughnessMap"] = _s.pbr.useRoughnessMap;
+        pbr["useAOMap"] = _s.pbr.useAOMap;
+
+        j["pbr"] = pbr;
+
         return j;
     }
 
@@ -123,6 +145,9 @@ namespace
                     ReadString(*it, "diffuse", m.diffuse);
                     ReadString(*it, "normal",  m.normal);
                     ReadString(*it, "height",  m.height);
+                    ReadString(*it, "metallic",  m.metallic);
+                    ReadString(*it, "roughness",  m.roughness);
+                    ReadString(*it, "ao",  m.ao);
                 }
                 _s.materials[it.key()] = m;
             }
@@ -157,6 +182,34 @@ namespace
         {
             ReadBool(*itBloom, "enable", _s.bloom.enable);
             ReadFloat(*itBloom, "intensity", _s.bloom.intensity);
+        }
+
+        auto itPBR = _j.find("pbr");
+
+        if (itPBR != _j.end() && itPBR->is_object())
+        {
+            // Albedo
+            std::array<float, 3> albedo =
+            {
+                _s.pbr.albedo.x,
+                _s.pbr.albedo.y,
+                _s.pbr.albedo.z
+            };
+
+            ReadColor3(*itPBR, "albedo", albedo);
+
+            _s.pbr.albedo = {albedo[0],albedo[1],albedo[2]};
+
+            // 数値パラメーター
+            ReadFloat(*itPBR, "metallic", _s.pbr.metallic);
+            ReadFloat(*itPBR, "roughness", _s.pbr.roughness);
+            ReadFloat(*itPBR, "ao", _s.pbr.ao);
+
+            // テクスチャ使用設定
+            ReadBool(*itPBR, "useAlbedoMap", _s.pbr.useAlbedoMap);
+            ReadBool(*itPBR, "useMetallicMap", _s.pbr.useMetallicMap);
+            ReadBool(*itPBR, "useRoughnessMap", _s.pbr.useRoughnessMap);
+            ReadBool(*itPBR, "useAOMap", _s.pbr.useAOMap);
         }
     }
 
@@ -200,6 +253,17 @@ ModelSettings::ModelSettings()
 
     bloom.enable = bloomDefault.enableBloom > 0.5f;
     bloom.intensity = bloomDefault.bloomIntensity;
+
+    const PBRMaterialSettings pbrMaterialDefalut{};
+
+    pbr.albedo = pbrMaterialDefalut.albedo;
+    pbr.ao = pbrMaterialDefalut.ao;
+    pbr.metallic = pbrMaterialDefalut.metallic;
+    pbr.roughness = pbrMaterialDefalut.roughness;
+    pbr.useAlbedoMap = pbr.useAlbedoMap;
+    pbr.useAOMap = pbr.useAOMap;
+    pbr.useMetallicMap = pbr.useMetallicMap;
+    pbr.useRoughnessMap = pbr.useRoughnessMap;
 }
 
 std::wstring ModelSettings::SidecarPath(const std::wstring& _modelPath)

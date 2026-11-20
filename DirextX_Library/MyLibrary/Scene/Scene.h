@@ -87,4 +87,7 @@ private:
 
 
 	bool firstPersonMode = false;
+
+	FBXModel* pbrSphere;
+	FBXModel* hellMeto;
 };

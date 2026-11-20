@@ -31,6 +31,9 @@ struct MaterialSettings
     std::string diffuse;
     std::string normal;
     std::string height;
+    std::string metallic;
+    std::string roughness;
+    std::string ao;
 };
 
 struct NormalMapSettings
@@ -59,6 +62,20 @@ struct HeightMapSettings
     float strength = 1.0f;
 };
 
+struct PBRMaterialSettings
+{
+    Vector3 albedo = { 1.0f, 1.0f, 1.0f };
+    float metallic = 0.0f;
+
+    float roughness = 0.5f;
+    float ao = 1.0f;
+    bool useAlbedoMap = true;
+    bool useMetallicMap = true;
+
+    bool useRoughnessMap = true;
+    bool useAOMap = true;
+};
+
 struct ModelSettings
 {
     static constexpr int kVersion = 1;
@@ -76,6 +93,7 @@ struct ModelSettings
     HeightMapSettings heightMap;
     SpecularSettings  specular;
     BloomSettings     bloom;
+    PBRMaterialSettings  pbr;
 
     // ---- 実行時だけの情報(JSON には書かない) ----
     State        state = State::New;

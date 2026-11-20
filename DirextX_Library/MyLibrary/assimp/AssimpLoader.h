@@ -39,6 +39,9 @@ private:
     void LoadDiffuseTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty);
     void LoadNormalTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty);
     void LoadHeightTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty);
+    void LoadMetallicTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty);
+    void LoadRoughnessTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty);
+    void LoadAOTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty);
     ResultErrorHandle::ErrorCode  LoadAnimations(const aiScene* scene,std::vector<AnimationData>& animations);
     ResultErrorHandle::ErrorCode  LoadBones(Mesh& dst, const aiMesh* src, ModelData& model);
     int LoadNodeHierarchy(const aiNode* src, int parentIndex, ModelData& model);

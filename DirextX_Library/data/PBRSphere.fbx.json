@@ -1,0 +1,49 @@
+{
+  "bloom": {
+    "enable": true,
+    "intensity": 1.0
+  },
+  "heightMap": {
+    "enable": false,
+    "strength": 1.0
+  },
+  "materials": {
+    "DefaultMaterial": {
+      "ao": "",
+      "diffuse": "planeTexture.png",
+      "height": "",
+      "metallic": "",
+      "normal": "testDist.png",
+      "roughness": ""
+    }
+  },
+  "normalMap": {
+    "enable": true,
+    "strength": 1.0
+  },
+  "pbr": {
+    "albedo": [
+      0.0,
+      0.5124,
+      0.9928
+    ],
+    "ao": 1.0,
+    "metallic": 1.0,
+    "roughness": 0.3,
+    "useAOMap": true,
+    "useAlbedoMap": true,
+    "useMetallicMap": true,
+    "useRoughnessMap": true
+  },
+  "specular": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "enable": false,
+    "pow": 1.0,
+    "strength": 0.5
+  },
+  "version": 1
+}

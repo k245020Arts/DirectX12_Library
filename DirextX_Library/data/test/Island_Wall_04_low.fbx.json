@@ -9,14 +9,31 @@
   },
   "materials": {
     "lambert2": {
+      "ao": "",
       "diffuse": "Island_Wall_04_low_lambert2_BaseColor.png",
       "height": "Island_Wall_04_low_lambert2_Height.png",
-      "normal": "Island_Wall_04_low_lambert2_Normal.png"
+      "metallic": "Island_Wall_04_low_lambert2_Metalness",
+      "normal": "Island_Wall_04_low_lambert2_Normal.png",
+      "roughness": "Island_Wall_04_low_lambert2_Roughness"
     }
   },
   "normalMap": {
     "enable": true,
     "strength": 1.0
+  },
+  "pbr": {
+    "albedo": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "ao": 1.0,
+    "metallic": 0.0,
+    "roughness": 0.5,
+    "useAOMap": true,
+    "useAlbedoMap": true,
+    "useMetallicMap": true,
+    "useRoughnessMap": true
   },
   "specular": {
     "color": [

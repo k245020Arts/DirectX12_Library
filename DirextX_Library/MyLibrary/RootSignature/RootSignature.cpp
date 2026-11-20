@@ -841,3 +841,242 @@ void RootSignature::SetShadowDebugRootSignature()
         OutputDebugStringW(L"ShadowDebug RootSignatureの生成に失敗\n");
     }
 }
+
+void RootSignature::SetPBRRootSignature()
+{
+	// RootSignatureの設定
+	D3D12_ROOT_SIGNATURE_FLAGS flag =
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
+	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
+	flag |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+
+	// RootParameter
+	CD3DX12_ROOT_PARAMETER rootParam[15] = {};
+
+	// RootParameter 0 : b0 Transform
+	rootParam[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+	// RootParameter 1 : t0 MaterialTexture
+	D3D12_DESCRIPTOR_RANGE materialRange = {};
+
+	materialRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	materialRange.NumDescriptors = 1;
+	materialRange.BaseShaderRegister = 0;
+	materialRange.RegisterSpace = 0;
+	materialRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[1].InitAsDescriptorTable(1, &materialRange, D3D12_SHADER_VISIBILITY_PIXEL);
+
+	//RootParameter 2 : b1 Light
+	rootParam[2].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_PIXEL);
+
+	//RootParameter 3 : b2 Bone
+	rootParam[3].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+	//RootParameter 4 : t1 ShadowMap
+	D3D12_DESCRIPTOR_RANGE shadowMapRange = {};
+
+	shadowMapRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	shadowMapRange.NumDescriptors = 1;
+	shadowMapRange.BaseShaderRegister = 1;
+	shadowMapRange.RegisterSpace = 0;
+	shadowMapRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[4].InitAsDescriptorTable(1, &shadowMapRange, D3D12_SHADER_VISIBILITY_PIXEL);
+
+	// RootParameter 5 : t2 NormalMap
+	D3D12_DESCRIPTOR_RANGE normalRange = {};
+
+	normalRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	normalRange.NumDescriptors = 1;
+	normalRange.BaseShaderRegister = 2;
+	normalRange.RegisterSpace = 0;
+	normalRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[5].InitAsDescriptorTable(1, &normalRange, D3D12_SHADER_VISIBILITY_PIXEL);
+
+	//RootParameter 3 : b3 Normal
+	rootParam[6].InitAsConstantBufferView(3, 0, D3D12_SHADER_VISIBILITY_ALL);
+	//RootParameter 3 : b4 Specular
+	rootParam[7].InitAsConstantBufferView(4, 0, D3D12_SHADER_VISIBILITY_ALL);
+	//RootParameter 8 : b5 Bloom
+	rootParam[8].InitAsConstantBufferView(5, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+	// RootParameter 5 : t2 NormalMap
+	D3D12_DESCRIPTOR_RANGE heightRange = {};
+
+	heightRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	heightRange.NumDescriptors = 1;
+	heightRange.BaseShaderRegister = 3;
+	heightRange.RegisterSpace = 0;
+	heightRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[9].InitAsDescriptorTable(1, &heightRange, D3D12_SHADER_VISIBILITY_ALL);
+
+	//RootParameter 9 : b6 Height
+	rootParam[10].InitAsConstantBufferView(6, 0, D3D12_SHADER_VISIBILITY_ALL);
+	rootParam[11].InitAsConstantBufferView(7, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+	// RootParameter 5 : t2 NormalMap
+	D3D12_DESCRIPTOR_RANGE metallicRange = {};
+
+	metallicRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	metallicRange.NumDescriptors = 1;
+	metallicRange.BaseShaderRegister = 4;
+	metallicRange.RegisterSpace = 0;
+	metallicRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[12].InitAsDescriptorTable(1, &metallicRange, D3D12_SHADER_VISIBILITY_ALL);
+
+	D3D12_DESCRIPTOR_RANGE roughnessRange = {};
+
+	roughnessRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	roughnessRange.NumDescriptors = 1;
+	roughnessRange.BaseShaderRegister = 5;
+	roughnessRange.RegisterSpace = 0;
+	roughnessRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[13].InitAsDescriptorTable(1, &roughnessRange, D3D12_SHADER_VISIBILITY_ALL);
+
+	D3D12_DESCRIPTOR_RANGE aoRange = {};
+
+	aoRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	aoRange.NumDescriptors = 1;
+	aoRange.BaseShaderRegister = 6;
+	aoRange.RegisterSpace = 0;
+	aoRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	rootParam[14].InitAsDescriptorTable(1, &aoRange, D3D12_SHADER_VISIBILITY_ALL);
+
+	//Static Sampler : s0
+	D3D12_STATIC_SAMPLER_DESC samplerDescs[5] = {};
+
+	// Sampler 0 : Material Texture (s0)
+	samplerDescs[0].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+
+	samplerDescs[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+
+	samplerDescs[0].MipLODBias = 0.0f;
+	samplerDescs[0].MaxAnisotropy = 1;
+	samplerDescs[0].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	samplerDescs[0].BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+	samplerDescs[0].MinLOD = 0.0f;
+	samplerDescs[0].MaxLOD = D3D12_FLOAT32_MAX;
+
+	samplerDescs[0].ShaderRegister = 0;
+	samplerDescs[0].RegisterSpace = 0;
+	samplerDescs[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	//Sampler 1 : ShadowMap (s1)
+	samplerDescs[1].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+
+	samplerDescs[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplerDescs[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplerDescs[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+
+	samplerDescs[1].MipLODBias = 0.0f;
+	samplerDescs[1].MaxAnisotropy = 1;
+	samplerDescs[1].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	samplerDescs[1].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+	samplerDescs[1].MinLOD = 0.0f;
+	samplerDescs[1].MaxLOD = D3D12_FLOAT32_MAX;
+
+	samplerDescs[1].ShaderRegister = 1;
+	samplerDescs[1].RegisterSpace = 0;
+	samplerDescs[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	samplerDescs[2] = samplerDescs[0];
+
+	samplerDescs[2].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	samplerDescs[2].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+	// シャドウマップの範囲外は「影なし(深度1.0)」として扱う
+	samplerDescs[2].AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDescs[2].AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDescs[2].AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDescs[2].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+
+	samplerDescs[2].MaxAnisotropy = 1;
+	samplerDescs[2].ShaderRegister = 2;
+
+	// Sampler 0 : Material Texture (s0)
+	samplerDescs[3].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+
+	samplerDescs[3].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[3].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[3].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+
+	samplerDescs[3].MipLODBias = 0.0f;
+	samplerDescs[3].MaxAnisotropy = 1;
+	samplerDescs[3].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	samplerDescs[3].BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+	samplerDescs[3].MinLOD = 0.0f;
+	samplerDescs[3].MaxLOD = D3D12_FLOAT32_MAX;
+
+	samplerDescs[3].ShaderRegister = 3;
+	samplerDescs[3].RegisterSpace = 0;
+	samplerDescs[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	// Sampler 4 : HeightMap Texture (40)
+	samplerDescs[4].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+
+	samplerDescs[4].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[4].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDescs[4].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+
+	samplerDescs[4].MipLODBias = 0.0f;
+	samplerDescs[4].MaxAnisotropy = 1;
+	samplerDescs[4].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	samplerDescs[4].BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+	samplerDescs[4].MinLOD = 0.0f;
+	samplerDescs[4].MaxLOD = D3D12_FLOAT32_MAX;
+
+	samplerDescs[4].ShaderRegister = 4;
+	samplerDescs[4].RegisterSpace = 0;
+	samplerDescs[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+
+	D3D12_ROOT_SIGNATURE_DESC desc = {};
+
+	desc.NumParameters = _countof(rootParam);
+	desc.pParameters = rootParam;
+
+	desc.NumStaticSamplers = _countof(samplerDescs);
+	desc.pStaticSamplers = samplerDescs;
+
+	desc.Flags = flag;
+
+	ComPtr<ID3DBlob> pBlob;
+	ComPtr<ID3DBlob> pErrorBlob;
+
+	HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_0, pBlob.GetAddressOf(), pErrorBlob.GetAddressOf());
+
+	if (FAILED(hr))
+	{
+		if (pErrorBlob)
+		{
+			OutputDebugStringA(static_cast<const char*>(pErrorBlob->GetBufferPointer()));
+		}
+
+		OutputDebugStringW(L"RootSignatureのシリアライズに失敗");
+
+		success = false;
+		return;
+	}
+
+	hr = Engine::GetInstance()->Device()->CreateRootSignature(0, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_PPV_ARGS(pRootSignature.GetAddressOf()));
+
+	if (FAILED(hr))
+	{
+		OutputDebugStringW(L"RootSignatureの生成に失敗");
+
+		success = false;
+		return;
+	}
+
+	success = true;
+}

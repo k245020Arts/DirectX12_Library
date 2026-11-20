@@ -9,14 +9,31 @@
   },
   "materials": {
     "MariaMat": {
+      "ao": "",
       "diffuse": "Walking.fbm/maria_diffuse.png",
       "height": "",
-      "normal": "Walking.fbm/maria_normal.png"
+      "metallic": "",
+      "normal": "Walking.fbm/maria_normal.png",
+      "roughness": ""
     }
   },
   "normalMap": {
     "enable": true,
     "strength": 1.0
+  },
+  "pbr": {
+    "albedo": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "ao": 1.0,
+    "metallic": 0.0,
+    "roughness": 0.5,
+    "useAOMap": true,
+    "useAlbedoMap": true,
+    "useMetallicMap": true,
+    "useRoughnessMap": true
   },
   "specular": {
     "color": [

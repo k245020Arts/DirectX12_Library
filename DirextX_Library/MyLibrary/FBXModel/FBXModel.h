@@ -19,6 +19,12 @@ struct IKChain;
 
 struct DescriptorHandle;
 
+enum class RenderingMode
+{
+	Standard,
+	PBR
+};
+
 struct NodeData
 {
 	std::wstring name;
@@ -58,6 +64,10 @@ struct TextureSRVData
 	DescriptorHandle* normalMap;
 	DescriptorHandle* heightMap;
 
+	//PBR用
+	DescriptorHandle* metallicMap;
+	DescriptorHandle* roughnessMap;
+	DescriptorHandle* aoMap;
 };
 
 // IKソルバーの種類
@@ -85,6 +95,9 @@ public:
 
 	void Update();
 	void Draw();
+
+	void StandardDraw();
+	void PBRDraw();
 
 	Transform& GetTransform() { return transform; }
 
@@ -168,6 +181,11 @@ public:
 	void EnableToBloom(const bool _enableBloom) { bloomParam.enableBloom = _enableBloom ? 1.0f : 0.0f; }
 	void BloomStrength(const float _strength) { bloomParam.bloomIntensity = _strength; }
 
+	void SetRenderingMode(RenderingMode mode)
+	{
+		renderingMode = mode;
+	}
+
 private:
 
 	using ConstantPtr = std::vector<std::shared_ptr<ConstBuffer>>;
@@ -182,6 +200,7 @@ private:
 		ConstantPtr specularMap;
 		ConstantPtr bloom;
 		ConstantPtr heightMap;
+		ConstantPtr PBRParam;
 
 		ConstantBufferData()
 		{
@@ -193,6 +212,7 @@ private:
 			normalMap.resize(FRAME_BUFFER_COUNT);
 			bloom.resize(FRAME_BUFFER_COUNT);
 			heightMap.resize(FRAME_BUFFER_COUNT);
+			PBRParam.resize(FRAME_BUFFER_COUNT);
 		}
 	};
 
@@ -218,7 +238,7 @@ private:
 	void Init();
 
 	void SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint);
-
+	void SetPBRPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint);
 
 	void DrawShadow(const ShadowCamera& _camera, const ShadowMap& _shadowMap) override;
 	void SetShadowPipelineState();
@@ -230,6 +250,11 @@ private:
 	std::unique_ptr<RootSignature> rootSignature;
 	std::unique_ptr<PipelineState> pipelineState;
 	std::unique_ptr<PipelineState> wireFramePipelineState;
+
+	std::unique_ptr<RootSignature> PBRRootSignature = nullptr;
+	std::unique_ptr<PipelineState> PBRPipelineState = nullptr;
+	std::unique_ptr<PipelineState> PBRWireFramePipelineState = nullptr;
+
 	std::vector <std::unique_ptr<IndexBuffer>> indexBuffer;
 
 	ConstantBufferData constantBufferPtr;
@@ -267,6 +292,7 @@ private:
 	SpecularParam specularParam;
 	BloomParam bloomParam;
 	HeightMapParam heightMapParam;
+	PBRMaterialParam PBRParam;
 
 	// ---- <モデル名>.fbx.json との受け渡し ----
 	std::wstring modelFilePath;      // Load に渡されたモデルのパス
@@ -274,4 +300,8 @@ private:
 	void CollectSettings();          // normalMapParam / specularParam → JSON の内容
 
 	void ShaderParamSerializeImgui()override;
+
+	RenderingMode renderingMode = RenderingMode::PBR;
+
+	DescriptorHandle* GetTexDescriptorHeap(const std::wstring& _path);
 };

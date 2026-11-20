@@ -168,7 +168,10 @@ ResultErrorHandle::ErrorCode AssimpLoader::Load(const ImportSettings& setting, M
             LoadDiffuseTexture(setting.filename, meshes[i], pMaterial, materialSettings, settingsDirty);
             LoadNormalTexture(setting.filename, meshes[i], pMaterial, materialSettings, settingsDirty);
             LoadHeightTexture(setting.filename, meshes[i], pMaterial, materialSettings, settingsDirty);
-
+            LoadMetallicTexture(setting.filename, meshes[i], pMaterial, materialSettings, settingsDirty);
+            LoadRoughnessTexture(setting.filename, meshes[i], pMaterial, materialSettings, settingsDirty);
+            LoadAOTexture(setting.filename, meshes[i], pMaterial, materialSettings, settingsDirty);
+            
         }
     }
 
@@ -534,7 +537,7 @@ void AssimpLoader::LoadHeightTexture(const wchar_t* filename, Mesh& dst, const a
         dst.HeightMap = ResolveTexturePath(filename, p);
 
         // FBX から見つけた結果を JSON に残す(次回からは JSON の内容が使われる)
-        material.height = (dst.HeightMap == L"404_NotFound_Texture_Path.err") ? FileNameOf(p) : ToSidecarTexturePath(filename, dst.NormalMap);
+        material.height = (dst.HeightMap == L"404_NotFound_Texture_Path.err") ? FileNameOf(p) : ToSidecarTexturePath(filename, dst.HeightMap);
         settingsDirty = true;
 
         if (dst.HeightMap.empty())
@@ -546,6 +549,147 @@ void AssimpLoader::LoadHeightTexture(const wchar_t* filename, Mesh& dst, const a
     {
         dst.HeightMap.clear();
         dst.HeightMap = L"NO_HEIGHT_IMAGE.err";
+    }
+}
+
+void AssimpLoader::LoadMetallicTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty)
+{
+    // JSON にテクスチャ名が書かれていれば、FBX の情報より優先する
+    if (!material.metallic.empty())
+    {
+        const std::wstring jsonName = UTFConverter::Utf8ToWide(material.metallic);
+        dst.MetallicMap = ResolveTexturePath(filename, jsonName);
+
+        if (dst.MetallicMap == L"404_NotFound_Texture_Path.err")
+            OutputDebugStringW((L"[HeightTexture] JSONで指定されたテクスチャが見つかりません: " + jsonName + L"\n").c_str());
+        else
+            OutputDebugStringW((L"[HeightTexture] JSONの指定で読み込み: " + dst.MetallicMap + L"\n").c_str());
+        return;
+    }
+
+    aiString path;
+
+    if (GetTexturePathWithFallback(src, { aiTextureType_METALNESS }, path))
+    {
+        const std::string p = path.C_Str();
+
+        // 埋め込みテクスチャ("*0" など)は未対応
+        if (!p.empty() && p[0] == '*')
+        {
+            OutputDebugStringA("[HeightTexture] 埋め込みテクスチャ(未対応)\n");
+            dst.MetallicMap.clear();
+            return;
+        }
+
+        dst.MetallicMap = ResolveTexturePath(filename, p);
+
+        // FBX から見つけた結果を JSON に残す(次回からは JSON の内容が使われる)
+        material.metallic = (dst.MetallicMap == L"404_NotFound_Texture_Path.err") ? FileNameOf(p) : ToSidecarTexturePath(filename, dst.MetallicMap);
+        settingsDirty = true;
+
+        if (dst.MetallicMap.empty())
+            OutputDebugStringA(("[HeightTexture] 見つかりません: " + p + "\n").c_str());
+        else
+            OutputDebugStringW((L"[HeightTexture] 読み込み: " + dst.MetallicMap + L"\n").c_str());
+    }
+    else
+    {
+        dst.MetallicMap.clear();
+        dst.MetallicMap = L"NO_MetallicMap_IMAGE.err";
+    }
+}
+
+void AssimpLoader::LoadRoughnessTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty)
+{
+    // JSON にテクスチャ名が書かれていれば、FBX の情報より優先する
+    if (!material.roughness.empty())
+    {
+        const std::wstring jsonName = UTFConverter::Utf8ToWide(material.roughness);
+        dst.RoughnessMap = ResolveTexturePath(filename, jsonName);
+
+        if (dst.HeightMap == L"404_NotFound_Texture_Path.err")
+            OutputDebugStringW((L"[HeightTexture] JSONで指定されたテクスチャが見つかりません: " + jsonName + L"\n").c_str());
+        else
+            OutputDebugStringW((L"[HeightTexture] JSONの指定で読み込み: " + dst.RoughnessMap + L"\n").c_str());
+        return;
+    }
+
+    aiString path;
+
+    if (GetTexturePathWithFallback(src, { aiTextureType_MAYA_SPECULAR_ROUGHNESS, aiTextureType_DIFFUSE_ROUGHNESS }, path))
+    {
+        const std::string p = path.C_Str();
+
+        // 埋め込みテクスチャ("*0" など)は未対応
+        if (!p.empty() && p[0] == '*')
+        {
+            OutputDebugStringA("[HeightTexture] 埋め込みテクスチャ(未対応)\n");
+            dst.RoughnessMap.clear();
+            return;
+        }
+
+        dst.RoughnessMap = ResolveTexturePath(filename, p);
+
+        // FBX から見つけた結果を JSON に残す(次回からは JSON の内容が使われる)
+        material.roughness = (dst.RoughnessMap == L"404_NotFound_Texture_Path.err") ? FileNameOf(p) : ToSidecarTexturePath(filename, dst.RoughnessMap);
+        settingsDirty = true;
+
+        if (dst.RoughnessMap.empty())
+            OutputDebugStringA(("[HeightTexture] 見つかりません: " + p + "\n").c_str());
+        else
+            OutputDebugStringW((L"[HeightTexture] 読み込み: " + dst.RoughnessMap + L"\n").c_str());
+    }
+    else
+    {
+        dst.RoughnessMap.clear();
+        dst.RoughnessMap = L"NO_RoughnessMap_IMAGE.err";
+    }
+}
+
+void AssimpLoader::LoadAOTexture(const wchar_t* filename, Mesh& dst, const aiMaterial* src, MaterialSettings& material, bool& settingsDirty)
+{
+    // JSON にテクスチャ名が書かれていれば、FBX の情報より優先する
+    if (!material.ao.empty())
+    {
+        const std::wstring jsonName = UTFConverter::Utf8ToWide(material.ao);
+        dst.AoMap = ResolveTexturePath(filename, jsonName);
+
+        if (dst.AoMap == L"404_NotFound_Texture_Path.err")
+            OutputDebugStringW((L"[HeightTexture] JSONで指定されたテクスチャが見つかりません: " + jsonName + L"\n").c_str());
+        else
+            OutputDebugStringW((L"[HeightTexture] JSONの指定で読み込み: " + dst.AoMap + L"\n").c_str());
+        return;
+    }
+
+    aiString path;
+
+    if (GetTexturePathWithFallback(src, { aiTextureType_AMBIENT_OCCLUSION,aiTextureType_LIGHTMAP,aiTextureType_AMBIENT }, path))
+    {
+        const std::string p = path.C_Str();
+
+        // 埋め込みテクスチャ("*0" など)は未対応
+        if (!p.empty() && p[0] == '*')
+        {
+            OutputDebugStringA("[HeightTexture] 埋め込みテクスチャ(未対応)\n");
+            dst.HeightMap.clear();
+            return;
+        }
+
+        dst.AoMap = ResolveTexturePath(filename, p);
+
+        // FBX から見つけた結果を JSON に残す(次回からは JSON の内容が使われる)
+        material.ao = (dst.AoMap == L"404_NotFound_Texture_Path.err") ? FileNameOf(p) : ToSidecarTexturePath(filename, dst.AoMap);
+        settingsDirty = true;
+
+        if (dst.AoMap.empty())
+            OutputDebugStringA(("[HeightTexture] 見つかりません: " + p + "\n").c_str());
+        else
+            OutputDebugStringW((L"[HeightTexture] 読み込み: " + dst.AoMap + L"\n").c_str());
+    }
+    else
+    {
+        dst.AoMap.clear();
+        dst.AoMap = L"NO_AoMap_IMAGE.err";
     }
 }
 

@@ -1,0 +1,57 @@
+{
+  "bloom": {
+    "enable": true,
+    "intensity": 1.0
+  },
+  "heightMap": {
+    "enable": false,
+    "strength": 1.0
+  },
+  "materials": {
+    "DefaultMaterial": {
+      "ao": "",
+      "diffuse": "textures/T_CannonTower_BC_4K.png",
+      "height": "",
+      "metallic": "",
+      "normal": "textures/T_CannonTower_N_4K.png",
+      "roughness": ""
+    },
+    "MI_CannonTower": {
+      "ao": "",
+      "diffuse": "textures/T_CannonTower_BC_4K.png",
+      "height": "",
+      "metallic": "",
+      "normal": "textures/T_CannonTower_N_4K.png",
+      "roughness": ""
+    }
+  },
+  "normalMap": {
+    "enable": true,
+    "strength": 1.0
+  },
+  "pbr": {
+    "albedo": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "ao": 1.0,
+    "metallic": 0.0,
+    "roughness": 0.5,
+    "useAOMap": true,
+    "useAlbedoMap": true,
+    "useMetallicMap": true,
+    "useRoughnessMap": true
+  },
+  "specular": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "enable": false,
+    "pow": 1.0,
+    "strength": 0.5
+  },
+  "version": 1
+}

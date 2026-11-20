@@ -132,6 +132,11 @@ struct Mesh
     std::wstring DiffuseMap; // テクスチャのファイルパス
     std::wstring NormalMap; //テクスチャのノーマルマップのファイルパス
     std::wstring HeightMap; //テクスチャのハイトマップのファイルパス
+    std::wstring MetallicMap; // テクスチャのファイルパス
+    std::wstring RoughnessMap; //テクスチャのノーマルマップのファイルパス
+    std::wstring AoMap; //テクスチャのハイトマップのファイルパス
+
+
     bool hasBones = false;
 };
 
@@ -173,4 +178,19 @@ struct HeightMapParam
     float enableHeight = 0.0f;
     float heightStrength = 1.0f;
     Vector2 heightPad;
+};
+
+struct PBRMaterialParam
+{
+    Vector3 albedo = { 1.0f, 1.0f, 1.0f };
+    float metallic = 0.0f;
+
+    float roughness = 0.5f;
+    float ao = 1.0f;
+    uint32_t useAlbedoMap = 1;
+    uint32_t useMetallicMap = 1;
+
+    uint32_t useRoughnessMap = 1;
+    uint32_t useAOMap = 1;
+    Vector2 padding = { 0.0f, 0.0f };
 };

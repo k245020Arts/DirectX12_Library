@@ -193,6 +193,9 @@
     <Filter Include="Shader\PostEffectShader\Fog">
       <UniqueIdentifier>{235303cf-d377-4f88-97f8-9a4518bf958e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\FBXModelShader\PBR">
+      <UniqueIdentifier>{b262a152-9796-4808-83f8-2afbcde08d6e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp">
@@ -765,6 +768,9 @@
     </FxCompile>
     <FxCompile Include="Shader\PostEffectBaseShader\Fog\FogPixelShader.hlsl">
       <Filter>Shader\PostEffectShader\Fog</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\FBXModelShader\PBR\PBRPixelShader.hlsl">
+      <Filter>Shader\FBXModelShader\PBR</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,49 @@
+{
+  "bloom": {
+    "enable": true,
+    "intensity": 1.0
+  },
+  "heightMap": {
+    "enable": false,
+    "strength": 1.0
+  },
+  "materials": {
+    "Material_MR": {
+      "ao": "Default_AO.jpg",
+      "diffuse": "Default_albedo.jpg",
+      "height": "",
+      "metallic": "",
+      "normal": "Default_normal.jpg",
+      "roughness": "Default_metalRoughness.jpg"
+    }
+  },
+  "normalMap": {
+    "enable": true,
+    "strength": 1.0
+  },
+  "pbr": {
+    "albedo": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "ao": 1.0,
+    "metallic": 0.0,
+    "roughness": 0.5,
+    "useAOMap": true,
+    "useAlbedoMap": true,
+    "useMetallicMap": true,
+    "useRoughnessMap": true
+  },
+  "specular": {
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "enable": false,
+    "pow": 1.0,
+    "strength": 0.5
+  },
+  "version": 1
+}

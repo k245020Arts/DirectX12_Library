@@ -149,6 +149,7 @@ ResultErrorHandle FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, boo
 	Init();
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/FBXModelShader/FBXModelVertexShader.hlsl", "BasicVS_FBX", L"Shader/FBXModelShader/FBXModelPixelShader.hlsl", "BasicPS_FBX");
+	SetPBRPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/FBXModelShader/FBXModelVertexShader.hlsl", "BasicVS_FBX", L"Shader/FBXModelShader/PBR/PBRPixelShader.hlsl", "main");
 	//SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
 	if (!loader.GetTextureLoader()) {
 		pipelineState->ErrorStateChange();
@@ -191,6 +192,22 @@ void FBXModel::Update()
 
 void FBXModel::Draw()
 {
+	switch (renderingMode)
+	{
+	case RenderingMode::Standard:
+		StandardDraw();
+		break;
+	case RenderingMode::PBR:
+		PBRDraw();
+		break;
+	default:
+		assert(false && "描画モードを追加してください");
+		break;
+	}
+}
+
+void FBXModel::StandardDraw()
+{
 	auto currentIndex = Engine::GetInstance()->CurrentBackBufferIndex();
 	auto commandList = Engine::GetInstance()->CommandList();
 
@@ -225,7 +242,55 @@ void FBXModel::Draw()
 		commandList->IASetVertexBuffers(0, 1, &vbView);
 		commandList->IASetIndexBuffer(&ibView);
 
+		//地面影を描画する場合はインシタンシングを2にする。
+		if (groundShadow) {
+			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 2, 0, 0, 0); // インデックスの数分描画する
+		}
+		else {
+			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 1, 0, 0, 0); // インデックスの数分描画する
+		}
+	}
+}
 
+void FBXModel::PBRDraw()
+{
+	auto currentIndex = Engine::GetInstance()->CurrentBackBufferIndex();
+	auto commandList = Engine::GetInstance()->CommandList();
+
+	// メッシュの数だけインデックス分の描画を行う処理を回す
+	for (size_t i = 0; i < modelData.meshes.size(); i++)
+	{
+		auto vbView = vertexBuffer[i]->GetView(); // そのメッシュに対応する頂点バッファ
+		auto ibView = indexBuffer[i]->View(); // そのメッシュに対応する頂点バッファ
+		auto materialHeap = DescriptorHeap::GetInstance()->GetHeap().Get();
+
+		commandList->SetDescriptorHeaps(1, DescriptorHeap::GetInstance()->GetHeap().GetAddressOf());
+
+		commandList->SetGraphicsRootSignature(PBRRootSignature->Get());
+		commandList->SetPipelineState(PBRPipelineState->GetPipelineState());
+		commandList->SetGraphicsRootConstantBufferView(0, constantBufferPtr.matrixTransform[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootDescriptorTable(1, materialHandles[i].diffuseMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
+		commandList->SetGraphicsRootConstantBufferView(2, constantBufferPtr.light[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootConstantBufferView(3, constantBufferPtr.bone[currentIndex]->GetAddress()); // 定数バッファをセット
+
+		if (shadowMapHandle != nullptr) {
+			commandList->SetGraphicsRootDescriptorTable(4, shadowMapHandle->handleGPU);
+		}
+
+		commandList->SetGraphicsRootDescriptorTable(5, materialHandles[i].normalMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
+		commandList->SetGraphicsRootConstantBufferView(6, constantBufferPtr.normalMap[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootConstantBufferView(7, constantBufferPtr.specularMap[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootConstantBufferView(8, constantBufferPtr.bloom[currentIndex]->GetAddress()); // 定数バッファをセット
+		commandList->SetGraphicsRootDescriptorTable(9, materialHandles[i].heightMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
+		commandList->SetGraphicsRootConstantBufferView(10, constantBufferPtr.heightMap[currentIndex]->GetAddress()); // そのメッシュに対応するディスクリプタテーブルをセット
+		commandList->SetGraphicsRootConstantBufferView(11, constantBufferPtr.PBRParam[currentIndex]->GetAddress()); // そのメッシュに対応するディスクリプタテーブルをセット
+		commandList->SetGraphicsRootDescriptorTable(12, materialHandles[i].metallicMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
+		commandList->SetGraphicsRootDescriptorTable(13, materialHandles[i].roughnessMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
+		commandList->SetGraphicsRootDescriptorTable(14, materialHandles[i].aoMap->handleGPU); // そのメッシュに対応するディスクリプタテーブルをセット
+
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		commandList->IASetVertexBuffers(0, 1, &vbView);
+		commandList->IASetIndexBuffer(&ibView);
 
 		//地面影を描画する場合はインシタンシングを2にする。
 		if (groundShadow) {
@@ -234,8 +299,6 @@ void FBXModel::Draw()
 		else {
 			commandList->DrawIndexedInstanced((UINT)modelData.meshes[i].Indices.size(), 1, 0, 0, 0); // インデックスの数分描画する
 		}
-
-
 	}
 }
 
@@ -413,6 +476,7 @@ void FBXModel::Init()
 		CreateConstantBufferData<NormalMapParam>(constantBufferPtr.normalMap[i], L"ノーマルマップ用定数バッファの生成に失敗\n");
 		CreateConstantBufferData<BloomParam>(constantBufferPtr.bloom[i], L"ブルーム用用定数バッファの生成に失敗\n");
 		CreateConstantBufferData<HeightMapParam>(constantBufferPtr.heightMap[i], L"ハイトマップ用定数バッファの生成に失敗\n");
+		CreateConstantBufferData<PBRMaterialParam>(constantBufferPtr.PBRParam[i], L"PBR用定数バッファの生成に失敗\n");
 
 		// 変換行列の登録
 		auto ptr = constantBufferPtr.matrixTransform[i]->GetPtr<MatrixTransform>();
@@ -452,48 +516,23 @@ void FBXModel::Init()
 
 		auto height = constantBufferPtr.heightMap[i]->GetPtr<HeightMapParam>();
 		*height = heightMapParam;
+
+		auto pbr = constantBufferPtr.PBRParam[i]->GetPtr<PBRMaterialParam>();
+		*pbr = PBRParam;
 	}
 
 	materialHandles.clear();
 
 	for (size_t i = 0; i < modelData.meshes.size(); i++)
 	{
-		auto diffusePath = modelData.meshes[i].DiffuseMap;
-		if (!modelData.meshes[i].DiffuseMap.empty()) {
-			if (GetExtension(modelData.meshes[i].DiffuseMap) == TexExtension::PSD) {
-				diffusePath = ReplaceExtension(modelData.meshes[i].DiffuseMap, "png"); //psdの場合はtgaとして扱う
-			}
-		}
+		TextureSRVData srvData = TextureSRVData();
 
-		TextureSRVData srvData;
-		ResultErrorHandle::ErrorCode errorHandle = TextureLoader::GetInstance()->Load(diffusePath);
-		auto mainTex = TextureLoader::GetInstance()->Get(diffusePath);
-		auto handle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), diffusePath);
-		srvData.diffuseMap = handle;
-
-		auto normalPath = modelData.meshes[i].NormalMap;
-		if (!modelData.meshes[i].NormalMap.empty()) {
-			if (GetExtension(modelData.meshes[i].NormalMap) == TexExtension::PSD) {
-				normalPath = ReplaceExtension(modelData.meshes[i].NormalMap, "png"); //psdの場合はtgaとして扱う
-			}
-		}
-
-		ResultErrorHandle::ErrorCode normalMapErrorHandle = TextureLoader::GetInstance()->Load(normalPath);
-		auto normalTex = TextureLoader::GetInstance()->Get(normalPath);
-		auto normalHandle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), normalPath);
-		srvData.normalMap = normalHandle;
-
-		auto heightPath = modelData.meshes[i].HeightMap;
-		if (!modelData.meshes[i].HeightMap.empty()) {
-			if (GetExtension(modelData.meshes[i].HeightMap) == TexExtension::PSD) {
-				heightPath = ReplaceExtension(modelData.meshes[i].HeightMap, "png"); //psdの場合はtgaとして扱う
-			}
-		}
-
-		ResultErrorHandle::ErrorCode heightMapErrorHandle = TextureLoader::GetInstance()->Load(heightPath);
-		auto heightTex = TextureLoader::GetInstance()->Get(heightPath);
-		auto heightHandle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), heightPath);
-		srvData.heightMap = heightHandle;
+		srvData.diffuseMap = GetTexDescriptorHeap(modelData.meshes[i].DiffuseMap);
+		srvData.normalMap = GetTexDescriptorHeap(modelData.meshes[i].NormalMap);
+		srvData.heightMap = GetTexDescriptorHeap(modelData.meshes[i].HeightMap);
+		srvData.metallicMap = GetTexDescriptorHeap(modelData.meshes[i].MetallicMap);
+		srvData.roughnessMap = GetTexDescriptorHeap(modelData.meshes[i].RoughnessMap);
+		srvData.aoMap = GetTexDescriptorHeap(modelData.meshes[i].AoMap);
 
 		materialHandles.push_back(srvData);
 	}
@@ -503,6 +542,13 @@ void FBXModel::Init()
 	if (!rootSignature->IsSuccess())
 	{
 		OutputDebugStringW(L"ルートシグネチャの生成に失敗\n");
+	}
+
+	PBRRootSignature = std::make_unique<RootSignature>();
+	PBRRootSignature->SetPBRRootSignature();
+	if (!PBRRootSignature->IsSuccess())
+	{
+		OutputDebugStringW(L"PBR用ルートシグネチャの生成に失敗\n");
 	}
 
 	SetShadowPipelineState();
@@ -524,6 +570,25 @@ void FBXModel::SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wst
 	if (!pipelineState->IsSuccess())
 	{
 		OutputDebugStringW(L"パイプラインステートの生成に失敗\n");
+	}
+}
+
+void FBXModel::SetPBRPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::wstring _VSfilePath, std::string _VSentryPoint, std::wstring _PSfilePath, std::string _PSentryPoint)
+{
+	PBRPipelineState = std::make_unique<PipelineState>(topology);
+	PBRPipelineState->SetInputLayout(VertexSkinning3D::InputLayout);
+	PBRPipelineState->SetRootSignature(PBRRootSignature->Get());
+	PBRPipelineState->SetDrawLayOut(D3D12_FILL_MODE_SOLID);
+	PBRPipelineState->SetVS(_VSfilePath, _VSentryPoint);
+	PBRPipelineState->SetPS(_PSfilePath, _PSentryPoint);
+	// シーン描画はマルチレンダーターゲット。ピクセルシェーダー(BasicPS_FBX)は Bloom ターゲットにも出力する
+	PBRPipelineState->SetRenderTargetFormats(SceneLayout::Formats, SceneLayout::Count);
+	PBRPipelineState->SetExtraTargetOutput(true);
+	PBRPipelineState->Create();
+
+	if (!PBRPipelineState->IsSuccess())
+	{
+		OutputDebugStringW(L"PBR用パイプラインステートの生成に失敗\n");
 	}
 }
 
@@ -653,6 +718,9 @@ void FBXModel::VertexMapping(const Camera3D* _camera)
 
 		auto height = constantBufferPtr.heightMap[i]->GetPtr<HeightMapParam>();
 		*height = heightMapParam;
+
+		auto pbr = constantBufferPtr.PBRParam[i]->GetPtr<PBRMaterialParam>();
+		*pbr = PBRParam;
 	}
 }
 
@@ -706,6 +774,15 @@ void FBXModel::ApplySettings()
 
 	heightMapParam.enableHeight = s.heightMap.enable ? 1.0f : 0.0f;
 	heightMapParam.heightStrength = s.heightMap.strength;
+
+	PBRParam.albedo = s.pbr.albedo;
+	PBRParam.ao = s.pbr.ao;
+	PBRParam.roughness = s.pbr.roughness;
+	PBRParam.metallic = s.pbr.metallic;
+	PBRParam.useAlbedoMap = s.pbr.useAlbedoMap ? 1 : 0;
+	PBRParam.useAOMap = s.pbr.useAOMap ? 1 : 0;
+	PBRParam.useRoughnessMap = s.pbr.useRoughnessMap ? 1 : 0;
+	PBRParam.useMetallicMap = s.pbr.useMetallicMap ? 1 : 0;
 }
 
 void FBXModel::CollectSettings()
@@ -727,6 +804,15 @@ void FBXModel::CollectSettings()
 
 	s.heightMap.enable = heightMapParam.enableHeight > 0.5f;
 	s.heightMap.strength = heightMapParam.heightStrength;
+
+	s.pbr.albedo = PBRParam.albedo;
+	s.pbr.ao = PBRParam.ao;
+	s.pbr.roughness = PBRParam.roughness;
+	s.pbr.metallic = PBRParam.metallic;
+	s.pbr.useAlbedoMap = s.pbr.useAlbedoMap == 1 ? true : false;
+	s.pbr.useAOMap = s.pbr.useAOMap == 1 ? true : false;
+	s.pbr.useMetallicMap = s.pbr.useMetallicMap == 1 ? true : false;
+	s.pbr.useRoughnessMap = s.pbr.useRoughnessMap == 1 ? true : false;
 }
 
 bool FBXModel::SaveSettings(bool _overwriteBroken)
@@ -749,6 +835,24 @@ void FBXModel::ShaderParamSerializeImgui()
 
 	if (ImGui::CollapsingHeader(title.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 	{
+
+		// ================= 描画モード =================
+		ImGui::TextUnformatted(u8"描画モード");
+		ImGui::Separator();
+
+		const char* renderingModeItems[] =
+		{
+			"Standard",
+			"PBR"
+		};
+
+		int mode = static_cast<int>(renderingMode);
+
+		if (ImGui::Combo(u8"Rendering Mode",&mode,renderingModeItems,IM_ARRAYSIZE(renderingModeItems)))
+		{
+			renderingMode = static_cast<RenderingMode>(mode);
+		}
+
 		// ================= ノーマルマップ =================
 		ImGui::TextUnformatted(u8"ノーマルマップ");
 		ImGui::Separator();
@@ -812,6 +916,63 @@ void FBXModel::ShaderParamSerializeImgui()
 
 		ImGui::Spacing();
 
+		// ================= PBR =================
+		ImGui::TextUnformatted(u8"PBR（物理ベースレンダリング）");
+		ImGui::Separator();
+
+		// ベースカラー
+		ImGui::ColorEdit3(u8"ベースカラー##pbr",&PBRParam.albedo.x);
+		HelpTooltip(u8"マテリアルの基本色です。");
+
+		// 金属度
+		ImGui::SliderFloat(u8"金属度##pbr",&PBRParam.metallic,0.0f,1.0f,"%.2f");
+		HelpTooltip(u8"1.0 に近いほど金属らしくなり、0.0 では非金属になります。");
+
+		// 粗さ
+		ImGui::SliderFloat(u8"粗さ##pbr",&PBRParam.roughness,0.0f,1.0f,"%.2f");
+		HelpTooltip(u8"小さいほど鏡面反射が鋭く、大きいほど反射がぼやけます。");
+
+		// AO
+		ImGui::SliderFloat(u8"環境遮蔽##pbr",&PBRParam.ao,0.0f,1.0f,"%.2f");
+		HelpTooltip(u8"環境光による陰影の強さを調整します。");
+
+		ImGui::Spacing();
+
+		// プリセット
+		ImGui::TextUnformatted(u8"質感プリセット:");
+
+		if (ImGui::Button(u8"非金属"))
+		{
+			PBRParam.metallic = 0.0f;
+			PBRParam.roughness = 0.8f;
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button(u8"金属"))
+		{
+			PBRParam.metallic = 1.0f;
+			PBRParam.roughness = 0.3f;
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button(u8"プラスチック"))
+		{
+			PBRParam.metallic = 0.0f;
+			PBRParam.roughness = 0.25f;
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button(u8"ゴム"))
+		{
+			PBRParam.metallic = 0.0f;
+			PBRParam.roughness = 0.95f;
+		}
+
+		ImGui::Spacing();
+
 		// ================= ブルーム =================
 		ImGui::TextUnformatted(u8"ブルーム（光る）");
 		ImGui::Separator();
@@ -824,7 +985,7 @@ void FBXModel::ShaderParamSerializeImgui()
 		HelpTooltip(u8"OFF にすると、このモデルは光りません（ポストエフェクトの Bloom が ON のときに効きます）");
 
 		BeginDisabledIf(!bloomOn);
-		ImGui::SliderFloat(u8"強さ##bloom", &bloomParam.bloomIntensity, 0.0f, 4.0f, "%.2f");
+		ImGui::SliderFloat(u8"強さ##bloom", &bloomParam.bloomIntensity, 0.0f, 40.0f, "%.2f");
 		HelpTooltip(u8"Bloom ターゲットへ書く色の倍率。大きいほど強く光ります");
 		EndDisabledIf();
 
@@ -892,6 +1053,22 @@ void FBXModel::ShaderParamSerializeImgui()
 	}
 
 	ImGui::PopID();
+}
+
+DescriptorHandle* FBXModel::GetTexDescriptorHeap(const std::wstring& _path)
+{
+	auto path = _path;
+	if (!path.empty()) {
+		if (GetExtension(path) == TexExtension::PSD) {
+			path = ReplaceExtension(path, "png"); //psdの場合はtgaとして扱う
+		}
+	}
+
+	ResultErrorHandle::ErrorCode errorHandle = TextureLoader::GetInstance()->Load(path);
+	auto mainTex = TextureLoader::GetInstance()->Get(path);
+	auto handle = DescriptorHeap::GetInstance()->Register(TextureLoader::GetInstance(), path);
+
+	return handle;
 }
 
 void FBXModel::AttachToNode(FBXModel* parent, const std::wstring& nodeName)

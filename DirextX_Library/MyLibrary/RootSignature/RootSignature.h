@@ -20,6 +20,7 @@ public:
 	void SetPostEffectTwoInputRootSignature(); // t0, t1, b0 (サンプラーは LINEAR + CLAMP)
 	void SetShadowDepthRootSignature();
 	void SetShadowDebugRootSignature();
+	void SetPBRRootSignature();
 
 private:
 	bool success = false; // ルートシグネチャの生成に成功したかどうか
