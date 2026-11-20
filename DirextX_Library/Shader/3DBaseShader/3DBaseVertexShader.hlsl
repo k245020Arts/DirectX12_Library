@@ -22,6 +22,7 @@ VSOutput BasicVS_3D(VSInput input, uint instNo : SV_InstanceID)
     output.normal = mul(World, normal);
     output.instNo = instNo;
     output.shadowPosition = mul(lightViewProjection, worldPos);
+    output.worldPosition = worldPos;
     
     return output;
 }

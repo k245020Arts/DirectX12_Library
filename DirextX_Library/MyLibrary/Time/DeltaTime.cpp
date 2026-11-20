@@ -8,6 +8,34 @@ namespace {
     const float maxDeltaTime = 0.5f;
 }
 
+void DeltaTime::TimeMeasurementStart()
+{
+    timerMeasurementStart = std::chrono::steady_clock::now();
+}
+
+void DeltaTime::TimeMeasurementFinish(const std::string& _message)
+{
+    timerMeasurementFinish = std::chrono::steady_clock::now();
+
+    timeTaken = timerMeasurementFinish - timerMeasurementStart;
+
+    // ミリ秒に変換
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(timeTaken).count();
+
+    std::string MSTitleMessage = "Time Taken:";
+    std::string MSEndMessage = "%lld ms\n";
+
+    std::string MSmessage = MSTitleMessage + _message + MSEndMessage;
+
+    std::string SEndMessage = "%.f3 秒\n";
+
+    std::string SMessage = MSTitleMessage + _message + SEndMessage;
+
+    printf(MSmessage.c_str(), static_cast<long long>(milliseconds));
+
+    printf(SMessage.c_str(), static_cast<long long>(milliseconds / 1000.0f));
+}
+
 DeltaTime::DeltaTime() : targetFrameTime(std::chrono::microseconds(1000000 / FPS))
 {
     startTime = std::chrono::high_resolution_clock::now();
@@ -86,7 +114,7 @@ void DeltaTime::Update()
         deltaTime = dt;
     }
 
-    // 元々のセーフティ（maxDeltaTime）も最終防衛線として適用
+    // セーフティ（maxDeltaTime）も最終防衛線として適用
     if (deltaTime > maxDeltaTime) {
         deltaTime = maxDeltaTime;
     }

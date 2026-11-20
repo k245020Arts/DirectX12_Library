@@ -512,6 +512,7 @@
     <None Include="ImGui\imgui_bezier_math.inl" />
     <None Include="ImGui\imgui_extra_math.inl" />
     <None Include="Shader\2DBaseShader\BasicShaderHeader.hlsli" />
+    <None Include="Shader\Light\Light.hlsli" />
     <None Include="Shader\Shadow\ShadowSample.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

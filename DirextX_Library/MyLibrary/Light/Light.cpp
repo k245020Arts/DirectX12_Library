@@ -105,6 +105,39 @@ void Light::SetIntensity(uint32_t _lightIndex, float intensity)
 	lightBufferData.lights[_lightIndex].intensity = intensity;
 }
 
+void Light::SetPosition(uint32_t _lightIndex, const Vector3& position)
+{
+    // 存在しないインデックスは変更しない
+    if (_lightIndex >= lightBufferData.lightCount)
+    {
+        return;
+    }
+
+    lightBufferData.lights[_lightIndex].position = position;
+}
+
+void Light::SetRange(uint32_t _lightIndex, float range)
+{
+    // 存在しないインデックスは変更しない
+    if (_lightIndex >= lightBufferData.lightCount)
+    {
+        return;
+    }
+
+    lightBufferData.lights[_lightIndex].range = range;
+}
+
+void Light::SetSpotAngle(uint32_t _lightIndex, float innerAngleDeg, float outerAngleDeg)
+{
+    // 存在しないインデックスは変更しない
+    if (_lightIndex >= lightBufferData.lightCount)
+    {
+        return;
+    }
+
+    lightBufferData.lights[_lightIndex].SetSpotAngle(innerAngleDeg, outerAngleDeg);
+}
+
 void Light::SetAmbientColor(const Vector3& color)
 {
 	lightBufferData.ambientColor = color;

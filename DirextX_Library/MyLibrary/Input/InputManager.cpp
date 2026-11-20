@@ -9,7 +9,7 @@ InputManager::InputManager()
 
 InputManager::~InputManager()
 {
-	
+
 }
 
 void InputManager::Update()

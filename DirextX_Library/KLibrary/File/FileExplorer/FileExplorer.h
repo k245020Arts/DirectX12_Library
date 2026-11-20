@@ -80,10 +80,11 @@ private:
 	struct CreateEntryImGuiWindowData
 	{
 		bool isDraw;				// Windowを描画するかどうか
+		bool isWindowFocus;			// Windowをフォーカスするかどうか
 		std::string filePath;		// ファイルを作成するパス
 		std::string fileName;		// 作成するファイル名
 
-		CreateEntryImGuiWindowData() : isDraw(false), filePath(""), fileName("") {};
+		CreateEntryImGuiWindowData() : isDraw(false), isWindowFocus(false), filePath(""), fileName("") {};
 
 		/// <summary>
 		/// エントリ関連のメンバ値のリセット
@@ -91,6 +92,7 @@ private:
 		void ResetEntryData()
 		{
 			isDraw = false;
+			isWindowFocus = false;
 			filePath.clear();
 			fileName.clear();
 		}

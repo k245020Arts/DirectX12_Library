@@ -8,11 +8,14 @@ class DeltaTime : public SingletonBase<DeltaTime>
 {
 public:
 
+	void TimeMeasurementStart();
+	void TimeMeasurementFinish(const std::string& _message);
+
 	float GetFPS()const { return currentFPS; }
 	float GetDeltaTime()const { return deltaTime; }
 	float GetDeltaTimeMulTimeScale()const { return deltaTime * timeScale; }
 	void SetTimeScale(float _timeScale) { timeScale = _timeScale; }
-	// 戻り値の型が bool になっていたため、void（または適切な実装）に合わせて修正
+
 	void SetFrameRateLimitEnabled(bool _limitFps) { isFpsLimit = _limitFps; }
 
 private:
@@ -41,6 +44,10 @@ private:
 	float timeBuf[BUF_SIZE];
 	int readP;
 	int writeP;
+
+	std::chrono::steady_clock::time_point timerMeasurementStart;
+	std::chrono::steady_clock::time_point timerMeasurementFinish;
+	std::chrono::steady_clock::duration timeTaken;
 
 	friend class SingletonBase<DeltaTime>;
 	friend class Application;

@@ -12,31 +12,6 @@ cbuffer Transform : register(b0)
     float4 uvRect;
 }
 
-#define MAX_LIGHT_COUNT 12
-
-struct LightData
-{
-    float3 direction;
-    float intensity;
-
-    float3 color;
-    float padding;
-};
-
-cbuffer LightBuffer : register(b1)
-{
-    LightData lights[MAX_LIGHT_COUNT];
-
-    uint lightCount;
-    float3 padding;
-
-    float3 ambientColor;
-    float ambientIntensity;
-    
-    float3 cameraPos;
-    float pad;
-};
-
 // ノーマルマップ用用(C++ の NormalMapParam と同じ並び)
 cbuffer NormalMapParam : register(b3)
 {

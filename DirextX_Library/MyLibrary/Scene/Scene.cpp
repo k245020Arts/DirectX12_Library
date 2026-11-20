@@ -101,7 +101,9 @@ Scene::Scene()
 	texture2D1->GetTransform().position = Vector3(1000, 200, 0);*/
 
 	model = new FBXModel();
+	DeltaTime::GetInstance()->TimeMeasurementStart();
 	model->Load(L"data/Walking.fbx", false, true);
+	DeltaTime::GetInstance()->TimeMeasurementFinish("Model1ロード完了");
 
 	model->LoadAnimation(L"data/Idle.fbx");
 	model->LoadAnimation(L"data/Fast Run.fbx");
@@ -113,7 +115,9 @@ Scene::Scene()
 	//Sword And Shield Attack
 
 	model1 = new FBXModel();
+	DeltaTime::GetInstance()->TimeMeasurementStart();
 	model1->Load(L"data/Walking.fbx", false, true);
+	DeltaTime::GetInstance()->TimeMeasurementFinish("Model2ロード完了");
 	model1->LoadAnimation(L"data/Defender.fbx");
 	model1->LoadAnimation(L"data/Shopping Cart Dance.fbx");
 
@@ -162,8 +166,8 @@ Scene::Scene()
 	// 蝶番の制限（例: 膝）
 	model->SetIKHinge(legIK, 1, Vector3(1, 0, 0), 0.0f, DirectX::XMConvertToRadians(130.0f));
 
-	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Color::RGBToVector3(WHITE)));
-	Light::GetInstance()->AddLight(LightData(Vector3(0.0f, 0.0f, 1.0f), 1.0f, Color::RGBToVector3(WHITE)));
+	//Light::GetInstance()->AddLight(LightData::SetDirectionalLightData(Vector3(0.0f, 1.0f, 0.0f), 1.0f, Color::RGBToVector3(WHITE)));
+	//Light::GetInstance()->AddLight(LightData::SetDirectionalLightData(Vector3(0.0f, 0.0f, 1.0f), 1.0f, Color::RGBToVector3(WHITE)));
 
 	model->SetBlendMode(BlendState::NO_BLEND);
 	model->SetAlpha(0.5f);
@@ -199,8 +203,14 @@ Scene::Scene()
 
 #endif // MODEL
 
-	Light::GetInstance()->AddLight(LightData(Vector3(-1.0f, -1.0f, -1.0f), 3.0f, Color::RGBToVector3(WHITE)));
-
+	Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(0, 100.0f, 0),Vector3(0,-1,0), 3.0f, Color::RGBToVector3(GOLD), 1000.0f,10.0f,12.0f));
+	/*Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(-200.0f, 250.0f, -300.0f), Vector3(0, -1, 0), 3.0f, Color::RGBToVector3(GRAY), 1000.0f, 0.0f, 120.0f));
+	Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(100.0f, 250.0f, -100.0f), Vector3(0, -1, 0), 3.0f, Color::RGBToVector3(GREEN), 1000.0f, 30.0f, 90.0f));
+	Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(0.0f, 250.0f, 100.0f), Vector3(0, -1, 0), 3.0f, Color::RGBToVector3(BLUE), 1000.0f, 0.0f, 180.0f));
+	Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(100.0f, 200.0f,200.0f), Vector3(0, -1, 0), 3.0f, Color::RGBToVector3(RED), 1000.0f, 40.0f, 150.0f));
+	Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(200.0f, 150.0f, 0.0f), Vector3(0, -1, 0), 3.0f, Color::RGBToVector3(SAKURA), 1000.0f, 50.0f, 80.0f));
+	Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(300.0f, 100.0f, 100.0f), Vector3(0, -1, 0), 3.0f, Color::RGBToVector3(SILVER), 1000.0f, 10.0f, 20.0f));*/
+	//Light::GetInstance()->SetIntensity(0, 1.0f);
 #ifdef ORIGINAL_MOUSE_POINTER
 	clickTime = 0.0f;
 	mousePointer = new Texture2D();
@@ -420,6 +430,8 @@ void Scene::Update()
 	else {
 		speedUP = 0.0f;
 	}
+
+	Light::GetInstance()->SetPosition(1, model->GetTransform().position + Vector3(0,100,0));
 
 	/*Camera3D::GetInstance()->SetTarget(model->GetTransform().position);
 	Camera3D::GetInstance()->SetPosition(model->GetTransform().position + matrix.TransformDirection(Vector3(0.0f,600.0f,-200.0f)));*/

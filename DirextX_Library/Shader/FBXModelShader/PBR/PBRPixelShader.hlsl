@@ -1,5 +1,6 @@
-#include "../../Shadow/ShadowSample.hlsli"
 #include "../../2DBaseShader/BasicShaderHeader.hlsli"
+#include "../../Shadow/ShadowSample.hlsli"
+#include "../../Light/Light.hlsli"
 
 Texture2D<float4> albedoTexture : register(t0);
 Texture2D<float4> normalTexture : register(t2);
@@ -167,24 +168,31 @@ ScenePSOutput main(VSOutput _output, uint instNo : SV_InstanceID)
     // --------------------------------
     // 4. ShadowMap
     // --------------------------------
-
+    
     float shadowColor = CalculateShadow(_output.shadowPosition, 0.001f); // 今の値のまま
+    
+    // 影の影響を受けるのはディレクショナルライトだけ(シャドウマップは平行光源から作っているため)
+    // ポイント/スポットライトはシャドウマップの影響を受けない
+    float shadowFactor = lerp(0.3f, 1.0f, shadowColor);
 
     float3 directLighting = float3(0, 0, 0);
 
     // C++側のライト最大数を超えないようにする
     uint count = lightCount;
 
+    [loop]
     for (uint i = 0; i < count; ++i)
     {
-        float3 L = normalize(-lights[i].direction);
+        // ライトの種類ごとの違いは EvaluateLight の中に閉じ込めている
+        float3 L;
+        float3 radiance = LightCalculation(lights[i], _output.worldPosition.xyz, L);
 
-        float3 lightResult = CalculatePBRLighting(N,V,L,albedo,metallic,roughness,lights[i].color,lights[i].intensity);
+        float3 lightResult = CalculatePBRLighting(N, V, L, albedo, metallic, roughness, radiance, 1.0f);
 
-        directLighting += lightResult;
+        float shadowRate = (lights[i].lightType == LIGHT_TYPE_DIRECTIONAL) ? shadowFactor : 1.0f;
+
+        directLighting += lightResult * shadowRate;
     }
-    
-    directLighting *= lerp(0.3f, 1.0f, shadowColor);
     
     // --------------------------------
     // 6. 環境光

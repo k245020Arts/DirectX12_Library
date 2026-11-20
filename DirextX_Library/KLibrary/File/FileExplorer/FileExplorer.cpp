@@ -4,7 +4,7 @@
 #include <Windows.h>
 #include <string>
 #include <cwchar>
-#include "../../../MyLibrary/VisualStudioAdd/VisualStudioAdd.h"
+
 
 // newした際にメモリリークしたかをおうためのマクロ
 
@@ -36,7 +36,6 @@ void FileExplorer::Init()
 
 	allEntryNameList.clear();
 	allEntryNameList = std::move(FileSystemUtils::GetRecursiveDirectoryAndFileNameList(FileExplorerInfo::START_READ_FILEPATH, true));
-	VisualStudioProjectEditor::ProjectFilePath(L"DirextX_Library.vcxproj");
 
 	// エントリデータの初期化
 	InitEntryData();
@@ -376,19 +375,14 @@ bool FileExplorer::ButtonDrawings(const FileSystemUtils::EntryPathData& _entryPa
 	CopyButtonDraw(_entryPathData);
 
 	if (!_entryPathData.isDirectory)
-		return true;	// エントリがフォルダでなかったら、以下の作成処理をせず、return
+		return true;	// エントリがフォルダでなかったら、子階層にエントリを作成できないので、return
 
-	if (!createDirectoryImGuiWindowData.isDraw)
-	{
-		// フォルダ作成のImGui::Buttonの表示
-		CreateEntryButtonDraw(_entryPathData, u8"フォルダの作成", createDirectoryImGuiWindowData);
-	}
+	// フォルダ作成のImGui::Buttonの表示
+	CreateEntryButtonDraw(_entryPathData, u8"フォルダの作成", createDirectoryImGuiWindowData);
 
-	if (!createFileImGuiWindowData.isDraw)
-	{
-		// ファイル作成のImGui::Buttonの表示
-		CreateEntryButtonDraw(_entryPathData, u8"ファイルの作成", createFileImGuiWindowData);
-	}
+	// ファイル作成のImGui::Buttonの表示
+	CreateEntryButtonDraw(_entryPathData, u8"ファイルの作成", createFileImGuiWindowData);
+
 	return true;
 }
 
@@ -478,7 +472,7 @@ void FileExplorer::CopyButtonDraw(const FileSystemUtils::EntryPathData& _entryPa
 #endif
 }
 
-//-- エントリの作成 -----------------------------------------------
+//-- エントリの作成ボタン -----------------------------------------------
 
 void FileExplorer::CreateEntryButtonDraw(const FileSystemUtils::EntryPathData& _entryPathData, const std::string& _buttonName, CreateEntryImGuiWindowData& _createEntryImGuiWindowData)
 {
@@ -496,8 +490,9 @@ void FileExplorer::CreateEntryButtonDraw(const FileSystemUtils::EntryPathData& _
 
 	if (ImGui::Button(_buttonName.c_str(), buttonSize))
 	{
-		_createEntryImGuiWindowData.isDraw		= true;
-		_createEntryImGuiWindowData.filePath	= _entryPathData.path;
+		_createEntryImGuiWindowData.isDraw			= true;
+		_createEntryImGuiWindowData.isWindowFocus	= true;
+		_createEntryImGuiWindowData.filePath		= _entryPathData.path;
 	}
 
 	ImGui::PopStyleVar();
@@ -512,11 +507,19 @@ void FileExplorer::CreateEntryButtonDraw(const FileSystemUtils::EntryPathData& _
 	);
 }
 
-//-- ディレクトリの作成 -------------------------------------------
+//-- ディレクトリの作成Window -------------------------------------------
 
 bool FileExplorer::CreateDirectoryWindowDraw()
 {
 	bool isCreateDirectory = false;	// ディレクトリ作成したかどうか
+
+	// Windowをフォーカスするとき
+	if (createDirectoryImGuiWindowData.isWindowFocus)
+	{
+		// Windowをフォーカス
+		ImGui::SetNextWindowFocus();
+		createDirectoryImGuiWindowData.isWindowFocus = false;
+	}
 
 	ImGui::Begin(u8"フォルダ作成");
 
@@ -547,6 +550,9 @@ bool FileExplorer::CreateDirectoryWindowDraw()
 
 			// ディレクトリ名文字列のリセット
 			createDirectoryImGuiWindowData.fileName.clear();
+
+			// windowを消す
+			createDirectoryImGuiWindowData.isDraw = false;
 		}
 	}
 
@@ -566,11 +572,19 @@ bool FileExplorer::CreateDirectoryWindowDraw()
 	return isCreateDirectory;
 }
 
-//-- ファイルの作成 ---------------------------------------------
+//-- ファイルの作成Window ---------------------------------------------
 
 bool FileExplorer::CreateFileWindowDraw()
 {
 	bool isCreateFile = false;	// ファイルを作成したかどうか
+
+	// Windowをフォーカスするとき
+	if (createFileImGuiWindowData.isWindowFocus)
+	{
+		// Windowをフォーカス
+		ImGui::SetNextWindowFocus();
+		createFileImGuiWindowData.isWindowFocus = false;
+	}
 
 	ImGui::Begin(u8"ファイル作成");
 
@@ -634,9 +648,9 @@ bool FileExplorer::CreateFileWindowDraw()
 	// ファイル名が設定されているとき
 	if (!createFileImGuiWindowData.fileName.empty())
 	{
-		// ファイルタイプがNONEでないとき、または、ファイルタイプがNONEかつファイルの拡張子が指定されていたら (文字数が「.」の一文字よりも多かったら)
+		// ファイルタイプがNONEでないとき、または、ファイルタイプがNONEかつファイルの拡張子が指定されていたら
 		if (createFileImGuiWindowData.fileType != CLASS_FILE_TYPE::NONE ||
-			(createFileImGuiWindowData.fileType == CLASS_FILE_TYPE::NONE && createFileImGuiWindowData.fileExtension.size() > 1))
+			(createFileImGuiWindowData.fileType == CLASS_FILE_TYPE::NONE && createFileImGuiWindowData.fileExtension.size() > 0))
 		{
 			if (ImGui::Button(u8"追加"))
 			{
@@ -653,11 +667,8 @@ bool FileExplorer::CreateFileWindowDraw()
 				}
 				else if (createFileImGuiWindowData.fileType == CLASS_FILE_TYPE::CLASS)
 				{
-#ifdef TEST
-					isCreateFile = VisualStudioProjectEditor::CreateClassFiles(createFileImGuiWindowData.filePath, createFileImGuiWindowData.fileName);
-#else
+					// Classファイルの作成
 					isCreateFile = CreateClassFiles(createFileImGuiWindowData.filePath, createFileImGuiWindowData.fileName);
-#endif // VISUAL_STUDIO_ADD
 				}
 				else if (createFileImGuiWindowData.fileType == CLASS_FILE_TYPE::CPP || createFileImGuiWindowData.fileType == CLASS_FILE_TYPE::H)
 				{
@@ -675,6 +686,9 @@ bool FileExplorer::CreateFileWindowDraw()
 
 				// ファイル名文字列のリセット
 				createFileImGuiWindowData.fileName.clear();
+
+				// windowを消す
+				createFileImGuiWindowData.isDraw = false;
 			}
 		}
 	}

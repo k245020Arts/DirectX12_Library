@@ -1,4 +1,5 @@
 #include "../2DBaseShader/BasicShaderHeader.hlsli"
+#include "../Light/Light.hlsli"
 #include "../Shadow/ShadowSample.hlsli"
 
 SamplerState smp : register(s0); // サンプラー
@@ -42,26 +43,38 @@ ScenePSOutput BasicPS_FBX(VSOutput input) : SV_TARGET
      
     //Diffuseの計算
     float3 diffuseLight = ambientColor * ambientIntensity;
+    float3 diffuseLightNoShadow = 0;
     float3 specularLight = 0;
+    float3 specularLightNoShadow = 0;
     float3 vieDir = normalize(cameraPos - input.worldPosition.xyz);
-    
-    [unroll(MAX_LIGHT_COUNT)]
-    for (uint i = 0; i < lightCount; ++i)
-    {
-        float3 lightDir = normalize(-lights[i].direction);
+    float shininess = max(specularPow, 1.0f);
 
-        float3 lightCol = lights[i].color * lights[i].intensity;
+    uint count = min(lightCount, MAX_LIGHT_COUNT);
+
+    [loop]
+    for (uint i = 0; i < count; ++i)
+    {
+        // 方向と、減衰込みの光の色はライトの種類に応じて EvaluateLight が返す
+        float3 lightDir;
+        float3 lightCol = LightCalculation(lights[i], input.worldPosition.xyz, lightDir);
 
         float ndl = saturate(dot(useNormal, lightDir));
 
-         //対象となる二つのベクトルを足すとその二つのベクトルをハーフベクトルになる
+        //対象となる二つのベクトルを足すとその二つのベクトルをハーフベクトルになる
         float3 halfDir = normalize(lightDir + vieDir);
-        float shininess = max(specularPow, 1.0f);
         float spec = pow(saturate(dot(useNormal, halfDir)), shininess);
         spec *= (ndl > 0.0f) ? 1.0f : 0.0f; // ライトが当たらない面にはハイライトを出さない
 
-        diffuseLight += lightCol * ndl;
-        specularLight += lightCol * spec;
+        if (lights[i].lightType == LIGHT_TYPE_DIRECTIONAL)
+        {
+            diffuseLight += lightCol * ndl;
+            specularLight += lightCol * spec;
+        }
+        else
+        {
+            diffuseLightNoShadow += lightCol * ndl;
+            specularLightNoShadow += lightCol * spec;
+        }
     }
 
     float4 color = _MainTex.Sample(smp, input.uv) * input.color;
@@ -69,13 +82,14 @@ ScenePSOutput BasicPS_FBX(VSOutput input) : SV_TARGET
     // 画像の透明な部分は描画しない
     clip(color.a - 0.001f);
 
-    // 両方のライトを合成
-    float3 finalRGB = color.rgb * diffuseLight;
-
     float shadowColor = CalculateShadow(input.shadowPosition, 0.001f); // 今の値のまま
-    finalRGB.rgb *= lerp(0.3f, 1.0f, shadowColor);
-    
-    finalRGB += specularLight * specularColor.rgb * specularStrength * shadowColor * enableSpecular;
+    float shadowFactor = lerp(0.3f, 1.0f, shadowColor);
+
+    // 全てのライトを合成(影はディレクショナルライトと環境光にだけ掛ける)
+    float3 finalRGB = color.rgb * (diffuseLight * shadowFactor + diffuseLightNoShadow);
+
+    float3 specularSum = specularLight * shadowColor + specularLightNoShadow;
+    finalRGB += specularSum * specularColor.rgb * specularStrength * enableSpecular;
     
     output.color = float4(finalRGB, color.a);
 

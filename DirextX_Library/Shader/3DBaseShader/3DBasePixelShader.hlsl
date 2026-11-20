@@ -1,4 +1,5 @@
 #include "../2DBaseShader/BasicShaderHeader.hlsli"
+#include "../Light/Light.hlsli"
 #include "../Shadow/ShadowSample.hlsli"
 
 SamplerState smp : register(s0); // サンプラー
@@ -20,15 +21,24 @@ ScenePSOutput BasicPS_3D(VSOutput input) : SV_TARGET
     }
     
     float3 totalLight = ambientColor * ambientIntensity;
-
-    [unroll(MAX_LIGHT_COUNT)]
+    float3 totalLightNoShadow = 0;
+    
+    [loop]
     for (uint i = 0; i < lightCount; ++i)
     {
-        float3 lightDir = normalize(-lights[i].direction);
+        float3 lightDir;
+        float3 lightCol = LightCalculation(lights[i], input.worldPosition.xyz, lightDir);
 
         float brightness = saturate(dot(normalize(input.normal.xyz), lightDir));
 
-        totalLight += lights[i].color * lights[i].intensity * brightness;
+        if (lights[i].lightType == LIGHT_TYPE_DIRECTIONAL)
+        {
+            totalLight += lightCol * brightness;
+        }
+        else
+        {
+            totalLightNoShadow += lightCol * brightness;
+        }
     }
 
     float4 color = _MainTex.Sample(smp, input.uv) * input.color;
@@ -36,12 +46,10 @@ ScenePSOutput BasicPS_3D(VSOutput input) : SV_TARGET
     // 画像の透明な部分は描画しない
     clip(color.a - 0.001f);
 
-    // 両方のライトを合成
-    float3 finalRGB = color.rgb * totalLight;
-    
     float shadowColor = CalculateShadow(input.shadowPosition, 0.001f); // 今の値のまま
 
-    finalRGB.rgb *= lerp(0.3f, 1.0f, shadowColor);
+    // 全てのライトを合成(影はディレクショナルライトと環境光にだけ掛ける)
+    float3 finalRGB = color.rgb * (totalLight * lerp(0.3f, 1.0f, shadowColor) + totalLightNoShadow);
 
     output.color = float4(finalRGB, color.a);
 

@@ -51,7 +51,16 @@ void PipelineState::SetVS(std::wstring filePath, std::string _entryPoint)
 
 	if (FAILED(hr))
 	{
-		printf("頂点シェーダーの読み込みに失敗");
+		// どのファイルで失敗したか、HRESULT はいくつかを出す
+		std::wstring msg = L"頂点シェーダーの読み込みに失敗: " + filePath
+			+ L" hr=0x" + std::to_wstring(static_cast<unsigned long>(hr)) + L"\n";
+		OutputDebugStringW(msg.c_str());
+
+		// HLSL のコンパイルエラーなら、行番号つきの内容がここに入っている
+		if (errorBlob)
+		{
+			OutputDebugStringA(static_cast<const char*>(errorBlob->GetBufferPointer()));
+		}
 		return;
 	}
 
@@ -66,7 +75,15 @@ void PipelineState::SetPS(std::wstring filePath, std::string _entryPoint)
 
 	if (FAILED(hr))
 	{
-		OutputDebugStringW(L"ピクセルシェーダーの読み込みに失敗");
+		// どのファイルで失敗したか、HRESULT はいくつかを出す
+		std::wstring msg = L"ピクセルシェーダーの読み込みに失敗: " + filePath + L" hr=0x" + std::to_wstring(static_cast<unsigned long>(hr)) + L"\n";
+		OutputDebugStringW(msg.c_str());
+
+		// HLSL のコンパイルエラーなら、行番号つきの内容がここに入っている
+		if (errorBlob)
+		{
+			OutputDebugStringA(static_cast<const char*>(errorBlob->GetBufferPointer()));
+		}
 		return;
 	}
 
