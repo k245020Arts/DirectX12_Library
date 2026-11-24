@@ -21,6 +21,7 @@ void DeltaTime::TimeMeasurementFinish(const std::string& _message)
 
     // ƒ~ƒŠ•b‚É•ÏŠ·
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(timeTaken).count();
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(timeTaken).count();
 
     std::string MSTitleMessage = "Time Taken:";
     std::string MSEndMessage = "%lld ms\n";

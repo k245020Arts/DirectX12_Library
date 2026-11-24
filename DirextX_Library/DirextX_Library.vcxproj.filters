@@ -199,6 +199,18 @@
     <Filter Include="Shader\Light">
       <UniqueIdentifier>{6afabaad-67e5-4795-b8dc-105f01a49997}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MyLibrary\PostEffect\MotionBlur">
+      <UniqueIdentifier>{3f252b88-0483-47b2-a996-b44d01484234}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\PostEffectShader\MotionBlur">
+      <UniqueIdentifier>{b0d6ca35-6f84-4589-a932-40be12d546d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\PostEffectShader\Vignette">
+      <UniqueIdentifier>{4775e05f-c444-4403-9168-4929cdc7032a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLibrary\PostEffect\Vignette">
+      <UniqueIdentifier>{f0f9b2e1-87e4-4149-b84a-fc0957fc6db1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyLibrary\assimp\AssimpLoader.cpp">
@@ -431,6 +443,12 @@
     </ClCompile>
     <ClCompile Include="MyLibrary\PostEffect\Fog\FogEffect.cpp">
       <Filter>MyLibrary\PostEffect\Fog</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\PostEffect\MotionBlur\MotionBlur.cpp">
+      <Filter>MyLibrary\PostEffect\MotionBlur</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLibrary\PostEffect\Vignette\Vignette.cpp">
+      <Filter>MyLibrary\PostEffect\Vignette</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -710,6 +728,12 @@
     <ClInclude Include="MyLibrary\PostEffect\Fog\FogEffect.h">
       <Filter>MyLibrary\PostEffect\Fog</Filter>
     </ClInclude>
+    <ClInclude Include="MyLibrary\PostEffect\MotionBlur\MotionBlur.h">
+      <Filter>MyLibrary\PostEffect\MotionBlur</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLibrary\PostEffect\Vignette\Vignette.h">
+      <Filter>MyLibrary\PostEffect\Vignette</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\2DBaseShader\Basic_VertexShader.hlsl">
@@ -774,6 +798,12 @@
     </FxCompile>
     <FxCompile Include="Shader\FBXModelShader\PBR\PBRPixelShader.hlsl">
       <Filter>Shader\FBXModelShader\PBR</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\MotionBlur\MotionBlurPixelShader.hlsl">
+      <Filter>Shader\PostEffectShader\MotionBlur</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\Vignette\VignettePixelShader.hlsl">
+      <Filter>Shader\PostEffectShader\Vignette</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

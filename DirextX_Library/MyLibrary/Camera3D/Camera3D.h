@@ -19,13 +19,16 @@ public:
     void SetUpVec(const Vector3& _upVec);
 
     const DirectX::XMMATRIX& GetViewMatrix() const { return viewMatrix; }
+    const DirectX::XMMATRIX& GetPrevViewMatrix() const { return prevViewMatrix; }
     const DirectX::XMMATRIX& GetProjectionMatrix() const { return projectionMatrix; }
+    const DirectX::XMMATRIX& GettPrevProjectionMatrix() const { return prevProjectionMatrix; }
 
     const Vector3 GetPosition()const { return position; }
     const Vector3 GetTarget()const { return target; }
     const Vector3 GetUpVec()const { return upVec; }
     const float GetNear()const { return nearFar.cameraToNear; }
     const float GetFar()const { return nearFar.cameraToFar; }
+    const float GetAspect()const { return aspect; }
 
 private:
 
@@ -50,8 +53,13 @@ private:
     Matrix viewMatrix{};
     Matrix projectionMatrix{};
 
+    Matrix prevViewMatrix{};
+    Matrix prevProjectionMatrix{};
+
     float fovAngle = 0.0f;
     NearFar nearFar ={};
+
+    float aspect;
 
     friend class SingletonBase<Camera3D>;
 };

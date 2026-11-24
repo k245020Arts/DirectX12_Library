@@ -11,6 +11,8 @@ class ShadowMap;
 class ShadowCamera;
 class ShadowMapDebug;
 class RenderPass;
+class MotionBlur;
+class Vignette;
 
 class PostEffectCreater : public SingletonBase<PostEffectCreater>
 {
@@ -35,6 +37,8 @@ private:
 	GaussianBlur* gaussianBlur = nullptr;
 	DistortionPostEffect* distortion = nullptr;
 	FogEffect* fog = nullptr;
+	MotionBlur* motionBlur =nullptr;
+	Vignette* vignette =nullptr;
 
 	friend class SingletonBase<PostEffectCreater>;
 

@@ -181,7 +181,9 @@
     <ClCompile Include="MyLibrary\PostEffect\Bloom\BloomEffect.cpp" />
     <ClCompile Include="MyLibrary\PostEffect\Copy\CopyEffect.cpp" />
     <ClCompile Include="MyLibrary\PostEffect\Fog\FogEffect.cpp" />
+    <ClCompile Include="MyLibrary\PostEffect\MotionBlur\MotionBlur.cpp" />
     <ClCompile Include="MyLibrary\PostEffect\PostEffectCreater.cpp" />
+    <ClCompile Include="MyLibrary\PostEffect\Vignette\Vignette.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Box\Box2D.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Box\Box3D.cpp" />
     <ClCompile Include="MyLibrary\Primitives\Capsule\Capsule.cpp" />
@@ -271,8 +273,10 @@
     <ClInclude Include="MyLibrary\PostEffect\Bloom\BloomEffect.h" />
     <ClInclude Include="MyLibrary\PostEffect\Copy\CopyEffect.h" />
     <ClInclude Include="MyLibrary\PostEffect\Fog\FogEffect.h" />
+    <ClInclude Include="MyLibrary\PostEffect\MotionBlur\MotionBlur.h" />
     <ClInclude Include="MyLibrary\PostEffect\PostEffectCreater.h" />
     <ClInclude Include="MyLibrary\PostEffect\PostEffectParam.h" />
+    <ClInclude Include="MyLibrary\PostEffect\Vignette\Vignette.h" />
     <ClInclude Include="MyLibrary\Primitives\Box\Box2D.h" />
     <ClInclude Include="MyLibrary\Primitives\Box\Box3D.h" />
     <ClInclude Include="MyLibrary\Primitives\Capsule\Capsule.h" />
@@ -487,6 +491,16 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">GaussianBlurPSShader</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\MotionBlur\MotionBlurPixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MotionBlurPS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MotionBlurPS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shader\PostEffectBaseShader\PostEffectBaseVertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
@@ -495,6 +509,16 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PostEffectBaseVSShader</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PostEffectBaseVSShader</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shader\PostEffectBaseShader\Vignette\VignettePixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VignettePS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VignettePS</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shader\Shadow\ShadowMapDebugPixelShader.hlsl">

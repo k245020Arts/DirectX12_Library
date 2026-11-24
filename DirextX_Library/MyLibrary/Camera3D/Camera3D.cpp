@@ -32,6 +32,8 @@ void Camera3D::Update()
 	ImGui::End();
 #endif // IMGUI
 	
+	prevViewMatrix = viewMatrix;
+	prevProjectionMatrix = projectionMatrix;
 	//target.x += 0.1f;
 	const auto eyePos = DirectX::XMVectorSet(position.x, position.y, position.z, 1.0f);
 	const auto targetPos = DirectX::XMVectorSet(target.x, target.y, target.z, 1.0f);
@@ -39,7 +41,7 @@ void Camera3D::Update()
 	const auto up = DirectX::XMVectorSet(upVec.x, upVec.y, upVec.z, 0.0f);
 
 	const float fov = DirectX::XMConvertToRadians(fovAngle);
-	const auto aspect = static_cast<float>(Engine::GetInstance()->GetWindowSize().width) / static_cast<float>(Engine::GetInstance()->GetWindowSize().height); // アスペクト比
+	aspect = static_cast<float>(Engine::GetInstance()->GetWindowSize().width) / static_cast<float>(Engine::GetInstance()->GetWindowSize().height); // アスペクト比
 
 	viewMatrix = DirectX::XMMatrixLookAtLH(eyePos, targetPos, up);
 	

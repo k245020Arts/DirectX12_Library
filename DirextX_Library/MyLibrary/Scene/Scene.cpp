@@ -204,6 +204,7 @@ Scene::Scene()
 #endif // MODEL
 
 	Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(0, 100.0f, 0),Vector3(0,-1,0), 3.0f, Color::RGBToVector3(GOLD), 1000.0f,10.0f,12.0f));
+	Light::GetInstance()->AddLight(LightData::SetDirectionalLightData(Vector3(0,0,-1),1.0f,Color::RGBToVector3(WHITE)));
 	/*Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(-200.0f, 250.0f, -300.0f), Vector3(0, -1, 0), 3.0f, Color::RGBToVector3(GRAY), 1000.0f, 0.0f, 120.0f));
 	Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(100.0f, 250.0f, -100.0f), Vector3(0, -1, 0), 3.0f, Color::RGBToVector3(GREEN), 1000.0f, 30.0f, 90.0f));
 	Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(0.0f, 250.0f, 100.0f), Vector3(0, -1, 0), 3.0f, Color::RGBToVector3(BLUE), 1000.0f, 0.0f, 180.0f));
@@ -334,11 +335,11 @@ void Scene::Update()
 #ifdef MODEL
 
 #ifdef IMGUI
-	static float target[3] = { 100.0f, 150.0f, 50.0f };
+	static float targetIK[3] = { 100.0f, 150.0f, 50.0f };
 	static float weight = 0.0f;
 
 	ImGui::Begin("IK");
-	ImGui::SliderFloat3("target", target, -300.0f, 300.0f);
+	ImGui::SliderFloat3("target", targetIK, -300.0f, 300.0f);
 	ImGui::SliderFloat("weight", &weight, 0.0f, 1.0f);
 
 	ImGui::SliderFloat3("hand", &hand->GetTransform().position.x, -300.0f, 300.0f);
@@ -352,7 +353,7 @@ void Scene::Update()
 
 	ImGui::End();
 
-	model->SetIKTarget(legIK, Vector3(target[0], target[1], target[2]), weight);
+	model->SetIKTarget(legIK, Vector3(targetIK[0], targetIK[1], targetIK[2]), weight);
 #endif //IMGUI
 
 	//model->SetIKHinge(legIK, 1, Vector3(1, 0, 0), 0.0f, DirectX::XMConvertToRadians(130.0f));
