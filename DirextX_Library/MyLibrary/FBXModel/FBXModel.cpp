@@ -129,7 +129,9 @@ ResultErrorHandle FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, boo
 	};
 
 	AssimpLoader loader;
+	//DeltaTime::GetInstance()->TimeMeasurementStart();
 	handle.SetErrorCode(loader.Load(importSetting, modelData));
+	//DeltaTime::GetInstance()->TimeMeasurementFinish(tag + "AssmipLoadFinish");
 	if (!handle.IsSuccess())
 	{
 		return handle;
@@ -146,10 +148,16 @@ ResultErrorHandle FBXModel::Load(const wchar_t* _modelFilePath, bool _uflip, boo
 		animator->AddAnimation(modelData);
 	}
 
+	//DeltaTime::GetInstance()->TimeMeasurementStart();
 	Init();
+	//DeltaTime::GetInstance()->TimeMeasurementFinish(tag + "InitFinish");
 	drawType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	//DeltaTime::GetInstance()->TimeMeasurementStart();
 	SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/FBXModelShader/FBXModelVertexShader.hlsl", "BasicVS_FBX", L"Shader/FBXModelShader/FBXModelPixelShader.hlsl", "BasicPS_FBX");
+	//DeltaTime::GetInstance()->TimeMeasurementFinish(tag + "BasePipelineStateCreate");
+	//DeltaTime::GetInstance()->TimeMeasurementStart();
 	SetPBRPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/FBXModelShader/FBXModelVertexShader.hlsl", "BasicVS_FBX", L"Shader/FBXModelShader/PBR/PBRPixelShader.hlsl", "main");
+	//DeltaTime::GetInstance()->TimeMeasurementFinish(tag + "PBRPipelineStateCreate");
 	//SetPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, L"Shader/3DBaseShader/3DBaseVertexShader.hlsl", "BasicVS_3D", L"Shader/3DBaseShader/3DBasePixelShader.hlsl", "BasicPS_3D");
 	if (!loader.GetTextureLoader()) {
 		pipelineState->ErrorStateChange();
@@ -537,15 +545,13 @@ void FBXModel::Init()
 		materialHandles.push_back(srvData);
 	}
 
-	rootSignature = std::make_unique<RootSignature>();
-	rootSignature->SetModelRootSignature();
+	rootSignature = RootSignature::GetSharedModel();
 	if (!rootSignature->IsSuccess())
 	{
 		OutputDebugStringW(L"ルートシグネチャの生成に失敗\n");
 	}
 
-	PBRRootSignature = std::make_unique<RootSignature>();
-	PBRRootSignature->SetPBRRootSignature();
+	PBRRootSignature = RootSignature::GetSharedPBR();
 	if (!PBRRootSignature->IsSuccess())
 	{
 		OutputDebugStringW(L"PBR用ルートシグネチャの生成に失敗\n");
@@ -594,8 +600,7 @@ void FBXModel::SetPBRPipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology, std::
 
 void FBXModel::SetShadowPipelineState()
 {
-	shadowRootSignature = std::make_unique<RootSignature>();
-	shadowRootSignature->SetShadowDepthRootSignature();
+	shadowRootSignature = RootSignature::GetSharedShadowDepth();
 	if (!shadowRootSignature->IsSuccess())
 	{
 		OutputDebugStringW(L"Shadow用RootSignatureの生成に失敗\n");

@@ -27,13 +27,13 @@ void DeltaTime::TimeMeasurementFinish(const std::string& _message)
 
     std::string MSmessage = MSTitleMessage + _message + MSEndMessage;
 
-    std::string SEndMessage = "%.f3 •b\n";
+    std::string SEndMessage = "%.3f •b\n";
 
     std::string SMessage = MSTitleMessage + _message + SEndMessage;
 
     printf(MSmessage.c_str(), static_cast<long long>(milliseconds));
 
-    printf(SMessage.c_str(), static_cast<long long>(milliseconds / 1000.0f));
+    printf(SMessage.c_str(), static_cast<float>(milliseconds / 1000.0f));
 }
 
 DeltaTime::DeltaTime() : targetFrameTime(std::chrono::microseconds(1000000 / FPS))

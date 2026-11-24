@@ -94,6 +94,7 @@ Scene::Scene()
 #endif // ON2D
 
 #ifdef MODEL
+	DeltaTime::GetInstance()->TimeMeasurementStart();
 	//L"data/Alicia/FBX/Alicia_solid_Unity.FBX"
 	/*texture2D1 = new Texture2D();
 	auto texresult = texture2D1->Load("data/textest.png");
@@ -101,9 +102,9 @@ Scene::Scene()
 	texture2D1->GetTransform().position = Vector3(1000, 200, 0);*/
 
 	model = new FBXModel();
-	DeltaTime::GetInstance()->TimeMeasurementStart();
+	
 	model->Load(L"data/Walking.fbx", false, true);
-	DeltaTime::GetInstance()->TimeMeasurementFinish("Model1ロード完了");
+	
 
 	model->LoadAnimation(L"data/Idle.fbx");
 	model->LoadAnimation(L"data/Fast Run.fbx");
@@ -115,9 +116,7 @@ Scene::Scene()
 	//Sword And Shield Attack
 
 	model1 = new FBXModel();
-	DeltaTime::GetInstance()->TimeMeasurementStart();
 	model1->Load(L"data/Walking.fbx", false, true);
-	DeltaTime::GetInstance()->TimeMeasurementFinish("Model2ロード完了");
 	model1->LoadAnimation(L"data/Defender.fbx");
 	model1->LoadAnimation(L"data/Shopping Cart Dance.fbx");
 
@@ -201,6 +200,7 @@ Scene::Scene()
 	sky = new FBXModel();
 	sky->Load("data/sky/SM_SkySphere.fbx", true, true);
 
+	DeltaTime::GetInstance()->TimeMeasurementFinish("10体合計ロード時間");
 #endif // MODEL
 
 	Light::GetInstance()->AddLight(LightData::SetSpotLightData(Vector3(0, 100.0f, 0),Vector3(0,-1,0), 3.0f, Color::RGBToVector3(GOLD), 1000.0f,10.0f,12.0f));

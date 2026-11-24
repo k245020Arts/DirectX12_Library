@@ -73,13 +73,13 @@ inline TexExtension GetExtension(const std::wstring& _filePath)
 
 	std::wstring psd = L"psd";
 
-	printf("•¶š”: %zu\n", strExten.size());
+	/*printf("•¶š”: %zu\n", strExten.size());
 
 	for (wchar_t c : strExten)
 	{
 		printf("•¶šƒR[ƒh: 0x%04X\n",
 			static_cast<unsigned int>(c));
-	}
+	}*/
 
 	if (strExten == L"png")
 	{

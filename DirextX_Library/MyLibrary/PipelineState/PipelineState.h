@@ -7,6 +7,7 @@
 class PipelineState
 {
 public:
+	void ClearChche();
 	PipelineState();
 	~PipelineState() {};
 	PipelineState(D3D12_PRIMITIVE_TOPOLOGY_TYPE _desc); // コンストラクタである程度の設定をする

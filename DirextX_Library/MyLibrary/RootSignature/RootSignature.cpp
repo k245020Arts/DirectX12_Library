@@ -1,5 +1,53 @@
 ﻿#include "RootSignature.h"
 #include "../Engine/Engine.h"
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+
+// ============================================================================
+//  ルートシグネチャのキャッシュ
+//   シリアライズした中身(バイト列)が同じなら、同じ ID3D12RootSignature を返す。
+//   どのクラスが何個 RootSignature を作っても、種類が同じなら実体は1つになる。
+//   (PSO のキャッシュは、ルートシグネチャのポインタが同じかどうかで同じ PSO かを判断している)
+// ============================================================================
+namespace
+{
+	std::mutex rootSignatureMutex;
+	std::unordered_map<std::string, ComPtr<ID3D12RootSignature>> rootSignatureCache; // シリアライズ結果 -> 実体
+	std::unordered_set<const ID3D12RootSignature*> rootSignatureSet;                 // キャッシュにあるものの一覧
+	
+	HRESULT CreateRootSignatureCached(ID3DBlob * _blob, ComPtr<ID3D12RootSignature>&_out)
+	{
+		const std::string key(static_cast<const char*>(_blob->GetBufferPointer()), _blob->GetBufferSize());
+		{
+			std::lock_guard<std::mutex> lock(rootSignatureMutex);
+			auto it = rootSignatureCache.find(key);
+			if (it != rootSignatureCache.end())
+			{
+				_out = it->second;
+				return S_OK;
+			}
+		}
+		ComPtr<ID3D12RootSignature> rootSignature;
+		const HRESULT hr = Engine::GetInstance()->Device()->CreateRootSignature(
+			0, // GPUが複数ある場合のノードマスク（今回は1個しか無い想定なので0）
+			_blob->GetBufferPointer(),
+			_blob->GetBufferSize(),
+			IID_PPV_ARGS(rootSignature.GetAddressOf()));
+
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+		
+		std::lock_guard<std::mutex> lock(rootSignatureMutex);
+		auto result = rootSignatureCache.emplace(key, rootSignature); // 同時に作られていたら、先に入った方を使う
+		rootSignatureSet.insert(result.first->second.Get());
+		_out = result.first->second;
+		return S_OK;
+	}
+}
 
 RootSignature::RootSignature()
 {
@@ -71,11 +119,7 @@ void RootSignature::SetTextureRootSampler()
 	}
 
 	// ルートシグネチャ生成
-	hr = Engine::GetInstance()->Device()->CreateRootSignature(
-		0, // GPUが複数ある場合のノードマスク（今回は1個しか無い想定なので0）
-		pBlob->GetBufferPointer(), // シリアライズしたデータのポインタ
-		pBlob->GetBufferSize(), // シリアライズしたデータのサイズ
-		IID_PPV_ARGS(pRootSignature.GetAddressOf())); // ルートシグニチャ格納先のポインタ
+	hr = CreateRootSignatureCached(pBlob.Get(), pRootSignature); // ルートシグニチャ格納先のポインタ
 
 	if (FAILED(hr))
 	{
@@ -329,7 +373,7 @@ void RootSignature::SetModelRootSignature()
 		return;
 	}
 
-	hr = Engine::GetInstance()->Device()->CreateRootSignature(0,pBlob->GetBufferPointer(),pBlob->GetBufferSize(),IID_PPV_ARGS(pRootSignature.GetAddressOf()));
+	hr = CreateRootSignatureCached(pBlob.Get(), pRootSignature); // ルートシグニチャ格納先のポインタ
 
 	if (FAILED(hr))
 	{
@@ -456,11 +500,7 @@ void RootSignature::Set3DRootSignature()
 	}
 
 	// ルートシグネチャ生成
-	hr = Engine::GetInstance()->Device()->CreateRootSignature(
-		0, // GPUが複数ある場合のノードマスク（今回は1個しか無い想定なので0）
-		pBlob->GetBufferPointer(), // シリアライズしたデータのポインタ
-		pBlob->GetBufferSize(), // シリアライズしたデータのサイズ
-		IID_PPV_ARGS(pRootSignature.GetAddressOf())); // ルートシグニチャ格納先のポインタ
+	hr = CreateRootSignatureCached(pBlob.Get(), pRootSignature); // ルートシグニチャ格納先のポインタ
 
 	if (FAILED(hr))
 	{
@@ -614,12 +654,8 @@ void RootSignature::SetDistortionRootSignature()
 		return;
 	}
 
-	// ルートシグネチャ生成
-	hr = Engine::GetInstance()->Device()->CreateRootSignature(
-		0, // GPUが複数ある場合のノードマスク（今回は1個しか無い想定なので0）
-		pBlob->GetBufferPointer(), // シリアライズしたデータのポインタ
-		pBlob->GetBufferSize(), // シリアライズしたデータのサイズ
-		IID_PPV_ARGS(pRootSignature.GetAddressOf())); // ルートシグニチャ格納先のポインタ
+	hr = CreateRootSignatureCached(pBlob.Get(), pRootSignature); // ルートシグニチャ格納先のポインタ
+
 
 	if (FAILED(hr))
 	{
@@ -700,12 +736,7 @@ void RootSignature::SetPostEffectTwoInputRootSignature()
 		return;
 	}
 
-	// ルートシグネチャ生成
-	hr = Engine::GetInstance()->Device()->CreateRootSignature(
-		0, // GPUが複数ある場合のノードマスク（今回は1個しか無い想定なので0）
-		pBlob->GetBufferPointer(), // シリアライズしたデータのポインタ
-		pBlob->GetBufferSize(), // シリアライズしたデータのサイズ
-		IID_PPV_ARGS(pRootSignature.GetAddressOf())); // ルートシグニチャ格納先のポインタ
+	hr = CreateRootSignatureCached(pBlob.Get(), pRootSignature); // ルートシグニチャ格納先のポインタ
 
 	if (FAILED(hr))
 	{
@@ -762,12 +793,8 @@ void RootSignature::SetShadowDepthRootSignature()
         return;
     }
 
-    hr = Engine::GetInstance()->Device()->CreateRootSignature(
-        0,
-        blob->GetBufferPointer(),
-        blob->GetBufferSize(),
-        IID_PPV_ARGS(pRootSignature.ReleaseAndGetAddressOf())
-    );
+	hr = CreateRootSignatureCached(blob.Get(), pRootSignature); // ルートシグニチャ格納先のポインタ
+
 
     success = SUCCEEDED(hr);
     if (!success)
@@ -833,7 +860,7 @@ void RootSignature::SetShadowDebugRootSignature()
         return;
     }
 
-    hr = Engine::GetInstance()->Device()->CreateRootSignature(0,blob->GetBufferPointer(),blob->GetBufferSize(),IID_PPV_ARGS(pRootSignature.ReleaseAndGetAddressOf()));
+	hr = CreateRootSignatureCached(blob.Get(), pRootSignature); // ルートシグニチャ格納先のポインタ
 
     success = SUCCEEDED(hr);
     if (!success)
@@ -1068,7 +1095,7 @@ void RootSignature::SetPBRRootSignature()
 		return;
 	}
 
-	hr = Engine::GetInstance()->Device()->CreateRootSignature(0, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_PPV_ARGS(pRootSignature.GetAddressOf()));
+	hr = CreateRootSignatureCached(pBlob.Get(), pRootSignature); // ルートシグニチャ格納先のポインタ
 
 	if (FAILED(hr))
 	{
@@ -1079,4 +1106,47 @@ void RootSignature::SetPBRRootSignature()
 	}
 
 	success = true;
+}
+
+// ============================================================================
+//  ルートシグネチャ共有まわりの公開関数
+// ============================================================================
+bool RootSignature::IsShared(const ID3D12RootSignature * _rootSignature)
+{
+	if (_rootSignature == nullptr)
+	{
+		return false;
+	}
+	
+	std::lock_guard<std::mutex> lock(rootSignatureMutex);
+	return rootSignatureSet.count(_rootSignature) != 0;
+}
+
+void RootSignature::ClearShared()
+{
+	std::lock_guard<std::mutex> lock(rootSignatureMutex);
+	rootSignatureSet.clear();
+	rootSignatureCache.clear();
+}
+
+// ---- 互換用(FBXModel が使っている)。中身が同じなら実体は共有されるので、毎回作っても同じ ----
+std::shared_ptr<RootSignature> RootSignature::GetSharedModel()
+{
+	auto rootSignature = std::make_shared<RootSignature>();
+	rootSignature->SetModelRootSignature();
+	return rootSignature;
+}
+
+std::shared_ptr<RootSignature> RootSignature::GetSharedPBR()
+{
+	auto rootSignature = std::make_shared<RootSignature>();
+	rootSignature->SetPBRRootSignature();
+	return rootSignature;
+}
+
+std::shared_ptr<RootSignature> RootSignature::GetSharedShadowDepth()
+{
+	auto rootSignature = std::make_shared<RootSignature>();
+	rootSignature->SetShadowDepthRootSignature();
+	return rootSignature;
 }

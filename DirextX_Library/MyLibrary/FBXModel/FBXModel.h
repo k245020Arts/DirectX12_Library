@@ -247,18 +247,18 @@ private:
 	std::unique_ptr<Animator> animator;
 
 	std::vector<std::unique_ptr<VertexBuffer>> vertexBuffer;
-	std::unique_ptr<RootSignature> rootSignature;
+	std::shared_ptr<RootSignature> rootSignature;
 	std::unique_ptr<PipelineState> pipelineState;
 	std::unique_ptr<PipelineState> wireFramePipelineState;
 
-	std::unique_ptr<RootSignature> PBRRootSignature = nullptr;
+	std::shared_ptr<RootSignature> PBRRootSignature = nullptr;
 	std::unique_ptr<PipelineState> PBRPipelineState = nullptr;
 	std::unique_ptr<PipelineState> PBRWireFramePipelineState = nullptr;
 
 	std::vector <std::unique_ptr<IndexBuffer>> indexBuffer;
 
 	ConstantBufferData constantBufferPtr;
-	std::unique_ptr<RootSignature> shadowRootSignature;
+	std::shared_ptr<RootSignature> shadowRootSignature;
 	std::unique_ptr<PipelineState> shadowPipelineState;
 
 	bool useIndex;
